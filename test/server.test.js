@@ -10,7 +10,7 @@ const { spawn, execFileSync } = require('child_process');
 const SERVER = path.join(__dirname, '..', 'server.js');
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'home-it-test-'));
 const PORT = 8911, WX = 8912, BASE = `http://127.0.0.1:${PORT}`;
-const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0.1', WEATHER_URL: `http://127.0.0.1:${WX}/wx`, GEOCODE_URL: `http://127.0.0.1:${WX}/geo` };
+const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0.1', WEATHER_URL: `http://127.0.0.1:${WX}/wx`, GEOCODE_URL: `http://127.0.0.1:${WX}/geo`, BACKUP_COPY_DIR: path.join(DATA, 'copy') };
 const cli = (args, extra = {}) => execFileSync('node', [SERVER, ...args], { env: { ...env, ...extra }, encoding: 'utf8' });
 let proc, fake, cookie = '';
 
@@ -239,4 +239,10 @@ test('too many wrong passwords means a wait', async () => {
   let last;
   for (let i = 0; i < 6; i++) last = await call('/api/login', { name: 'Sherry', password: 'nope' + i }, { anon: true });
   assert.equal(last.status, 429);
+});
+
+test('the app says it is up, and the day’s backup also lands in the second folder', async () => {
+  const h = await (await fetch(BASE + '/api/health')).json();
+  assert.equal(h.ok, true); assert.match(h.version, /^\d+\.\d+\.\d+$/); assert.equal(h.backup.copy, 'ok');
+  assert.deepEqual(fs.readdirSync(path.join(DATA, 'copy')), fs.readdirSync(path.join(DATA, 'backups')));
 });
