@@ -18,7 +18,7 @@
     rules: [],      // weekly: { id, dow, start, end, place, from, until?, skip: [dates] }
     events: [],     // { id, date, time?, t, d?, rep?: 'weekly'|'monthly'|'yearly', done?: the day a repeating one was last ticked }
     settings: { guide: 'luffy', travel: 25, rate: 0, nightFrom: '23:30', nightTo: '07:00', idle: 10, look: 'auto',
-      city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', company: '', hide: [] },
+      city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', calUrl: '', company: '', hide: [] },
     day: ''         // the last day the lists were tidied for
   });
 
@@ -172,7 +172,9 @@
     return d === Math.min(d0, monthLen(y, m));   // the 31st falls on the last day of a shorter month
   }
   // That day's events in time order. A repeating one comes back as that day's copy, ticked only if ticked that day.
+  // s.cal holds rows read from a calendar link (never saved with the rest); they show but can't be ticked or changed here.
   const eventsOn = (s, date) => s.events.filter(e => falls(e, date)).map(e => e.rep ? { ...e, date, d: e.done === date } : e)
+    .concat((s.cal || []).filter(c => c.date === date).map((c, i) => ({ id: 'cal' + date + i, date, time: c.time, t: c.t, cal: true })))
     .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
   // Everything still ahead, soonest first. A repeating event is listed once, at its next day.
   function eventList(s, today) {
@@ -233,6 +235,7 @@
     nightFrom: v => okTime(v) ? v : bad('Pick a time.'),
     nightTo: v => okTime(v) ? v : bad('Pick a time.'),
     splitUrl: v => { v = text(v, 200); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a web address starting with https://'); },
+    calUrl: v => { v = text(v, 400).replace(/^webcal:\/\//i, 'https://'); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a calendar link starting with webcal:// or https://'); },
     budgetUrl: v => { v = text(v, 200); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a web address starting with https://'); }
   };
   // ctx: { today, rid }. Each returns a short message for the page to show.

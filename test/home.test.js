@@ -188,3 +188,21 @@ test('to-dos can be renamed, and the same shift can’t be added twice', () => {
   H.apply(s, 'shift.edit', { id: s.shifts[0].id, start: '15:00', end: '23:00' }, c);
   assert.equal(H.shiftsOn(s, '2026-11-12')[0].start, '15:00');
 });
+
+test('a shared calendar file is read into days: time zones, repeats, skipped and moved days', () => {
+  const read = require('../ics').read;
+  const ics = ['BEGIN:VCALENDAR',
+    'BEGIN:VEVENT', 'UID:a', 'SUMMARY:Dentist\\, downtown', 'DTSTART;VALUE=DATE:20261112', 'BEGIN:VALARM', 'TRIGGER:-PT15M', 'END:VALARM', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:b', 'SUMMARY:Yoga', 'DTSTART:20261102T100000', 'RRULE:FREQ=WEEKLY;BYDAY=MO,WE;UNTIL=20261118T000000', 'EXDATE:20261109T100000', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:b', 'RECURRENCE-ID:20261111T100000', 'SUMMARY:Yoga (moved)', 'DTSTART:20261111T190000', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:c', 'SUMMARY:Trip', 'DTSTART;VALUE=DATE:20261114', 'DTEND;VALUE=DATE:20261116', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:d', 'SUMMARY:Rent', 'DTSTART;VALUE=DATE:20260131', 'RRULE:FREQ=MONTHLY', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:e', 'SUMMARY:Stand', ' up', 'DTSTART:20261110T090000', 'RRULE:FREQ=DAILY;COUNT=2', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:f', 'SUMMARY:Called off', 'STATUS:CANCELLED', 'DTSTART:20261110T090000', 'END:VEVENT',
+    'END:VCALENDAR'].join('\r\n');
+  assert.deepEqual(read(ics, '2026-11-09', '2026-12-31').map(r => `${r.date} ${r.time || 'all-day'} ${r.t}`), [
+    '2026-11-10 09:00 Standup', '2026-11-11 09:00 Standup', '2026-11-11 19:00 Yoga (moved)', '2026-11-12 all-day Dentist, downtown',
+    '2026-11-14 all-day Trip', '2026-11-15 all-day Trip', '2026-11-16 10:00 Yoga', '2026-12-31 all-day Rent']);
+  const s = H.blank(); s.cal = [{ date: '2026-11-12', time: '17:00', t: 'Dentist' }];
+  assert.equal(H.eventsOn(s, '2026-11-12')[0].cal, true); assert.equal(H.coming(s, '2026-11-11')[0].t, 'Dentist');
+});

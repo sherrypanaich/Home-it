@@ -5,7 +5,9 @@
 The bottom of the big screen is useful now, and the phone screen does more from its first page.
 
 ### New
-- **Tap a card for more.** The bottom cards each say one thing. Tap one and a panel opens with the details.
+- **Tap for a full page.** The bottom cards each say one thing. Tap one and its page opens; Back, or a tap beside the page, returns to the home screen. Settings, shifts and events open the same way.
+- **Everything for today in one place.** Today's to-dos now sit inside the Today panel with your plans, and "All of today" opens a page with the shift, plans, to-dos and weather together. The list card keeps Later and Shopping.
+- **Your calendar.** Paste the link of a shared Apple, Google or Outlook calendar in Settings and its events show on Today and Coming up. Home it only reads it.
 - **Coming up.** The next thing on your schedule, and the next two weeks of shifts and events when you tap it. Also on the phone.
 - **Next days' weather.** Tomorrow at a glance; tap for four days and the next hours.
 - **Live money cards.** Link Split it and Budget it once and the screen shows what you're owed or owe, and what's safe to spend until payday with the bills before it. Company mode still hides them.

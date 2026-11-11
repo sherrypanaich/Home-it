@@ -102,7 +102,8 @@ function stateOf(uid) {
   if (H.normalize(s, today())) saveDb();
   return s;
 }
-const viewFor = (uid, req) => ({ me: { name: nameFor(uid), kiosk: !!sessionOf(req)?.kiosk }, version: VERSION, today: today(), state: stateOf(uid) });
+const withCal = uid => { const s = stateOf(uid), c = calFor(uid); return c.rows.length ? { ...s, cal: c.rows } : s; };   // calendar rows ride along; they are never saved
+const viewFor = (uid, req) => ({ me: { name: nameFor(uid), kiosk: !!sessionOf(req)?.kiosk }, version: VERSION, today: today(), state: withCal(uid), cal: calFor(uid).state });
 function applyOp(uid, op, args) {
   const s = stateOf(uid), msg = H.apply(s, op, args, { today: today(), rid });
   saveDb(); return msg;
@@ -201,7 +202,7 @@ function file(res, name, type, cache, dir) {
 }
 const PUBLIC_FILES = new Set(['/manifest.webmanifest', '/sw.js', '/icon.svg', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/apple-touch-icon.png']);
 
-const mcp = require('./mcp')({ DATA_DIR, users: () => users, findUser, checkLogin, tooManyTries, noteMiss, secure, H, stateOf, today, version: VERSION,
+const mcp = require('./mcp')({ DATA_DIR, users: () => users, findUser, checkLogin, tooManyTries, noteMiss, secure, H, stateOf: uid => withCal(uid), today, version: VERSION,
   applyOp: (uid, op, args) => { const msg = applyOp(uid, op, args); changed(uid); return msg; },   // the screen updates as the assistant works
   weather: uid => weatherFor(stateOf(uid).settings),
   needsCode: uid => accounts.needsCode(uid), checkCode: (uid, code) => accounts.checkCode(uid, code) });
@@ -233,6 +234,30 @@ async function moneyFor(uid) {
     catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }
   }));
   return res;
+}
+
+// ---------- a calendar link (Apple, Google, Outlook): read every 15 minutes, the next 60 days kept ----------
+const ICS = require('./ics');
+const calCache = new Map();   // uid -> { url, at, rows, state: 'ok' | 'wait' | 'fail', busy }
+function calFor(uid) {
+  const url = stateOf(uid).settings.calUrl; if (!url) return { rows: [], state: '' };
+  let hit = calCache.get(uid);
+  if (!hit || hit.url !== url) calCache.set(uid, hit = { url, at: 0, rows: [], state: 'wait' });
+  if (!hit.busy && Date.now() - hit.at > 15 * 60e3) refreshCal(uid, hit);
+  return hit;
+}
+async function refreshCal(uid, hit) {
+  hit.busy = true; hit.at = Date.now();
+  const before = JSON.stringify(hit.rows) + hit.state;
+  try {
+    const r = await fetch(hit.url, { signal: AbortSignal.timeout(15000), headers: { 'User-Agent': 'home-it' } });
+    if (!r.ok) throw new Error('calendar ' + r.status);
+    const text = await r.text();
+    if (!/BEGIN:VCALENDAR/.test(text) || text.length > 8e6) throw new Error('not a calendar');
+    hit.rows = ICS.read(text, today(), H.addDays(today(), 60)); hit.state = 'ok';
+  } catch (e) { hit.state = hit.rows.length ? 'ok' : 'fail'; hit.at = Date.now() - 13 * 60e3; }   // try again in a couple of minutes
+  hit.busy = false;
+  if (calCache.get(uid) === hit && JSON.stringify(hit.rows) + hit.state !== before) changed(uid);
 }
 
 // ---------- weather: asked at most every 15 minutes per place, and the last answer is kept if the internet drops ----------

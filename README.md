@@ -22,6 +22,8 @@ node server.js link-split YOURNAME   # run this in the Home it folder; it asks f
 node server.js link-budget YOURNAME
 ```
 
+To show a calendar you already keep (Apple, Google, Outlook), share it as a link and paste the `webcal://` or `https://` address under Settings, Apps. Home it reads it every 15 minutes and never writes to it.
+
 Home it asks each app every few minutes, the same way an AI assistant would. The key is kept in `data/users.json` on your computer and never sent to a screen. `unlink-split` and `unlink-budget` undo it. See [CHANGELOG.md](CHANGELOG.md) for what's new.
 
 ## Try it without installing

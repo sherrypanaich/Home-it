@@ -190,6 +190,8 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
       <div class="line">Travel time to work<select id="set-travel" style="width:auto"></select></div>
       <form id="rateform" style="flex-direction:row;align-items:flex-end"><label>Hourly pay ($)<input id="set-rate" type="text" inputmode="decimal" maxlength="7" autocomplete="off"></label><button class="btn">Save</button></form>
       <div class="line"><div>Company<small>Hides the money cards on the big screen until tomorrow</small></div><button class="sw" id="company" aria-pressed="false" aria-label="Company mode"></button></div>
+      <form id="calform" style="flex-direction:row;align-items:flex-end"><label>Calendar link (Apple, Google or Outlook)<input id="set-calUrl" type="text" inputmode="url" maxlength="400" placeholder="webcal://" autocomplete="off"></label><button class="btn">Save</button></form>
+      <div class="note" id="calnote"></div>
       <div class="note">Cards, colours, night hours and the weather town are set on the big screen.</div>
       <div class="line" id="acct"><div><span id="who"></span><small id="ver"></small></div><a class="btn" href="api/logout">Sign out</a></div>
       <a class="btn" id="fulllink" href="./?full=1">Open the big screen view</a>
@@ -218,7 +220,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
 (function(){
   'use strict';
   var DEMO = !!window.HOMEIT_DEMO, H = window.H, $ = function(id){ return document.getElementById(id); };
-  var S = null, ME = { name:'' }, VERSION = '', WX = null;
+  var S = null, ME = { name:'' }, VERSION = '', WX = null, CAL = '';
   var ui = { pane:'today', list:'today', rep:'', weekOff:0, sday:null, srep:false, day:'' };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function tm(t, short){ return H.fmtTime(t, short); }
@@ -242,7 +244,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
         return r.json().then(function(j){ if (!r.ok) throw new Error(j.error || 'Something went wrong'); return j; });
       }, function(){ throw new Error('Can’t reach Home it right now'); });
   }
-  function take(j){ if (VERSION && j.version !== VERSION) return location.reload(); S = j.state; ME = j.me; VERSION = j.version; render(); }
+  function take(j){ if (VERSION && j.version !== VERSION) return location.reload(); S = j.state; ME = j.me; VERSION = j.version; CAL = j.cal || ''; render(); }
   function loadState(){ return api('api/state').then(take); }
   function op(name, args, quiet){
     if (DEMO){
@@ -270,7 +272,8 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     $('hero').innerHTML = '<div class="eb">' + (v.phase === 'before' || v.phase === 'soon' ? 'Today’s shift' : 'Today') + '</div><div class="big disp">' + esc(big) + '</div><div>' + esc(sub) + '</div><div class="chip">' + esc(chip) + '</div><div class="say">“' + esc(g.line) + '”</div>'
       + '<img src="art/' + g.who + '-' + g.mood + '.webp" alt="' + (g.who === 'luffy' ? 'Luffy' : 'Hancock') + ', ' + g.mood + '">';
     var h = '';
-    v.events.slice().sort(function(a, b){ return (a.time || '').localeCompare(b.time || ''); }).forEach(function(e){ h += '<li><button class="it" data-ev="' + esc(e.id) + '" aria-pressed="' + !!e.d + '"><span class="box"></span><span class="t">' + esc(e.t) + '</span>' + (e.time ? '<span class="tagp">' + tm(e.time) + '</span>' : '') + '</button></li>'; });
+    v.events.slice().sort(function(a, b){ return (a.time || '').localeCompare(b.time || ''); }).forEach(function(e){ h += e.cal ? '<li><span class="it" style="cursor:default"><span class="t">' + esc(e.t) + '</span><span class="tagp">' + (e.time ? tm(e.time) : 'Calendar') + '</span></span></li>'
+      : '<li><button class="it" data-ev="' + esc(e.id) + '" aria-pressed="' + !!e.d + '"><span class="box"></span><span class="t">' + esc(e.t) + '</span>' + (e.time ? '<span class="tagp">' + tm(e.time) + '</span>' : '') + '</button></li>'; });
     $('plist').innerHTML = h; $('planscard').hidden = !h;
     h = '';
     S.lists.today.forEach(function(t){ h += '<li><button class="it" data-todo="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><span class="box"></span><span class="t">' + esc(t.t) + '</span>' + (t.due ? '<span class="tagp">' + tm(t.due) + '</span>' : t.rep ? '<span class="tagp">' + (t.rep === 'daily' ? 'Daily' : 'Weekly') + '</span>' : '') + '</button></li>'; });
@@ -331,6 +334,8 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     document.querySelectorAll('#guidepick button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.v === s.guide); });
     $('set-travel').innerHTML = opts([0,5,10,15,20,25,30,35,40,45,50,60,75,90,120].map(function(n){ return [n, n + ' min']; }), s.travel);
     if (document.activeElement !== $('set-rate')) $('set-rate').value = s.rate || '';
+    if (document.activeElement !== $('set-calUrl')) $('set-calUrl').value = s.calUrl || '';
+    $('calnote').textContent = !s.calUrl ? 'Paste a shared calendar’s link and its events show on Today and Coming up. Home it only reads it.' : CAL === 'ok' ? 'Calendar connected. Checked every 15 minutes.' : CAL === 'fail' ? 'That link can’t be read. Check it is the calendar’s public link.' : 'Reading the calendar…';
     $('company').setAttribute('aria-pressed', v.company);
     $('who').textContent = DEMO ? 'Preview' : 'Signed in as ' + ME.name; $('ver').textContent = 'Home it ' + (VERSION || 'preview');
     $('acct').querySelector('a').hidden = DEMO; $('fulllink').hidden = DEMO;
@@ -421,6 +426,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   on('guidepick', 'click', function(e){ var b = e.target.closest('button'); if (b) op('settings.set', { key:'guide', value: b.dataset.v }, true); });
   on('set-travel', 'change', function(){ op('settings.set', { key:'travel', value: this.value }); });
   on('rateform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'rate', value: $('set-rate').value.replace(/[$,\s]/g, '') || 0 }); });
+  on('calform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
   on('company', 'click', function(){ op('company.set', { on: this.getAttribute('aria-pressed') !== 'true' }); });
 
   function start(){

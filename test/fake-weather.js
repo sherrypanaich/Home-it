@@ -3,6 +3,13 @@ const http = require('http');
 const pad = n => String(n).padStart(2, '0');
 module.exports = (port, cb) => http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x'); res.setHeader('Content-Type', 'application/json');
+  // and for a shared calendar: one event tomorrow at 18:30 UTC and a yearly all-day one that falls tomorrow too
+  if (u.pathname === '/cal.ics') {
+    const t = new Date(Date.now() + 864e5), d = `${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}`;
+    res.setHeader('Content-Type', 'text/calendar');
+    return res.end(['BEGIN:VCALENDAR', 'BEGIN:VEVENT', 'UID:1', 'SUMMARY:Dinner at Mum’s', `DTSTART:${d}T120000`, 'END:VEVENT',
+      'BEGIN:VEVENT', 'UID:2', 'SUMMARY:Maya’s birthday', `DTSTART;VALUE=DATE:2020${d.slice(4)}`, 'RRULE:FREQ=YEARLY', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n'));
+  }
   // also a stand-in for Split it's assistant address: answers one tool, only with the right key
   if (u.pathname === '/mcp') {
     if (req.headers.authorization !== 'Bearer good-key') { res.statusCode = 401; return res.end('{}'); }

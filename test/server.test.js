@@ -106,6 +106,20 @@ test('the money card shows a linked app, and nothing while there is company', as
   assert.deepEqual((await call('/api/money')).json, {});
 });
 
+test('a calendar link shows its events, read-only, and is never saved with the rest', async () => {
+  let r = await call('/api/op', { op: 'settings.set', args: { key: 'calUrl', value: 'ftp://nope' } });
+  assert.equal(r.status, 400);
+  r = await call('/api/op', { op: 'settings.set', args: { key: 'calUrl', value: `webcal://127.0.0.1:${WX}/cal.ics`.replace('webcal', 'http') } });
+  assert.equal(r.status, 200);
+  let cal; for (let i = 0; i < 40 && !(cal = (await call('/api/state')).json.state.cal); i++) await new Promise(res => setTimeout(res, 50));
+  assert.deepEqual(cal.map(c => (c.time || 'all day') + ' ' + c.t), ['all day Maya’s birthday', '12:00 Dinner at Mum’s']);
+  assert.equal((await call('/api/state')).json.cal, 'ok');
+  await new Promise(res => setTimeout(res, 600));   // let the app write its file
+  assert.doesNotMatch(fs.readFileSync(path.join(DATA, 'db.json'), 'utf8') + '', /Dinner at Mum/);
+  await call('/api/op', { op: 'settings.set', args: { key: 'calUrl', value: '' } });
+  assert.equal((await call('/api/state')).json.state.cal, undefined);
+});
+
 test('the bedroom screen link works once and stays signed in', async () => {
   const outp = cli(['kiosk-link', 'Sherry']);
   const link = outp.match(/http:\/\/localhost:\d+(\/kiosk\?t=\S+)/)[1];

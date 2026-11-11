@@ -101,7 +101,7 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .railk{display:flex;justify-content:space-between;width:62%;font-size:.74rem;font-weight:800;opacity:.9}
 .tl{list-style:none;margin:2px 0 0;padding:0 8px;display:flex;flex-direction:column;gap:3px;width:62%}
 .tl li{display:flex;gap:12px;align-items:baseline;font-weight:600;padding:2px 8px;margin:0 -8px;border-radius:8px}
-.tl time{font-weight:800;min-width:76px;white-space:nowrap}
+.tl time{font-weight:800;min-width:98px;white-space:nowrap}
 .tl li.done{opacity:.6;text-decoration:line-through}
 .tl li.now{background:rgba(255,255,255,.18)}
 .tl li.now::after{content:"NEXT";margin-left:auto;font-size:.68rem;font-weight:800;background:var(--hl);color:#14112A;border-radius:6px;padding:1px 6px;align-self:center}
@@ -217,6 +217,12 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .dbody .dr .ic{width:24px;height:24px;flex:none}
 .dbody .dr .wet{color:var(--accent);font-weight:800;font-size:.84rem}
 .dbody .big{font-size:2.2rem}
+.tk{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;min-height:40px;flex:1;min-width:0;font-weight:600}
+.tk[aria-pressed="true"]{text-decoration:line-through;color:var(--muted)}
+.tk[aria-pressed="true"] .tbox{background:var(--hl);border-color:var(--edge)}
+.tk .tbox{width:22px;height:22px;border-radius:7px;margin-right:10px;flex:none}
+.tk[disabled]{cursor:default}
+.tk[disabled] .tbox{visibility:hidden}
 .dbody .btn[disabled]{opacity:.45}
 .dbody .row .btn{flex:1}
 .toast button{all:unset;cursor:pointer;margin-left:14px;color:var(--hl);text-decoration:underline;font-weight:800;padding:6px 4px}
@@ -240,10 +246,13 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .idle .cap{font-weight:800;font-size:1.1rem;margin-top:14px}
 .idle .corner{position:absolute;left:24px;bottom:18px;text-align:left;font-size:2.6rem;line-height:1.15;text-shadow:3px 3px 0 rgba(20,17,42,.4)}
 .idle .corner small{display:block;font-family:var(--body);font-weight:800;font-size:1rem;text-shadow:none}
-.sheet{position:absolute;right:18px;top:16px;bottom:18px;width:400px;z-index:6;background:var(--surface);border:3px solid var(--edge);border-radius:16px;
-  box-shadow:-6px 6px 0 var(--pop);padding:14px 16px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.backdrop{position:absolute;inset:0;z-index:6;background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;cursor:pointer}
+.sheet{position:absolute;left:50%;transform:translateX(-50%);top:16px;bottom:18px;width:720px;z-index:7;background:var(--surface);border:3px solid var(--edge);border-radius:16px;
+  box-shadow:6px 6px 0 var(--pop);padding:16px 22px;display:flex;flex-direction:column;gap:8px;overflow:auto}
 .sheet .row{min-height:44px;border-top:1.5px solid var(--line)}
 .sheet .row.first{border-top:0;min-height:0}
+.sheet > .row.first:first-child{flex-direction:row-reverse;justify-content:flex-end;gap:14px}
+.sheet > .row.first:first-child .h2{font-size:1rem}
 .sheet .seg{box-shadow:none}
 .sheet .seg button{min-height:38px;padding:4px 12px}
 .sheet label{font-weight:800;font-size:.86rem;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
@@ -266,6 +275,10 @@ input,select{user-select:text;-webkit-user-select:text}
 .today.soon .evbtn{display:none}
 .tl button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:baseline;width:100%;min-height:30px}
 .tl li.past{opacity:.6}
+.tbox{display:inline-block;width:15px;height:15px;border:2.5px solid currentColor;border-radius:5px;margin-right:6px;vertical-align:-2px}
+.tl li.done .tbox{background:var(--hl);border-color:var(--hl)}
+.tl .morel button{font-size:.86rem;font-weight:800;opacity:.9;min-height:26px}
+.tdbtn{right:108px}
 .tl li.done span{text-decoration:line-through}
 .tl li.done{text-decoration:none}
 .items li{display:flex;align-items:center}
@@ -351,7 +364,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .stack .over{position:fixed;inset:0;padding:20px}
 .stack .night .c,.stack .idle .c{font-size:4.6rem}
 .stack .idle img{height:150px;right:10px}
-.stack .sheet{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;box-shadow:4px 4px 0 var(--pop)}
+.stack .backdrop{position:fixed}
+.stack .sheet{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;transform:none;box-shadow:4px 4px 0 var(--pop)}
 .stack .toast{position:fixed}
 .stack .osk{position:fixed}
 </style>
@@ -385,11 +399,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <section class="card today" id="today" data-card="today" aria-label="Today"></section>
 
       <section class="card todo" data-card="todo" aria-label="To-do list">
-        <div class="hd"><h2 class="h2">TO-DO</h2><span class="cnt" id="cnt"></span></div>
+        <div class="hd"><h2 class="h2">LISTS</h2><span class="cnt" id="cnt"></span></div>
         <div class="prog" id="prog" aria-hidden="true"></div>
         <div class="tabs" id="tabs" role="group" aria-label="Lists">
-          <button data-list="today" aria-pressed="true">Today</button>
-          <button data-list="later" aria-pressed="false">Later</button>
+          <button data-list="later" aria-pressed="true">Later</button>
           <button data-list="shop" aria-pressed="false">Shopping</button>
         </div>
         <ul class="items" id="items"></ul>
@@ -434,8 +447,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <img id="iimg" alt="">
     </div>
 
+    <div class="backdrop" id="backdrop" hidden data-close aria-label="Back to the home screen"></div>
     <aside class="sheet" id="sheet" hidden aria-label="Settings">
-      <div class="row first"><h2 class="h2">SETTINGS</h2><button class="btn" data-close>Done</button></div>
+      <div class="row first"><h2 class="h2">SETTINGS</h2><button class="btn" data-close>‹ Back</button></div>
       <div class="seg settabs" id="settabs" role="group" aria-label="Settings sections"><button data-v="screen">Screen</button><button data-v="look">Look</button><button data-v="work">Work</button><button data-v="cards">Cards</button><button data-v="apps">Apps</button></div>
       <h3>Cards</h3>
       <div id="toggles"></div>
@@ -456,18 +470,20 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <h3>Weather</h3>
       <div class="row"><form id="cityform"><label>Town or city<input class="kb" id="set-city" type="text" maxlength="60" autocomplete="off"></label><button class="btn">Set</button></form></div>
       <h3>Your other apps</h3>
+      <div class="row"><form id="calform"><label>Calendar link (Apple, Google or Outlook)<input class="kb" id="set-calUrl" type="text" inputmode="url" maxlength="400" placeholder="webcal://" autocomplete="off"></label><button class="btn">Save</button></form></div>
+      <div class="note" id="calnote"></div>
       <div class="row"><form id="splitform"><label>Split it address<input class="kb" id="set-splitUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="row"><form id="budgetform"><label>Budget it address<input class="kb" id="set-budgetUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="row" id="acct"><div><div class="name" id="who"></div><div class="st" id="ver"></div></div><a class="btn" href="api/logout">Sign out</a></div>
     </aside>
 
     <aside class="sheet" id="detailsheet" hidden aria-label="Details">
-      <div class="row first"><h2 class="h2" id="dtitle"></h2><button class="btn" data-close>Close</button></div>
+      <div class="row first"><h2 class="h2" id="dtitle"></h2><button class="btn" data-close>‹ Back</button></div>
       <div id="dbody" class="dbody"></div>
     </aside>
 
     <aside class="sheet" id="shiftsheet" hidden aria-label="Shifts">
-      <div class="row first"><h2 class="h2">SHIFTS</h2><button class="btn" data-close>Close</button></div>
+      <div class="row first"><h2 class="h2">SHIFTS</h2><button class="btn" data-close>‹ Back</button></div>
       <label>Day<select id="sday"></select></label>
       <div id="shave"></div>
       <h3 id="sadd">Add a shift</h3>
@@ -482,7 +498,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     </aside>
 
     <aside class="sheet" id="eventsheet" hidden aria-label="Events">
-      <div class="row first"><h2 class="h2">EVENTS</h2><button class="btn" data-close>Close</button></div>
+      <div class="row first"><h2 class="h2">EVENTS</h2><button class="btn" data-close>‹ Back</button></div>
       <form id="eventform" style="flex-direction:column;align-items:stretch;flex:none">
         <label>What<input class="kb" id="ename" type="text" maxlength="80" placeholder="Dentist, gym, date night" autocomplete="off"></label>
         <div class="row first">
@@ -510,8 +526,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   var DEMO = !!window.HOMEIT_DEMO, H = window.H;
   var $ = function(id){ return document.getElementById(id); };
   var stage = $('stage'), fit = $('fit'), root = document.documentElement;
-  var S = null, ME = { name:'', kiosk:false }, VERSION = '', WX = null, V = null, MONEY = {};
-  var ui = { list:'today', weekOff:0, rep:'', sheet:null, sday:null, srep:false, good:false, goodNight:false, awake:0, peek:0, touch:Date.now(), forceIdle:false, fake:null, minute:-1, day:'' };
+  var S = null, ME = { name:'', kiosk:false }, VERSION = '', WX = null, V = null, MONEY = {}, CAL = '';
+  var ui = { list:'later', weekOff:0, rep:'', sheet:null, sday:null, srep:false, good:false, goodNight:false, awake:0, peek:0, touch:Date.now(), forceIdle:false, fake:null, minute:-1, day:'' };
   var store = { get:function(k){ try { return localStorage.getItem('homeit.' + k); } catch(e){ return null; } }, set:function(k, v){ try { localStorage.setItem('homeit.' + k, v); } catch(e){} } };
 
   var SKY = {
@@ -524,7 +540,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     fog:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 9h16M4 13h12M7 17h13"/></svg>'
   };
   var LOCK = '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  var CARDS = [['today','Today'],['todo','To-do list'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['room','Room']];
+  var CARDS = [['today','Today'],['todo','Later and Shopping lists'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['room','Room']];
   // weather codes (WMO) -> [icon, words]
   function sky(code, day){
     if (code === 0 || code === 1) return [day ? 'sun' : 'moon', code ? 'Mostly clear' : 'Clear'];
@@ -572,7 +588,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function take(j){
     if (VERSION && j.version !== VERSION) return location.reload();          // the laptop updated itself: load the new screen
     if (!S && !j.me.kiosk && window.innerWidth < 760 && !/[?&]full=1/.test(location.search)) return location.replace('phone');   // phones get their own screen
-    S = j.state; ME = j.me; VERSION = j.version; $('wait').hidden = true; renderAll();
+    S = j.state; ME = j.me; VERSION = j.version; CAL = j.cal || ''; $('wait').hidden = true; renderAll();
   }
   function loadState(){ if (DEMO) return; return api('api/state').then(take); }
   function loadWeather(){
@@ -624,15 +640,20 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var d = v.next.date === v.date ? 'today' : v.next.date === v.tomorrow.date ? 'tomorrow' : H.DAYS_LONG[H.dow(v.next.date)];
     return 'Next shift ' + d + ' at ' + tm(v.next.start, true);
   }
-  function todayRows(v){
-    var rows = v.events.map(function(e){ return { m: e.time ? H.mins(e.time) : -1, label: e.time ? tm(e.time) : 'Today', t: e.t, done: !!e.d, id: e.id }; });
+  // Everything for today in one list: plans by time, the moment to leave, then today's to-dos.
+  function todayRows(v, all){
+    var rows = v.events.map(function(e){ return { m: e.time ? H.mins(e.time) : -1, label: e.time ? tm(e.time) : 'Today', t: e.t, done: !!e.d, id: e.cal ? null : e.id }; });
     if (v.phase === 'before') rows.push({ m: v.leaveM, label: tm(H.hhmm(v.leaveM)), t: 'Leave for work' });
+    S.lists.today.forEach(function(x){ rows.push({ m: x.due ? H.mins(x.due) : 2000 + (x.d ? 1 : 0), label: x.due ? tm(x.due) : 'To do', t: x.t, done: !!x.d, todo: x.id }); });
     rows.sort(function(a, b){ return a.m - b.m; });
     var next = -1;
-    rows.forEach(function(r, i){ if (next < 0 && !r.done && (r.m < 0 || r.m >= v.nowM)) next = i; r.past = r.m >= 0 && r.m < v.nowM; });
+    rows.forEach(function(r, i){ if (next < 0 && !r.done && !r.todo && (r.m < 0 || r.m >= v.nowM)) next = i; r.past = !r.todo && r.m >= 0 && r.m < v.nowM; });
     if (next >= 0) rows[next].now = true;
-    var from = Math.max(0, Math.min(next < 0 ? rows.length - 5 : next - 1, rows.length - 5));
-    return rows.slice(from, from + 5);
+    if (all) return rows;
+    var open = rows.filter(function(r){ return !r.done && !r.past; }), max = v.phase === 'before' ? 4 : 5, show = (open.length >= max ? open : rows.filter(function(r){ return !r.done; })).slice(0, max);
+    if (!show.length) show = rows.slice(-3);
+    show.more = rows.length - show.length;
+    return show;
   }
   function comingRows(v){
     var rows = [];
@@ -648,9 +669,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (!rows.length) return '';
     return '<ul class="tl">' + rows.map(function(r){
       var cls = (r.done ? 'done ' : '') + (r.past && !r.done ? 'past ' : '') + (r.now ? 'now' : '');
-      var inner = '<time>' + esc(r.label) + '</time><span>' + esc(r.t) + '</span>';
-      return '<li class="' + cls + '">' + (r.id ? '<button data-ev="' + esc(r.id) + '" aria-pressed="' + !!r.done + '">' + inner + '</button>' : inner) + '</li>';
-    }).join('') + '</ul>';
+      var inner = '<time>' + (r.todo ? '<i class="tbox"></i>' : '') + esc(r.label) + '</time><span>' + esc(r.t) + '</span>';
+      return '<li class="' + cls + '">' + (r.id ? '<button data-ev="' + esc(r.id) + '" aria-pressed="' + !!r.done + '">' + inner + '</button>'
+        : r.todo ? '<button data-td="' + esc(r.todo) + '" aria-pressed="' + !!r.done + '">' + inner + '</button>' : inner) + '</li>';
+    }).join('') + (rows.more > 0 ? '<li class="morel"><button data-today="1">+ ' + rows.more + ' more today</button></li>' : '') + '</ul>';
   }
   function tomorrowHtml(v){
     var sh = v.tomorrow.shifts[0], h = '<span>Tomorrow</span><span class="pill">' + (sh ? 'Shift ' + span(sh.start, endOf(sh), true) : 'Day off') + '</span>';
@@ -701,7 +723,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         + '<div class="leave">' + shiftLine(v) + '</div>' + tlHtml(rows.length ? rows : comingRows(v)) + tomorrowHtml(v);
     }
     var g = H.guide(S, v), name = g.who === 'luffy' ? 'Luffy' : 'Hancock';
-    el.innerHTML = h + '<button class="btn sm evbtn" id="evbtn">+ Event</button>'
+    el.innerHTML = h + '<button class="btn sm evbtn" id="evbtn">+ Event</button><button class="btn sm evbtn tdbtn" id="tdbtn">All of today ›</button>'
       + '<div class="fig"><div class="bubble">' + esc(g.line) + '</div><button id="figbtn" aria-label="Switch guide"><img src="art/' + g.who + '-' + g.mood + '.webp" alt="' + name + ', ' + g.mood + '"></button></div>';
   }
 
@@ -773,6 +795,19 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function renderDetail(){
     var k = ui.detail, h = '';
     $('dtitle').textContent = TITLES[k] || '';
+    if (k === 'today'){
+      var v = V, x = v.shift;
+      $('dtitle').textContent = 'TODAY';
+      if ($('tdadd') && document.activeElement === $('tdadd')) return;
+      h = '<div style="font-weight:800;font-size:1.15rem">' + H.fmtDate(v.date, true) + '</div>'
+        + '<div class="dr" style="border:0;padding:0"><span>' + (x ? 'Shift ' + span(x.start, endOf(x)) + ' · ' + esc(x.place) + (v.phase === 'before' || v.phase === 'soon' ? ' · leave by ' + tm(H.hhmm(v.leaveM)) : '') : 'Day off · ' + shiftLine(v)) + '</span>'
+        + (WX && WX.ok ? '<b>' + WX.temp + '° ' + sky(WX.code, WX.day)[1].toLowerCase() + ' · high ' + WX.hi + '°</b>' : '') + '</div><h3>Plans</h3>';
+      var ev = v.events.map(function(e){ return '<div class="dr"><button class="tk" ' + (e.cal ? 'disabled' : 'data-ev="' + esc(e.id) + '"') + ' aria-pressed="' + !!e.d + '"><i class="tbox"></i>' + esc(e.t) + '</button><b>' + (e.cal ? 'Calendar · ' : '') + (e.time ? tm(e.time) : 'Any time') + '</b></div>'; }).join('');
+      h += (ev || '<div class="note">Nothing planned.</div>') + '<h3>To do</h3>'
+        + S.lists.today.map(function(t){ return '<div class="dr"><button class="tk" data-td="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><i class="tbox"></i>' + esc(t.t) + '</button><span style="display:flex;align-items:center;gap:8px">' + (t.due ? '<b>' + tm(t.due) + '</b>' : t.rep ? '<b>' + (t.rep === 'daily' ? 'Daily' : 'Weekly') + '</b>' : '') + '<button class="btn sm" data-more="' + esc(t.id) + '" aria-label="Edit, move or remove">⋯</button></span></div>'; }).join('')
+        + '<form id="tdaddform" style="margin-top:6px"><input class="kb" id="tdadd" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off"><button class="btn primary">Add</button></form>'
+        + '<div class="row first" style="margin-top:8px"><button class="btn" data-open="eventsheet">+ Event</button><button class="btn" data-open="shiftsheet">+ Shift</button></div>';
+    }
     if (k === 'todo'){
       var td = S.lists[ui.todo.list].filter(function(y){ return y.id === ui.todo.id; })[0];
       if (!td) return show(null);
@@ -847,7 +882,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     $('set-travel').innerHTML = opts([0,5,10,15,20,25,30,35,40,45,50,60,75,90,120].map(function(n){ return [n, n + ' min']; }), s.travel);
     $('set-nightFrom').innerHTML = opts(times(30), s.nightFrom); $('set-nightTo').innerHTML = opts(times(30), s.nightTo);
     $('set-idle').innerHTML = opts([[0,'Never'],[5,'After 5 min'],[10,'After 10 min'],[20,'After 20 min'],[30,'After 30 min'],[60,'After an hour']], s.idle);
-    [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl]].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
+    [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl], ['set-calUrl', s.calUrl]].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
+    $('calnote').textContent = !s.calUrl ? 'Paste the link of a shared calendar and its events show on Today and Coming up. Home it only reads it.' : CAL === 'ok' ? 'Calendar connected. Checked every 15 minutes.' : CAL === 'fail' ? 'That link can’t be read. Check it is the calendar’s public link.' : 'Reading the calendar…';
     $('kiosksw').setAttribute('aria-pressed', !!ME.kiosk); $('kbsw').setAttribute('aria-pressed', kbOn());
     $('who').textContent = DEMO ? 'Preview' : 'Signed in as ' + ME.name; $('ver').textContent = 'Home it ' + (VERSION || 'preview');
     $('acct').querySelector('a').hidden = DEMO;
@@ -895,7 +931,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     hideKb();
     ['sheet','shiftsheet','eventsheet','detailsheet'].forEach(function(id){ $(id).hidden = id !== name; });
     if (name === 'detailsheet') renderDetail();
-    ui.sheet = name; $('gear').setAttribute('aria-expanded', name === 'sheet');
+    ui.sheet = name; $('gear').setAttribute('aria-expanded', name === 'sheet'); $('backdrop').hidden = !name;
     if (name === 'sheet') renderSettings();
     if (name === 'shiftsheet') renderShiftSheet();
     if (name === 'eventsheet'){ eventForm(null); renderEventSheet(); }
@@ -949,7 +985,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   document.addEventListener('focusin', function(e){
     var t = e.target;
     if (!t.classList || !t.classList.contains('kb') || !kbOn()) return;
-    kbT = t; t.setAttribute('inputmode', 'none'); kbShift = !t.value && t.id !== 'set-splitUrl' && t.id !== 'set-budgetUrl' && t.id !== 'set-rate'; drawKb(); $('osk').hidden = false;
+    kbT = t; t.setAttribute('inputmode', 'none'); kbShift = !t.value && t.id !== 'set-splitUrl' && t.id !== 'set-budgetUrl' && t.id !== 'set-calUrl' && t.id !== 'set-rate'; drawKb(); $('osk').hidden = false;
   });
   $('osk').addEventListener('pointerdown', function(e){
     e.preventDefault();
@@ -981,6 +1017,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('today', 'click', function(e){
     var c = e.target.closest('.chk');
     if (c){ var g = goList(); g[c.dataset.go] = !g[c.dataset.go]; store.set('go', JSON.stringify(g)); c.setAttribute('aria-pressed', !!g[c.dataset.go]); return; }
+    var td = e.target.closest('[data-td]'); if (td) return op('todo.toggle', { list:'today', id: td.dataset.td }, true);
+    if (e.target.closest('#tdbtn') || e.target.closest('[data-today]')){ ui.detail = 'today'; return show('detailsheet'); }
     var ev = e.target.closest('[data-ev]'); if (ev) return op('event.toggle', { id: ev.dataset.ev, date: V.date }, true);
     if (e.target.closest('#evbtn')) return show('eventsheet');
     if (e.target.closest('#figbtn')) op('settings.set', { key:'guide', value: S.settings.guide === 'luffy' ? 'hancock' : 'luffy' }, true);
@@ -1022,11 +1060,17 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     ui.detail = c.dataset.detail; show('detailsheet');
   }
   on('dbody', 'submit', function(e){
-    e.preventDefault(); if (e.target.id !== 'tdform') return;
+    e.preventDefault();
+    if (e.target.id === 'tdaddform'){ var a = $('tdadd').value.trim(); if (!a) return; $('tdadd').value = ''; $('tdadd').blur(); return op('todo.add', { list:'today', t: a }, true); }
+    if (e.target.id !== 'tdform') return;
     var v = $('tdname').value.trim(); if (!v) return toast('Type something first.');
     $('tdname').blur(); op('todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(){ show(null); });
   });
   on('dbody', 'click', function(e){
+    var tk = e.target.closest('.tk');
+    if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);
+    if (tk && tk.dataset.ev) return op('event.toggle', { id: tk.dataset.ev, date: V.date }, true);
+    var mo = e.target.closest('[data-more]'); if (mo){ ui.detail = 'todo'; ui.todo = { list:'today', id: mo.dataset.more }; return renderDetail(); }
     var mv = e.target.closest('[data-mv]'), rm = e.target.closest('[data-tdrm]'), t = ui.todo;
     if (mv) return op('todo.move', { list: t.list, id: t.id, to: mv.dataset.mv }).then(function(){ show(null); });
     if (!rm) return;
@@ -1048,6 +1092,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   ['travel','nightFrom','nightTo','idle'].forEach(function(k){ on('set-' + k, 'change', function(){ op('settings.set', { key: k, value: this.value }); }); });
   on('rateform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'rate', value: $('set-rate').value.replace(/[$,\s]/g, '') || 0 }); });
   on('splitform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'splitUrl', value: $('set-splitUrl').value }); });
+  on('calform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
   on('budgetform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'budgetUrl', value: $('set-budgetUrl').value }); });
   on('cityform', 'submit', function(e){
     e.preventDefault();
@@ -1106,7 +1151,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function start(){
     scale();
     if (DEMO){
-      S = H.sample(H.ymd(new Date())); ME = { name:'You', kiosk:false }; $('demo').hidden = false; $('wait').hidden = true;
+      S = H.sample(H.ymd(new Date())); S.cal = [{ date: H.addDays(H.ymd(new Date()), 1), time:'18:30', t:'Mum’s birthday dinner' }]; ME = { name:'You', kiosk:false }; $('demo').hidden = false; $('wait').hidden = true;
       on('demotimes', 'click', function(e){ var b = e.target.closest('button'); if (b) demoTime(b.dataset.t); });
       scale(); demoTime('');
     } else {
