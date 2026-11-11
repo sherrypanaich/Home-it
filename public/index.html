@@ -57,7 +57,7 @@ button{cursor:pointer}
 .stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;
   background-color:var(--bg);color:var(--ink);
   background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;
-  padding:16px 18px 18px;display:grid;grid-template-rows:60px minmax(0,1fr) 186px;gap:14px}
+  padding:16px 18px 18px;display:grid;grid-template-rows:60px minmax(0,1fr) 128px;gap:14px}
 .card{background:var(--surface);border:2.5px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--pop);min-width:0}
 .h2{display:inline-block;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:400;font-size:.84rem;
   padding:4px 12px 3px;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--hl);margin:0;white-space:nowrap;font-variant-numeric:normal}
@@ -114,7 +114,10 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .bubble{position:relative;border:2.5px solid #14112A;border-radius:16px;padding:8px 11px;font-weight:800;background:#fff;color:#14112A;
   font-size:.92rem;line-height:1.22;width:100%;box-shadow:3px 3px 0 #14112A;margin-bottom:10px;pointer-events:auto}
 .bubble::after{content:"";position:absolute;left:58%;bottom:-10px;width:15px;height:15px;background:#fff;border-right:2.5px solid #14112A;border-bottom:2.5px solid #14112A;transform:rotate(45deg)}
-.sfx{position:absolute;right:196px;bottom:22px;font-size:2.3rem;color:var(--hl);-webkit-text-stroke:2px #14112A;transform:rotate(-12deg);text-shadow:3px 3px 0 #14112A;pointer-events:none}
+.chks{gap:6px!important;flex-wrap:nowrap!important}
+.chks .chk{padding:3px 7px 3px 5px;font-size:.8rem;gap:5px}
+.chks .chk i{width:18px;height:18px}
+.sfx{position:absolute;right:200px;bottom:64px;font-size:2.3rem;color:var(--hl);-webkit-text-stroke:2px #14112A;transform:rotate(-12deg);text-shadow:3px 3px 0 #14112A;pointer-events:none}
 /* shift soon: the whole panel turns into an alert */
 .today.soon{background-color:var(--hl);color:#14112A;
   background-image:repeating-conic-gradient(from 0deg at 50% 46%,rgba(20,17,42,.11) 0deg 2deg,transparent 2deg 7deg)}
@@ -193,19 +196,27 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .vol .btn.sm{min-height:34px;min-width:44px;padding:0 8px}
 .hid{align-items:center;justify-content:center;text-align:center;color:var(--muted);font-weight:800;border-style:dashed!important;box-shadow:none!important;gap:6px!important}
 .hid svg{width:28px;height:28px}
-.up{display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden}
-.up div{display:flex;gap:10px;align-items:baseline;font-weight:600;font-size:.9rem;line-height:1.25}
-.up b{min-width:74px;font-weight:800;white-space:nowrap}
-.up span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.up .sh{color:var(--accent);font-weight:800}
-.fc{display:flex;gap:6px;flex:1;min-height:0}
-.fc div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:2px solid var(--line);border-radius:10px;font-weight:800;font-size:.84rem;min-width:0}
-.fc .ic{width:24px;height:24px}
-.fc small{color:var(--muted);font-weight:700;font-size:.74rem}
-.fc .wet{color:var(--accent)}
-.money .rows{display:flex;flex-direction:column;gap:1px;min-height:0;overflow:hidden;font-size:.84rem;font-weight:600;color:var(--muted)}
-.money .rows span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.money a.open{margin-top:auto;font-weight:800;font-size:.82rem;color:var(--accent)}
+.tap{cursor:pointer;position:relative;justify-content:flex-start}
+.tap::after{content:"More ›";position:absolute;right:12px;top:13px;font-family:var(--body);font-weight:800;font-size:.74rem;color:var(--muted);line-height:1}
+.tap:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--pop)}
+.tap.hid::after{content:none}
+.tap .one{font-weight:800;font-size:1.02rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tap .when{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.tap .one .sh{color:var(--accent)}
+.tap .more{font-size:.82rem;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tap .wxl{display:flex;align-items:center;gap:8px;font-weight:800}
+.tap .wxl .ic{width:30px;height:30px}
+.tap .wxl small{color:var(--muted);font-weight:700}
+.co{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.86rem}
+.dbody{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0}
+.dbody h3{margin:8px 0 0}
+.dbody .dr{display:flex;gap:10px;align-items:center;justify-content:space-between;font-weight:600;border-top:1.5px solid var(--line);padding-top:8px}
+.dbody .dr:first-child,.dbody h3 + .dr{border-top:0;padding-top:0}
+.dbody .dr b{font-weight:800;white-space:nowrap}
+.dbody .dr .sh{color:var(--accent);font-weight:800}
+.dbody .dr .ic{width:24px;height:24px;flex:none}
+.dbody .dr .wet{color:var(--accent);font-weight:800;font-size:.84rem}
+.dbody .big{font-size:2.2rem}
 .toast button{all:unset;cursor:pointer;margin-left:14px;color:var(--hl);text-decoration:underline;font-weight:800;padding:6px 4px}
 .slot{border:2px dashed var(--edge);border-radius:10px;padding:5px 10px;font-size:.82rem;color:var(--muted);font-weight:600}
 
@@ -244,7 +255,7 @@ body{overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-w
 input,select{user-select:text;-webkit-user-select:text}
 .fit{position:fixed;left:0;right:0;bottom:0;top:var(--top,0px);overflow:hidden}
 .stage.nolow{grid-template-rows:60px minmax(0,1fr)}
-.stage.nomid{grid-template-rows:60px 186px}
+.stage.nomid{grid-template-rows:60px 128px}
 .wx .off{font-weight:600;color:var(--muted);font-size:.86rem}
 .evbtn{position:absolute;right:14px;top:12px;background:rgba(255,255,255,.16);color:var(--panel-ink);border-color:rgba(255,255,255,.7);box-shadow:none;font-size:.86rem}
 .today.soon .evbtn{display:none}
@@ -393,22 +404,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     </div>
 
     <div class="low" id="low">
-      <section class="card" data-card="coming" aria-label="Coming up">
-        <h2 class="h2">COMING UP</h2>
-        <div class="up" id="coming"></div>
-      </section>
-      <section class="card" data-card="forecast" aria-label="Weather for the next days">
-        <h2 class="h2">NEXT DAYS</h2>
-        <div class="fc" id="forecast"></div>
-      </section>
-      <section class="card money" data-card="split" id="splitcard" aria-label="Split it"></section>
-      <section class="card money" data-card="budget" id="budgetcard" aria-label="Budget it"></section>
+      <section class="card tap" data-card="coming" data-detail="coming" role="button" tabindex="0" aria-label="Coming up, tap for more"></section>
+      <section class="card tap" data-card="forecast" data-detail="forecast" role="button" tabindex="0" aria-label="Weather for the next days, tap for more"></section>
+      <section class="card tap money" data-card="split" data-detail="split" id="splitcard" role="button" tabindex="0" aria-label="Split it, tap for more"></section>
+      <section class="card tap money" data-card="budget" data-detail="budget" id="budgetcard" role="button" tabindex="0" aria-label="Budget it, tap for more"></section>
       <section class="card" data-card="room" aria-label="Room">
-        <h2 class="h2">ROOM</h2>
-        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px">
+        <div class="row"><h2 class="h2">ROOM</h2>
+          <label class="co">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
+        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px;margin-top:auto">
           <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
-        <div class="row"><div><div class="name">Company</div><div class="st">Hides the money cards until tomorrow</div></div>
-          <button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money"></button></div>
       </section>
     </div>
 
@@ -448,6 +452,11 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <div class="row"><form id="splitform"><label>Split it address<input class="kb" id="set-splitUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="row"><form id="budgetform"><label>Budget it address<input class="kb" id="set-budgetUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="row" id="acct"><div><div class="name" id="who"></div><div class="st" id="ver"></div></div><a class="btn" href="api/logout">Sign out</a></div>
+    </aside>
+
+    <aside class="sheet" id="detailsheet" hidden aria-label="Details">
+      <div class="row first"><h2 class="h2" id="dtitle"></h2><button class="btn" data-close>Close</button></div>
+      <div id="dbody" class="dbody"></div>
     </aside>
 
     <aside class="sheet" id="shiftsheet" hidden aria-label="Shifts">
@@ -611,8 +620,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var next = -1;
     rows.forEach(function(r, i){ if (next < 0 && !r.done && (r.m < 0 || r.m >= v.nowM)) next = i; r.past = r.m >= 0 && r.m < v.nowM; });
     if (next >= 0) rows[next].now = true;
-    var from = Math.max(0, Math.min(next < 0 ? rows.length - 4 : next - 1, rows.length - 4));
-    return rows.slice(from, from + 4);
+    var from = Math.max(0, Math.min(next < 0 ? rows.length - 5 : next - 1, rows.length - 5));
+    return rows.slice(from, from + 5);
   }
   function comingRows(v){
     var rows = [];
@@ -652,8 +661,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       var wx = WX && WX.ok ? '<span class="pill">' + SKY[sky(WX.code, WX.day)[0]] + WX.temp + '° ' + sky(WX.code, WX.day)[1].toLowerCase() + '</span>' : '';
       h = '<div class="eyebrow">' + (left > 0 ? 'Leave for work in' : 'Time to leave. Shift starts in') + '</div>'
         + '<div class="count disp"><span class="n">' + (left > 0 ? left : Math.max(0, v.startM - v.nowM)) + '</span><span class="u">MIN</span></div>'
-        + '<div class="where" style="font-weight:800">Out the door by ' + tm(H.hhmm(v.leaveM)) + ' · shift ' + span(x.start, endOf(x)) + '</div>'
-        + '<div class="tom" style="margin-top:6px">' + c + '</div>'
+        + '<div class="where" style="font-weight:800">Out the door by ' + tm(H.hhmm(v.leaveM)) + ' · shift ' + span(x.start, endOf(x), true) + '</div>'
+        + '<div class="tom chks" style="margin-top:6px">' + c + '</div>'
         + '<div class="tom">' + wx + '<span class="pill">' + S.settings.travel + ' min to get there</span></div>'
         + '<div class="sfx disp">GO!</div>';
     } else if (v.phase === 'before'){
@@ -721,34 +730,68 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
 
   // ---------- bottom cards ----------
-  function moneyCard(el, kind, title, url){
-    var m = MONEY[kind], low = title.charAt(0) + title.slice(1).toLowerCase();
+  var TITLES = { coming:'COMING UP', forecast:'NEXT DAYS', split:'SPLIT IT', budget:'BUDGET IT' };
+  function low(t){ return t.charAt(0) + t.slice(1).toLowerCase(); }
+  function comingText(r){ return r.kind === 'shift' ? '<span class="sh">Shift ' + span(r.start, r.end, true) + '</span>' : esc(r.t) + (r.time ? ' · ' + tm(r.time) : ''); }
+  // Bottom cards say one thing each. Tapping one opens the rest (renderDetail).
+  function moneyCard(el, kind, url){
+    var m = MONEY[kind], title = TITLES[kind];
     el.hidden = S.settings.hide.indexOf(kind) >= 0 || (!m && !url);       // nothing to show yet: no empty box
     if (el.hidden) return;
     if (V.company || MONEY.hidden){ el.classList.add('hid'); el.innerHTML = LOCK + '<span>Hidden while you have company</span>'; return; }
     el.classList.remove('hid');
     var h = '<h2 class="h2">' + title + '</h2>';
-    if (m && m.ok){
-      h += (m.big ? '<div class="big disp ' + (m.owe ? 'bad' : 'good') + '">' + esc(m.big) + '</div>' : '') + '<div class="note" style="font-weight:700">' + esc(m.sub) + (m.stale ? ' · a while ago' : '') + '</div>'
-        + '<div class="rows">' + (m.rows || []).map(function(r){ return '<span>' + esc(r) + '</span>'; }).join('') + '</div>';
-    } else if (m) h += '<div class="note" style="font-weight:700">Can’t reach ' + low + ' right now.</div>';
-    if (url) h += '<a class="' + (m ? 'open' : 'btn primary') + '" href="' + esc(url) + '" target="_blank" rel="noopener"' + (m ? '' : ' style="margin-top:auto"') + '>Open ' + low + '</a>';
+    if (m && m.ok) h += (m.big ? '<div class="big disp ' + (m.owe ? 'bad' : 'good') + '">' + esc(m.big) + '</div>' : '') + '<div class="more">' + esc(m.big ? m.sub.split(' · ')[0] : m.sub) + '</div>';
+    else h += '<div class="one">' + (m ? 'Can’t reach it right now' : 'Open ' + low(title)) + '</div>';
     el.innerHTML = h;
   }
   function renderComing(){
-    var rows = H.coming(S, V.date, 5), h = '';
-    rows.forEach(function(r){
-      h += '<div><b>' + esc(r.label) + '</b>' + (r.kind === 'shift' ? '<span class="sh">Shift ' + span(r.start, r.end, true) + '</span>' : '<span>' + esc(r.t) + (r.time ? ' · ' + tm(r.time) : '') + '</span>') + '</div>';
-    });
-    $('coming').innerHTML = h || '<div class="note">Nothing booked in the next two weeks. Tap + Shift or + Event to add something.</div>';
+    var rows = H.coming(S, V.date, 30), r = rows[0];
+    stage.querySelector('[data-card="coming"]').innerHTML = '<h2 class="h2">COMING UP</h2>' + (r
+      ? '<div class="when">' + esc(r.label) + '</div><div class="one">' + comingText(r) + '</div><div class="more">' + (rows.length > 1 ? '+ ' + (rows.length - 1) + ' more in two weeks' : 'Nothing else booked') + '</div>'
+      : '<div class="one">Nothing booked</div><div class="more">Tap to see the next two weeks</div>');
   }
   function renderForecast(){
-    var h = '';
-    if (WX && WX.ok && WX.days) WX.days.slice(0, 4).forEach(function(d){
-      if (!isFinite(d.hi)) return;
-      h += '<div>' + H.DAYS[H.dow(d.date)] + SKY[sky(d.code, true)[0]] + '<span>' + d.hi + '° <small>' + d.lo + '°</small></span>' + (d.rain >= 40 ? '<small class="wet">' + d.rain + '% wet</small>' : '') + '</div>';
-    });
-    $('forecast').innerHTML = h || '<div class="note" style="border:0;align-items:flex-start">' + (WX ? 'Weather isn’t reachable right now.' : '') + '</div>';
+    var d = WX && WX.ok && WX.days && WX.days[0], h = '<h2 class="h2">NEXT DAYS</h2>';
+    if (d && isFinite(d.hi)){
+      var wet = WX.days.filter(function(x){ return x.rain >= 40; })[0];
+      h += '<div class="wxl">' + SKY[sky(d.code, true)[0]] + '<span>Tomorrow ' + d.hi + '° <small>' + d.lo + '°</small></span></div><div class="more">' + (wet ? 'Wet on ' + H.DAYS_LONG[H.dow(wet.date)] : sky(d.code, true)[1] + ', dry for days') + '</div>';
+    } else h += '<div class="one">' + (WX ? 'Weather isn’t reachable' : '') + '</div>';
+    stage.querySelector('[data-card="forecast"]').innerHTML = h;
+  }
+  function renderDetail(){
+    var k = ui.detail, h = '';
+    $('dtitle').textContent = TITLES[k] || '';
+    if (k === 'coming'){
+      var last = '';
+      H.coming(S, V.date, 30).forEach(function(r){
+        if (r.date !== last){ last = r.date; h += '<h3>' + (r.label === 'Tomorrow' ? 'Tomorrow · ' : '') + H.fmtDate(r.date, true) + '</h3>'; }
+        h += '<div class="dr"><span>' + comingText(r) + '</span></div>';
+      });
+      h = (h || '<div class="note">Nothing booked in the next two weeks.</div>') + '<div class="row first" style="margin-top:8px"><button class="btn" data-open="shiftsheet">+ Shift</button><button class="btn" data-open="eventsheet">+ Event</button></div>';
+    } else if (k === 'forecast'){
+      if (WX && WX.ok){
+        (WX.days || []).forEach(function(d){
+          if (!isFinite(d.hi)) return; var s2 = sky(d.code, true);
+          h += '<div class="dr"><b style="min-width:92px">' + H.DAYS_LONG[H.dow(d.date)] + '</b>' + SKY[s2[0]] + '<span style="flex:1">' + s2[1] + (d.rain >= 40 ? ' <span class="wet">' + d.rain + '% wet</span>' : '') + '</span><b>' + d.hi + '° / ' + d.lo + '°</b></div>';
+        });
+        h += '<h3>The next hours</h3>';
+        (WX.hours || []).filter(function(x, i){ return i > 0 && i <= 12 && i % 2 === 0; }).forEach(function(x){
+          var m = H.mins(x.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise), s3 = sky(x.code, !dk);
+          h += '<div class="dr"><b style="min-width:92px">' + hourLabel(x.t) + '</b>' + SKY[s3[0]] + '<span style="flex:1">' + s3[1] + (x.rain >= 40 ? ' <span class="wet">' + x.rain + '% wet</span>' : '') + '</span><b>' + x.temp + '°</b></div>';
+        });
+      } else h = '<div class="note">Weather isn’t reachable right now.</div>';
+    } else if (k === 'split' || k === 'budget'){
+      var m2 = MONEY[k], url = k === 'split' ? S.settings.splitUrl : S.settings.budgetUrl;
+      if (V.company || MONEY.hidden) h = '<div class="note">Hidden while you have company.</div>';
+      else {
+        if (m2 && m2.ok) h += (m2.big ? '<div class="big disp ' + (m2.owe ? 'bad' : 'good') + '">' + esc(m2.big) + '</div>' : '') + '<div style="font-weight:700">' + esc(m2.sub) + (m2.stale ? ' · from a while ago' : '') + '</div>'
+          + ((m2.rows || []).length ? '<h3>' + (k === 'split' ? 'Who owes who' : 'Bills before payday') + '</h3>' + m2.rows.map(function(r){ return '<div class="dr"><span>' + esc(r) + '</span></div>'; }).join('') : '');
+        else if (m2) h += '<div class="note">Can’t reach ' + low(TITLES[k]) + ' right now. It will try again in a few minutes.</div>';
+        if (url) h += '<a class="btn primary" href="' + esc(url) + '" target="_blank" rel="noopener" style="margin-top:8px;text-align:center">Open ' + low(TITLES[k]) + '</a>';
+      }
+    }
+    $('dbody').innerHTML = h;
   }
   function renderCards(){
     var hide = S.settings.hide;
@@ -756,9 +799,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var nolow = ['coming','forecast','split','budget','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
     $('low').hidden = nolow; $('mid').hidden = nomid;
     stage.classList.toggle('nolow', nolow); stage.classList.toggle('nomid', nomid && !nolow);
-    moneyCard($('splitcard'), 'split', 'SPLIT IT', S.settings.splitUrl);
-    moneyCard($('budgetcard'), 'budget', 'BUDGET IT', S.settings.budgetUrl);
+    moneyCard($('splitcard'), 'split', S.settings.splitUrl);
+    moneyCard($('budgetcard'), 'budget', S.settings.budgetUrl);
     renderComing(); renderForecast();
+    if (ui.sheet === 'detailsheet') renderDetail();
     $('company').setAttribute('aria-pressed', V.company);
   }
 
@@ -807,7 +851,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function show(name){
     hideKb();
-    ['sheet','shiftsheet','eventsheet'].forEach(function(id){ $(id).hidden = id !== name; });
+    ['sheet','shiftsheet','eventsheet','detailsheet'].forEach(function(id){ $(id).hidden = id !== name; });
+    if (name === 'detailsheet') renderDetail();
     ui.sheet = name; $('gear').setAttribute('aria-expanded', name === 'sheet');
     if (name === 'sheet') renderSettings();
     if (name === 'shiftsheet') renderShiftSheet();
@@ -918,6 +963,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     op('event.add', { t: t, date: $('eday').value, time: $('etime').value || undefined }).then(function(){ $('ename').value = ''; });
   });
   on('ehave', 'click', function(e){ var b = e.target.closest('[data-rmev]'); if (b) op('event.del', { id: b.dataset.rmev }); });
+  function openDetail(e){
+    var c = e.target.closest('[data-detail]'); if (!c || c.classList.contains('hid')) return;
+    if (e.type === 'keydown'){ if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
+    ui.detail = c.dataset.detail; show('detailsheet');
+  }
+  on('low', 'click', openDetail); on('low', 'keydown', openDetail);
   on('toast', 'click', function(e){ if (e.target.id === 'undo' && undoFn){ var f = undoFn; undoFn = null; $('toast').hidden = true; f(); } });
   on('gear', 'click', function(){ show(ui.sheet === 'sheet' ? null : 'sheet'); });
   stage.addEventListener('click', function(e){

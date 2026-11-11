@@ -5,8 +5,9 @@
 The bottom of the big screen is useful now, and the phone screen does more from its first page.
 
 ### New
-- **Coming up.** A card with the next days' shifts and events in order, on the big screen and on the phone.
-- **Next days' weather.** Four days ahead with highs, lows and a warning when it looks wet.
+- **Tap a card for more.** The bottom cards each say one thing. Tap one and a panel opens with the details.
+- **Coming up.** The next thing on your schedule, and the next two weeks of shifts and events when you tap it. Also on the phone.
+- **Next days' weather.** Tomorrow at a glance; tap for four days and the next hours.
 - **Live money cards.** Link Split it and Budget it once and the screen shows what you're owed or owe, and what's safe to spend until payday with the bills before it. Company mode still hides them.
 - **Undo.** Removing a to-do by mistake can be taken back for a few seconds.
 - **Phone: add a to-do straight from Today,** with plans and to-dos in their own lists.
@@ -16,6 +17,8 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 - Long to-dos wrap onto a second line instead of being cut off.
 - The marker on Today's timeline says NEXT, since it points at what's next.
 - The guide no longer says goodnight on the phone.
+- The bottom row is shorter, so Today, the to-do list and the week get more room.
+- The leaving-soon checklist fits on one line.
 
 ### Security
 - The keys that link Split it and Budget it stay on the computer and are never sent to a screen.
