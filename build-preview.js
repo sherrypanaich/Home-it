@@ -10,5 +10,7 @@ let phone = fs.readFileSync(path.join(__dirname, 'public', 'phone.html'), 'utf8'
 phone = phone.replace(/<link rel="(manifest|icon|apple-touch-icon)"[^>]*>\n/g, '').replace('<script src="home.js"></script>', '<script>window.HOMEIT_DEMO = true;</script>\n<script src="home.js"></script>');
 fs.writeFileSync(path.join(out, 'phone.html'), phone);
 fs.copyFileSync(path.join(__dirname, 'home.js'), path.join(out, 'home.js'));
+fs.copyFileSync(path.join(__dirname, 'carplan.js'), path.join(out, 'carplan.js'));
+fs.copyFileSync(path.join(__dirname, 'public', 'car-ui.js'), path.join(out, 'car-ui.js'));
 for (const f of fs.readdirSync(path.join(__dirname, 'public', 'art'))) fs.copyFileSync(path.join(__dirname, 'public', 'art', f), path.join(out, 'art', f));
 console.log('Preview written to ' + out);

@@ -20,7 +20,7 @@ const crypto = require('crypto');
 const readline = require('readline');
 const zlib = require('zlib');
 
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 // Optional settings file next to this one: KEY=value per line (see home-it.env.example).
 try {
   for (const line of fs.readFileSync(path.join(__dirname, 'home-it.env'), 'utf8').split(/\r?\n/)) {
@@ -275,6 +275,9 @@ async function newsFor(set) {
   } catch (e) { return hit ? { ...hit.data, stale: true } : { ok: false }; }
 }
 
+// ---------- the car (car.js): Bluelink sign-in stays in data/car.json ----------
+const car = require('./car')({ DATA_DIR, readBody, send, changed, weatherFor: set => weatherFor(set), settingsOf: uid => stateOf(uid).settings });
+
 // ---------- a calendar link (Apple, Google, Outlook): read every 15 minutes, the next 60 days kept ----------
 const ICS = require('./ics');
 const calCache = new Map();   // uid -> { url, at, rows, state: 'ok' | 'wait' | 'fail', busy }
@@ -364,6 +367,8 @@ async function handle(req, res) {
   if (PUBLIC_FILES.has(p)) return file(res, p.slice(1), null, p === '/sw.js' ? 'no-cache' : 'public, max-age=86400');
   if (/^\/art\/[a-z0-9-]+\.(webp|png)$/.test(p)) return file(res, p.slice(1), null, 'public, max-age=604800');
   if (p === '/home.js') return file(res, 'home.js', null, 'no-cache', __dirname);
+  if (p === '/carplan.js') return file(res, 'carplan.js', null, 'no-cache', __dirname);
+  if (p === '/car-ui.js') return file(res, 'car-ui.js', null, 'no-cache');
   if (p === '/login' && m === 'GET') return file(res, 'login.html');
   if (p === '/api/login' && m === 'POST') {
     const { name, password } = await readBody(req);
@@ -406,6 +411,7 @@ async function handle(req, res) {
   if (p === '/api/news' && m === 'GET') return send(res, 200, await newsFor(stateOf(uid).settings));
   if (p === '/api/weather' && m === 'GET') return send(res, 200, await weatherFor(stateOf(uid).settings));
   if (p === '/api/money' && m === 'GET') return send(res, 200, await moneyFor(uid));
+  if (await car(req, res, uid, p, m)) return;   // start the car (car.js)
   if (p === '/api/city' && m === 'POST') {
     const name = H.text((await readBody(req)).city, 60);
     if (!name) return send(res, 400, { error: 'Type a town or city.' });

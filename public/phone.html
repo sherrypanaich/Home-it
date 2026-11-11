@@ -131,6 +131,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
 
   <section id="p-today" class="pane">
     <div class="card hero" id="hero"></div>
+    <div class="card" style="margin-top:14px" id="carcard"><h2 class="h2">CAR</h2><div id="carbody"></div></div>
     <div class="card" style="margin-top:14px" id="planscard"><h2 class="h2">PLANS TODAY</h2><ul class="list" id="plist"></ul></div>
     <div class="card" style="margin-top:14px"><h2 class="h2">TO-DO TODAY</h2>
       <form id="quickform" style="flex-direction:row" class="addbar">
@@ -222,6 +223,8 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="home.js"></script>
+<script src="carplan.js"></script>
+<script src="car-ui.js"></script>
 <script>
 (function(){
   'use strict';
@@ -445,6 +448,12 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   on('company', 'click', function(){ op('company.set', { on: this.getAttribute('aria-pressed') !== 'true' }); });
 
   function start(){
+    CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'phone', openPage: function(){ $('carcard').scrollIntoView({ behavior:'smooth' }); }, demoWeather: function(){ return WX; }, onChange: function(){
+      var a = document.activeElement; if (a && a.closest && a.closest('#carlink,#carcode')) return;
+      $('carbody').innerHTML = CarUI.html(); } });
+    CarUI.bind($('carbody'));
+    on('carbody', 'click', function(e){ CarUI.click(e); });
+    on('carbody', 'submit', function(e){ CarUI.submit(e); });
     try { ui.pane = sessionStorage.getItem('homeit.pane') || 'today'; } catch(e){}
     var t = today(); eventForm(null);
     if (DEMO){ S = H.sample(t); ME = { name:'You' }; WX = { ok:true, temp:4, hi:7, city:'Belleville', sunrise:'06:56', sunset:'16:44' }; }
@@ -452,11 +461,11 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
       var last = S && (S.shifts[S.shifts.length - 1] || S.rules[S.rules.length - 1]) || { start:'14:00', end:'22:00' };
       $('sstart').innerHTML = opts(times(15), last.start); $('send').innerHTML = opts(times(15), last.end); render();
     };
-    if (DEMO) first();
+    if (DEMO){ first(); CarUI.load().then(function(){ CarUI.status(false); }); }
     else {
-      var boot = function(){ loadState().then(function(){ first(); api('api/weather').then(function(w){ WX = w; render(); }).catch(function(){}); }, function(){ toast('Can’t reach Home it. Trying again…'); setTimeout(boot, 5000); }); };
+      var boot = function(){ loadState().then(function(){ first(); api('api/weather').then(function(w){ WX = w; render(); }).catch(function(){}); CarUI.load().then(function(){ CarUI.status(false); }); }, function(){ toast('Can’t reach Home it. Trying again…'); setTimeout(boot, 5000); }); };
       boot();
-      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); }); es.onopen = function(){ if (S) loadState().catch(function(){}); }; } catch(e){}
+      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); CarUI.load(); }); es.onopen = function(){ if (S) loadState().catch(function(){}); }; } catch(e){}
       document.addEventListener('visibilitychange', function(){ if (!document.hidden) loadState().catch(function(){}); });
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
     }

@@ -198,6 +198,9 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .hid svg{width:28px;height:28px}
 .tap{cursor:pointer;position:relative;justify-content:flex-start}
 .tap::after{content:"More ›";position:absolute;right:12px;top:13px;font-family:var(--body);font-weight:800;font-size:.74rem;color:var(--muted);line-height:1}
+.low .tap::after{content:"›";font-size:1.3rem;top:9px}   /* six cards share the bottom row: an arrow is enough */
+.carnudge{position:absolute;left:50%;top:92px;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:10px;background:var(--hl);color:var(--hl-ink);border:3px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--edge);padding:10px 14px;font-size:1.05rem;white-space:nowrap}
+.carnudge[hidden]{display:none}
 .tap:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--pop)}
 .tap.hid::after{content:none}
 .tap .one{font-weight:800;font-size:1.02rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -295,6 +298,8 @@ input,select{user-select:text;-webkit-user-select:text}
 .g-today{grid-template:"top top" auto "a b" minmax(0,auto) "a c" minmax(0,1fr) / 1.25fr 1fr}
 .g-two{grid-template:"top top" auto "a b" minmax(0,1fr) / 1.15fr 1fr}
 .g-money{grid-template:"a b" minmax(0,1fr) / 1fr 1fr}
+.g-car{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
+.g-car .pc .dbody{max-width:980px;width:100%;margin:0 auto}
 .g-wx{grid-template:"a b" auto "c b" minmax(0,1fr) / 1.15fr 1fr}
 .now{gap:12px}
 .nowtop{display:flex;align-items:center;gap:18px}
@@ -509,6 +514,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <section class="card tap" data-card="forecast" data-detail="forecast" role="button" tabindex="0" aria-label="Weather for the next days, tap for more"></section>
       <section class="card tap money" data-card="split" data-detail="split" id="splitcard" role="button" tabindex="0" aria-label="Split it, tap for more"></section>
       <section class="card tap money" data-card="budget" data-detail="budget" id="budgetcard" role="button" tabindex="0" aria-label="Budget it, tap for more"></section>
+      <section class="card tap" data-card="car" data-detail="car" id="carcard" role="button" tabindex="0" aria-label="Car, tap to start it"></section>
       <section class="card" data-card="room" aria-label="Room">
         <div class="row">
           <label class="co" style="flex:1;justify-content:space-between">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
@@ -522,6 +528,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     <section class="pg full" data-pg="week" aria-label="Week"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="weather" aria-label="Weather"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="money" aria-label="Money"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    <section class="pg full" data-pg="car" aria-label="Car"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="news" aria-label="News"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     </div>
     <nav class="pgnav" id="pgnav" aria-label="Pages"></nav>
@@ -615,6 +622,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 </div>
 
 <script src="home.js"></script>
+<script src="carplan.js"></script>
+<script src="car-ui.js"></script>
 <script>
 (function(){
   'use strict';
@@ -635,7 +644,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     fog:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 9h16M4 13h12M7 17h13"/></svg>'
   };
   var LOCK = '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  var CARDS = [['today','Today'],['todo','Later and Shopping lists'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['room','Room']];
+  var CARDS = [['today','Today'],['todo','Later and Shopping lists'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['car','Car'],['room','Room']];
   // weather codes (WMO) -> [icon, words]
   function sky(code, day){
     if (code === 0 || code === 1) return [day ? 'sun' : 'moon', code ? 'Mostly clear' : 'Clear'];
@@ -687,9 +696,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function loadState(){ if (DEMO) return; return api('api/state').then(take); }
   function loadWeather(){
-    if (DEMO){ WX = demoWeather(); renderTick(true); return; }
+    if (DEMO){ WX = demoWeather(); renderTick(true); CarUI.load(); return; }
     api('api/weather').then(function(w){ WX = w; renderTick(true); }).catch(function(){});
-    loadMoney();
+    loadMoney(); CarUI.load();
   }
   var NEWS = null, newsAt = 0;
   function loadNews(){
@@ -861,6 +870,19 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     else h += '<div class="one">' + (m ? 'Can’t reach it right now' : 'Open ' + low(title)) + '</div>';
     el.innerHTML = h;
   }
+  // "Start the car?" a few minutes before leaving on a cold or hot day. It only asks; the car page still needs a press and hold.
+  function carNudge(text){
+    var el = $('carnudge');
+    if (!el){ el = document.createElement('div'); el.id = 'carnudge'; el.className = 'carnudge'; el.setAttribute('role', 'alert'); stage.appendChild(el);
+      el.addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; el.hidden = true; if (b.dataset.go) goPage('car'); }); }
+    el.innerHTML = '<b>' + esc(text) + '</b><button class="btn primary" data-go="1">Open the car</button><button class="btn">Not now</button>';
+    el.hidden = false; clearTimeout(ui.nudgeT); ui.nudgeT = setTimeout(function(){ el.hidden = true; }, 5 * 60e3);
+    try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.setValueAtTime(0.15, a.currentTime); g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.6); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + 0.6); } catch(e){}
+  }
+  function renderCar(){
+    var t = CarUI.tile(), el = $('carcard');
+    el.innerHTML = '<h2 class="h2">CAR</h2><div class="one' + (t.on ? ' good' : '') + '">' + esc(t.big) + '</div><div class="more">' + esc(t.sub) + '</div>';
+  }
   function renderComing(){
     var rows = H.coming(S, V.date, 30), r = rows[0];
     stage.querySelector('[data-card="coming"]').innerHTML = '<h2 class="h2">COMING UP</h2>' + (r
@@ -988,8 +1010,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
 
   // ---------- pages: Home first, then one full page each, swiped left and right ----------
-  var PAGES = [['home','Home'],['today','Today'],['week','Week'],['weather','Weather'],['money','Money'],['news','News']];
-  var PAGE_OF = { today:'today', coming:'week', pay:'week', forecast:'weather', split:'money', budget:'money', news:'news' };
+  var PAGES = [['home','Home'],['today','Today'],['week','Week'],['weather','Weather'],['money','Money'],['car','Car'],['news','News']];
+  var PAGE_OF = { today:'today', coming:'week', pay:'week', forecast:'weather', split:'money', budget:'money', car:'car', news:'news' };
   var pager = $('pager');
   function pageEl(name){ return pager.querySelector('[data-pg="' + name + '"]'); }
   // A page body cut into its named pieces (the body marks them with <!--cut:name-->); `head` is what comes first.
@@ -1031,6 +1053,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         h = !sp && !bu ? '<div class="note">Split it and Budget it are switched off in Settings, under Cards.</div>'
           : !MONEY.split && !MONEY.budget && !(V.company || MONEY.hidden) ? '<div class="note">Link Split it and Budget it to see your money here. Settings, under Apps, says how.</div>'
           : '<div class="pgrid g-money">' + (sp ? panel('a', one('split'), 'Split it') : '') + (bu ? panel(sp ? 'b' : 'a', one('budget'), 'Budget it') : '') + '</div>';
+      } else if (name === 'car'){
+        var ae = document.activeElement; if (ae && ae.closest && ae.closest('#carlink,#carcode')) return;   // don't redraw under someone typing
+        title = 'CAR'; sub = CarUI.linked() ? 'Start it for the weather, check the locks' : 'Add your Hyundai once';
+        h = '<div class="pgrid g-car">' + panel('a', CarUI.html(), 'Start the car') + '</div>';
       } else {
         p = parts('news'); sub = NEWS && NEWS.ok ? 'Tap a headline to read it' : '';
         h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : p.head;
@@ -1055,24 +1081,26 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     else pager.scrollTo({ left: el.offsetLeft - pager.offsetLeft - 18, behavior: jump ? 'auto' : 'smooth' });
     renderPages();
     if (name === 'news') loadNews();
+    if (name === 'car') openCar();
   }
+  function openCar(){ CarUI.reset(); CarUI.load().then(function(){ CarUI.status(false); }); }
   var pgTimer;
   pager.addEventListener('scroll', function(){
     clearTimeout(pgTimer); pgTimer = setTimeout(function(){
       var best = 'home', gap = 1e9;
       PAGES.forEach(function(pg){ var el = pageEl(pg[0]), g = Math.abs(el.offsetLeft - pager.offsetLeft - 18 - pager.scrollLeft); if (g < gap){ gap = g; best = pg[0]; } });
-      if (best !== ui.page){ ui.page = best; renderPages(); if (best === 'news') loadNews(); }
+      if (best !== ui.page){ ui.page = best; renderPages(); if (best === 'news') loadNews(); if (best === 'car') openCar(); }
     }, 90);
   });
   function renderCards(){
     var hide = S.settings.hide;
     CARDS.forEach(function(c){ stage.querySelector('[data-card="' + c[0] + '"]').hidden = hide.indexOf(c[0]) >= 0; });
-    var nolow = ['coming','forecast','split','budget','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
+    var nolow = ['coming','forecast','split','budget','car','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
     $('low').hidden = nolow; $('mid').hidden = nomid;
     $('pghome').classList.toggle('nolow', nolow); $('pghome').classList.toggle('nomid', nomid && !nolow);
     moneyCard($('splitcard'), 'split', S.settings.splitUrl);
     moneyCard($('budgetcard'), 'budget', S.settings.budgetUrl);
-    renderComing(); renderForecast();
+    renderComing(); renderForecast(); renderCar();
     if (ui.sheet === 'detailsheet') renderDetail();
     renderPages();
     $('company').setAttribute('aria-pressed', V.company);
@@ -1189,6 +1217,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       $('iclock').textContent = tm(H.hhmm(v.nowM)); $('idate').textContent = H.fmtDate(v.date, true); $('iline').textContent = shiftLine(v);
       var g = H.guide(S, v), src = 'art/' + g.who + '-calm.webp'; if ($('iimg').getAttribute('src') !== src) $('iimg').src = src;
     }
+    var nd = v.phase === 'soon' && !nightOn ? CarUI.nudge(v.toLeave) : null, nk = v.date + (v.shift ? v.shift.start : '');
+    if (nd && ui.nudged !== nk && ui.page !== 'car'){ ui.nudged = nk; carNudge(nd); }
     if (force || minute !== ui.minute){ ui.minute = minute; renderBar(v); renderToday(v); if (force){ renderWeek(v); renderItems(); renderCards(); if (ui.sheet === 'sheet') renderSettings(); if (ui.sheet === 'shiftsheet') renderShiftSheet(); if (ui.sheet === 'eventsheet') renderEventSheet(); } }
   }
   function renderAll(){ renderTick(true); }
@@ -1289,12 +1319,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function bodySubmit(e){
     e.preventDefault();
+    if (CarUI.submit(e)) return;
     if (e.target.id === 'tdaddform'){ var a = $('tdadd').value.trim(); if (!a) return; $('tdadd').value = ''; $('tdadd').blur(); return op('todo.add', { list:'today', t: a }, true); }
     if (e.target.id !== 'tdform') return;
     var v = $('tdname').value.trim(); if (!v) return toast('Type something first.');
     $('tdname').blur(); op('todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(){ show(null); });
   }
   function bodyClick(e){
+    if (CarUI.click(e)) return;
     var nw = e.target.closest('[data-news]'); if (nw){ ui.news = +nw.dataset.news; renderPages(); var on = pager.querySelector('.news .on'); if (on && on.scrollIntoView) on.scrollIntoView({ block:'nearest' }); return; }
     var tk = e.target.closest('.tk');
     if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);
@@ -1342,7 +1374,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('kiosksw', 'click', function(){ if (DEMO) return toast('This works once it’s on the laptop'); post('api/kiosk', { on: !ME.kiosk }); });
   on('kbsw', 'click', function(){ store.set('kb', kbOn() ? '0' : '1'); hideKb(); renderSettings(); });
   on('company', 'click', function(){ op('company.set', { on: !V.company }); });
-  on('gn', 'click', function(){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); });
+  on('gn', 'click', function(){ CarUI.goodnight(function(msg){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); if (msg) toast(msg); }); });   // checks the car is locked first
   on('nwake', 'click', function(e){ e.stopPropagation(); ui.good = false; ui.awake = Date.now() + 5 * 60e3; ui.touch = Date.now(); renderTick(); });
   ['pointerdown', 'keydown'].forEach(function(n){ document.addEventListener(n, function(e){
     var wasIdle = !$('idle').hidden;
@@ -1394,11 +1426,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (kind === 'night') m = 130;
     if (m != null){ var d = new Date(); d.setHours(Math.floor(m / 60), m % 60, 0, 0); ui.fake = d.getTime(); }
     document.querySelectorAll('#demotimes button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.t === kind); });
-    WX = demoWeather(); MONEY = demoMoney(); ui.minute = -1; renderAll();
+    WX = demoWeather(); MONEY = demoMoney(); ui.minute = -1; renderAll(); CarUI.load();
   }
 
   // ---------- start ----------
   function start(){
+    CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'big screen', demoWeather: function(){ return WX; },
+      openPage: function(){ goPage('car'); }, top: function(){ var el = pageEl('car'), d = el && el.querySelector('.pc .dbody'); if (d) d.scrollTop = 0; },
+      onChange: function(){ renderCar(); if (ui.page === 'car') renderPages(); } });
+    CarUI.bind(pager);
     scale();
     if (DEMO){
       S = H.sample(H.ymd(new Date())); S.cal = [{ date: H.addDays(H.ymd(new Date()), 1), time:'18:30', t:'Mum’s birthday dinner' }]; ME = { name:'You', kiosk:false }; $('demo').hidden = false; $('wait').hidden = true;
@@ -1407,7 +1443,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     } else {
       var first = function(){ loadState().then(loadWeather, function(){ $('wait').textContent = 'Can’t reach Home it. Trying again…'; setTimeout(first, 5000); }); };
       first();
-      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); loadMoney(); }); es.onopen = function(){ online(true); if (S) loadState().catch(function(){}); }; es.onerror = function(){ online(false); }; } catch(e){}
+      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); loadMoney(); CarUI.load(); }); es.onopen = function(){ online(true); if (S) loadState().catch(function(){}); }; es.onerror = function(){ online(false); }; } catch(e){}
       document.addEventListener('visibilitychange', function(){ if (!document.hidden) loadState().catch(function(){}); });
       // Ask the browser to keep the screen on (it lets go whenever the page is hidden, so ask again each time)
       var keepOn = function(){ if (navigator.wakeLock && !document.hidden) navigator.wakeLock.request('screen').catch(function(){}); };

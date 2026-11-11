@@ -26,6 +26,30 @@ To show a calendar you already keep (Apple, Google, Outlook), share it as a link
 
 Home it asks each app every few minutes, the same way an AI assistant would. The key is kept in `data/users.json` on your computer and never sent to a screen. `unlink-split` and `unlink-budget` undo it. See [CHANGELOG.md](CHANGELOG.md) for what's new.
 
+## Start the car (Hyundai Bluelink, Canada)
+
+Swipe to the **Car** page (or tap the Car card on Home, or the Car card on the phone's Today) to warm up or cool down the car before you leave. Home it picks the run time and climate from the weather where you live:
+
+| Feels like | Run time | Inside | Front defrost | Seat, wheel, rear window |
+|---|---|---|---|---|
+| below -10 °C | 8 min | 23 °C | on | on (seat high) |
+| -10 to 0 °C | 6 min | 22 °C | on | on (seat medium) |
+| 0 to 5 °C | 4 min | 22 °C | on if 3 °C or colder | on (seat low) |
+| 5 to 15 °C | 2 min | 21 °C | off | off |
+| 15 to 25 °C | 2 min | 21 °C (fan) | off | off |
+| 25 to 30 °C | 4 min | 21 °C, cooling | off | cooled seat if your car has it |
+| above 30 °C | 6 min | 20 °C, cooling | off | cooled seat if your car has it |
+
+Snow or freezing rain adds 2 minutes and turns defrost on. Rain or fog turns defrost on. It never runs less than 2 or more than 8 minutes. Every start can be changed before you press, and "Your car" on the car page makes it warmer, cooler, shorter or longer every time, and says which seats and wheel your car can heat.
+
+To set it up, open the car page and type your MyHyundai (Bluelink Canada) email, password and 4-number PIN. The first time, Hyundai sends you a code by email or text. They are saved only in `data/car.json` on this computer (readable by your user only) and only sent to Hyundai. "Remove the car from Home it" deletes them.
+
+The car page also shows locks, fuel and doors (read from what the car last reported, which doesn't wake it), with Lock and Unlock. Goodnight checks the car is locked first. On cold or hot days, a few minutes before you need to leave for a shift, the screen chimes and asks "Start the car?" so you can open the car page.
+
+Safety: you press and hold the button for a second to start (a tap does nothing), the car is never started by a timer, there are at most 3 starts an hour, a Stop button shows while it runs, and the last starts are listed with where they came from. If the PIN is wrong once, Home it stops and asks you to add the car again, so Bluelink never locks it. AI assistants cannot start the car. Don't use remote start in a closed garage.
+
+This uses the same calls as the MyHyundai app, as the open-source [hyundai_kia_connect_api](https://github.com/Hyundai-Kia-Connect/hyundai_kia_connect_api) project documents them. It is not an official Hyundai API and can stop working if Hyundai changes it. The car needs an active Bluelink plan, must be locked, in Park, with the doors, hood and trunk shut.
+
 ## Try it without installing
 
 ```
@@ -108,7 +132,7 @@ node server.js mcp-revoke NAME     sign every assistant out
 
 ## Your data
 
-Everything is in the `data` folder: `db.json` (shifts, lists, events, settings) and `users.json` (accounts) and `oauth.json` (connected assistants). A copy of `db.json` is kept for each of the last 30 days in `data/backups`. Those copies sit on the same disk as the data, so set `BACKUP_COPY_DIR` in `home-it.env` to a USB stick or a folder that syncs somewhere else and each day's copy goes there too. Past shifts and events are kept for two years.
+Everything is in the `data` folder: `db.json` (shifts, lists, events, settings) and `users.json` (accounts) and `oauth.json` (connected assistants), and `car.json` (your Bluelink sign-in, if you added the car). A copy of `db.json` is kept for each of the last 30 days in `data/backups`. Those copies sit on the same disk as the data, so set `BACKUP_COPY_DIR` in `home-it.env` to a USB stick or a folder that syncs somewhere else and each day's copy goes there too. Past shifts and events are kept for two years.
 
 ## Tests
 
