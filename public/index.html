@@ -57,7 +57,7 @@ button{cursor:pointer}
 .stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;
   background-color:var(--bg);color:var(--ink);
   background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;
-  padding:16px 18px 10px;display:grid;grid-template-rows:60px minmax(0,1fr) 34px;gap:12px}
+  padding:16px 18px 4px;display:grid;grid-template-rows:60px minmax(0,1fr) 40px;gap:12px}
 .card{background:var(--surface);border:2.5px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--pop);min-width:0}
 .h2{display:inline-block;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:400;font-size:.84rem;
   padding:4px 12px 3px;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--hl);margin:0;white-space:nowrap;font-variant-numeric:normal}
@@ -71,17 +71,18 @@ button{cursor:pointer}
 svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 
 /* top bar */
-.bar{display:flex;align-items:center;gap:16px;padding:0 10px 0 16px}
+.bar{display:flex;align-items:center;gap:18px;padding:0 8px 0 16px}
 .clock{font-size:2.05rem;line-height:1;white-space:nowrap}
 .date{font-weight:800;white-space:nowrap;line-height:1.15}
-.date small{display:block;font-weight:600;color:var(--muted);font-size:.8rem}
-.wx{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:0}
+.date small{display:block;font-weight:700;color:var(--muted);font-size:.88rem;margin-top:2px}
+.wx{display:flex;align-items:center;gap:10px;margin-left:auto;min-width:0}
 .wx .now{display:flex;align-items:center;gap:8px;font-weight:800;white-space:nowrap;margin-right:6px}
 .wx .now svg{width:30px;height:30px}
 .wx .now .t{font-size:1.5rem;line-height:1}
-.wx .now small{display:block;font-weight:600;color:var(--muted);font-size:.78rem;line-height:1.1}
-.wx .hr{display:flex;align-items:center;gap:5px;border:2px solid var(--edge);border-radius:10px;padding:3px 9px;font-size:.78rem;font-weight:600;background:var(--surface2);line-height:1.15;white-space:nowrap}
-.wx .hr b{font-size:.95rem}
+.wx .now small{display:block;font-weight:700;color:var(--muted);font-size:.84rem;line-height:1.15}
+.wx .hr{display:flex;align-items:center;gap:7px;border:2px solid var(--edge);border-radius:12px;padding:0 12px;min-height:42px;font-size:.84rem;font-weight:700;background:var(--surface2);line-height:1.15;white-space:nowrap}
+.wx .hr b{font-size:1.1rem;margin-left:2px}
+.wx .hr .ic{width:22px;height:22px}
 .gear{width:46px;height:46px;padding:0;display:grid;place-items:center;flex:none}
 .gear svg{width:22px;height:22px}
 
@@ -177,8 +178,17 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 
 /* bottom row */
 .low{display:flex;gap:14px;min-height:0}
-.low .card{flex:1;padding:11px 14px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
-.low .card > .h2{align-self:flex-start}
+.low .card{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.low .card > .h2{align-self:flex-start;margin-bottom:4px}
+/* every tile reads the same way: title tag, one main line, one small line, and a round arrow to tap */
+.low .tap .one,.low .tap .wxl,.low .tap .big{display:flex;align-items:center;gap:7px;height:34px;flex:none;font-family:var(--body);font-weight:800;font-size:1.15rem;line-height:1;white-space:nowrap}
+.low .tap .one{display:block;line-height:34px}
+.low .tap .big{font-family:var(--display);font-weight:400;font-size:1.6rem}
+.low .tap .wxl .ic{width:26px;height:26px}
+.low .tap .wxl small{font-size:.9rem}
+.low .tap .more{font-size:.86rem;line-height:1.25}
+.low .co{align-items:center;font-size:1rem;line-height:1.15;min-height:44px}
+.low .co small{display:block;font-size:.84rem;font-weight:700;color:var(--muted);margin-top:2px}
 .big{font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .big small{font-family:var(--body);font-size:.86rem;font-weight:800}
 .good{color:var(--good)} .bad{color:var(--bad)}
@@ -203,7 +213,9 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .hid svg{width:28px;height:28px}
 .tap{cursor:pointer;position:relative;justify-content:flex-start}
 .tap::after{content:"More ›";position:absolute;right:12px;top:13px;font-family:var(--body);font-weight:800;font-size:.74rem;color:var(--muted);line-height:1}
-.low .tap::after{content:"›";font-size:1.3rem;top:9px}   /* six cards share the bottom row: an arrow is enough */
+.low .tap::after{content:"";right:10px;top:10px;width:28px;height:28px;border-radius:50%;box-sizing:border-box;border:2.5px solid var(--edge);background:var(--surface2) var(--chev) center/12px 12px no-repeat}
+.stage{--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 1.5 8.5 6 4 10.5' fill='none' stroke='%2314112A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.stage[data-look="dark"]{--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 1.5 8.5 6 4 10.5' fill='none' stroke='%23F4F1FF' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 .carnudge{position:absolute;left:50%;top:92px;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:10px;background:var(--hl);color:var(--hl-ink);border:3px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--edge);padding:10px 14px;font-size:1.05rem;white-space:nowrap}
 .carnudge[hidden]{display:none}
 .tap:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--pop)}
@@ -377,12 +389,16 @@ input,select{user-select:text;-webkit-user-select:text}
 .pc .row .btn{flex:1}
 .flat .stats{gap:8px}
 .flat .stat{box-shadow:none;border-width:2px;border-color:var(--line);background:var(--surface2)}
-.pgnav{display:flex;align-items:center;justify-content:center;gap:10px}
-.pgnav .tabs{display:flex;gap:2px;background:var(--surface);border:2.5px solid var(--edge);border-radius:999px;padding:2px;box-shadow:3px 3px 0 var(--pop)}
-.pgnav button{font:inherit;font-weight:800;font-size:.84rem;color:var(--muted);background:none;border:0;border-radius:999px;padding:2px 16px;min-height:28px;cursor:pointer}
-.pgnav .tabs button[aria-current="true"]{color:var(--bg);background:var(--ink)}
-.pgnav .arr{width:34px;height:32px;padding:0;font-size:1.2rem;line-height:1;color:var(--ink);background:var(--surface);border:2.5px solid var(--edge);box-shadow:2px 2px 0 var(--pop)}
-.pgnav .arr:disabled{opacity:.3;cursor:default}
+.pgnav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:-4px;height:44px}
+.pgnav .tabs{display:flex;gap:2px;height:44px;box-sizing:border-box;background:var(--surface);border:2.5px solid var(--edge);border-radius:999px;padding:2px;box-shadow:3px 3px 0 var(--pop)}
+.pgnav button{font:inherit;font-weight:800;font-size:.95rem;color:var(--ink);background:none;border:0;border-radius:999px;padding:0 20px;min-height:0;cursor:pointer;position:relative;display:flex;align-items:center;gap:7px}
+.pgnav .tabs button::after{content:"";position:absolute;inset:-5px 0}   /* the whole height of the strip takes the tap */
+.pgnav .tabs button[aria-current="true"]{color:var(--bg);background:var(--ink);padding:0 22px}
+.pgnav .tabs button[aria-current="true"]::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--pgc,var(--hl));flex:none}
+.pgnav .arr{width:48px;height:44px;padding:0;justify-content:center;color:var(--ink);background:var(--surface);border:2.5px solid var(--edge);box-shadow:3px 3px 0 var(--pop)}
+.pgnav .arr svg{width:18px;height:18px;stroke-width:3}
+.pgnav .arr:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--pop)}
+.pgnav .arr:disabled{opacity:.3;cursor:default;transform:none}
 .lead{display:flex;flex-direction:column;gap:10px;height:100%}
 .lead small{color:var(--muted);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
 .lead b{font-family:var(--display);font-weight:400;font-size:1.7rem;line-height:1.15}
@@ -517,22 +533,35 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .stack .osk{position:fixed}
 
 /* timer in the top bar */
-.tmr{position:relative;flex:none}
-.tmr .btn{min-width:74px;font-variant-numeric:tabular-nums}
-.tmr .btn.run{background:var(--hl);color:var(--hl-ink)}
-.tmenu{position:absolute;right:0;top:calc(100% + 10px);z-index:40;display:grid;grid-template-columns:1fr 1fr;gap:6px;width:210px;padding:10px;background:var(--surface);border:3px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--pop)}
+.tmr{position:relative;flex:none;margin:0 2px 0 8px}
+.tmr > .btn{min-width:108px;height:46px;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:7px;font-variant-numeric:tabular-nums}
+.tmr > .btn .ic{width:20px;height:20px}
+.tmr > .btn.run{background:var(--hl);color:var(--hl-ink);font-size:1.1rem}
+.tmenu{position:absolute;right:0;top:calc(100% + 12px);z-index:40;width:292px;padding:12px;background:var(--surface);border:3px solid var(--edge);border-radius:14px;box-shadow:5px 5px 0 var(--pop)}
 .tmenu[hidden]{display:none}
-.tmenu button{font:inherit;font-weight:800;padding:12px 6px;border:2px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--ink);cursor:pointer}
-.tmenu .stop{color:var(--bad)}
-.tmenu:not(.on) .stop{display:none}
-.tmenu:not(.on) button[data-min="45"]{grid-column:span 2}
-.timeup{position:absolute;left:50%;top:92px;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:14px;background:var(--hl);color:var(--hl-ink);border:3px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--edge);padding:12px 16px;font-size:1.15rem;font-weight:800;white-space:nowrap}
+.tmenu .tt{font-weight:800;font-size:.95rem;margin:0 2px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.tmenu .tt b{font-family:var(--display);font-weight:400;font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums}
+.tmenu .tt small{font-size:.86rem;font-weight:700;color:var(--muted)}
+.tmenu .tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tmenu .tg[hidden]{display:none}
+.tmenu .tg button{font:inherit;font-weight:800;min-height:50px;padding:4px;border:2.5px solid var(--edge);border-radius:12px;background:var(--surface2);color:var(--ink);cursor:pointer;white-space:nowrap}
+.tmenu .tg button:active{background:var(--hl);color:var(--hl-ink)}
+.tmenu .tg .stop{background:var(--ink);color:var(--bg)}
+.timeup{position:absolute;left:50%;top:96px;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:12px;background:var(--hl);color:var(--hl-ink);border:3px solid #14112A;border-radius:16px;box-shadow:6px 6px 0 #14112A;padding:14px 16px 14px 20px;white-space:nowrap}
 .timeup[hidden]{display:none}
+.timeup .ic{width:34px;height:34px}
+.timeup b{font-family:var(--display);font-weight:400;font-size:1.7rem;line-height:1;margin-right:10px}
+.timeup .btn{border-color:#14112A;box-shadow:3px 3px 0 #14112A;background:#fff;color:#14112A;min-width:76px;font-size:1.02rem}
+.timeup .btn.ok{background:#14112A;color:#fff}
+/* a running timer also shows on the resting and night screens */
+.otmr{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.15rem;font-variant-numeric:tabular-nums;border:2.5px solid currentColor;border-radius:999px;padding:5px 16px;margin-top:8px}
+.otmr[hidden]{display:none}
+.otmr .ic{width:20px;height:20px}
 /* each page has its own colour */
 .pg[data-pg="today"]{--pgc:#2D5BFF}.pg[data-pg="week"]{--pgc:#8B5CF6}.pg[data-pg="weather"]{--pgc:#22B8E0}.pg[data-pg="money"]{--pgc:#16A765}.pg[data-pg="car"]{--pgc:#F0503C}.pg[data-pg="news"]{--pgc:#FF9A2E}
 .pg.full .h2{box-shadow:3px 3px 0 var(--pgc,var(--hl))}
 .pg.full .pghd .h2{box-shadow:4px 4px 0 var(--pgc,var(--hl))}
-.pgnav .tabs button[aria-current="true"][data-go="today"]{box-shadow:inset 0 -3px 0 #2D5BFF}.pgnav .tabs button[aria-current="true"][data-go="week"]{box-shadow:inset 0 -3px 0 #8B5CF6}.pgnav .tabs button[aria-current="true"][data-go="weather"]{box-shadow:inset 0 -3px 0 #22B8E0}.pgnav .tabs button[aria-current="true"][data-go="money"]{box-shadow:inset 0 -3px 0 #16A765}.pgnav .tabs button[aria-current="true"][data-go="car"]{box-shadow:inset 0 -3px 0 #F0503C}.pgnav .tabs button[aria-current="true"][data-go="news"]{box-shadow:inset 0 -3px 0 #FF9A2E}
+.pgnav [data-go="today"]{--pgc:#2D5BFF}.pgnav [data-go="week"]{--pgc:#8B5CF6}.pgnav [data-go="weather"]{--pgc:#22B8E0}.pgnav [data-go="money"]{--pgc:#16A765}.pgnav [data-go="car"]{--pgc:#F0503C}.pgnav [data-go="news"]{--pgc:#FF9A2E}
 /* bars: budgets and day temperatures */
 .bud{border-top:1.5px solid var(--line);padding-top:8px}
 .dbody h3 + .bud{border-top:0;padding-top:0}
@@ -569,8 +598,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <div class="date"><span id="date"></span><small id="sun"></small></div>
       <div class="wx" id="wx"></div>
       <div class="tmr" id="tmr">
-        <button class="btn sm" id="tmrbtn" aria-haspopup="true" aria-expanded="false">Timer</button>
-        <div class="tmenu" id="tmenu" hidden><button data-min="5">5 min</button><button data-min="10">10 min</button><button data-min="15">15 min</button><button data-min="25">25 min</button><button data-min="45">45 min</button><button data-min="0" class="stop">Stop</button></div>
+        <button class="btn" id="tmrbtn" aria-haspopup="true" aria-expanded="false" aria-label="Timer"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/></svg><span id="tmrtxt">Timer</span></button>
+        <div class="tmenu" id="tmenu" hidden>
+          <div class="tt" id="tmt"></div>
+          <div class="tg" id="tmset"><button data-min="5">5 min</button><button data-min="10">10 min</button><button data-min="15">15 min</button><button data-min="20">20 min</button><button data-min="30">30 min</button><button data-min="60">1 hour</button></div>
+          <div class="tg" id="tmrun" hidden><button data-add="1">+1 min</button><button data-add="5">+5 min</button><button data-min="0" class="stop">Stop</button></div>
+        </div>
       </div>
       <button class="btn gear" id="gear" aria-label="Settings" aria-expanded="false">
         <svg class="ic" viewBox="0 0 24 24"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="17" cy="18" r="2.2"/></svg>
@@ -614,8 +647,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <section class="card tap" data-card="car" data-detail="car" id="carcard" role="button" tabindex="0" aria-label="Car, tap to start it"></section>
       <section class="card" data-card="room" aria-label="Room">
         <div class="row">
-          <label class="co" style="flex:1;justify-content:space-between">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
-        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px;margin-top:auto">
+          <label class="co" style="flex:1;justify-content:space-between"><span>Company<small id="cohint">Hides money</small></span><button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
+        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:48px;margin-top:auto">
           <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
       </section>
     </div>
@@ -633,12 +666,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     <div class="over night" id="night" hidden>
       <div class="c disp" id="nclock"></div>
       <div class="n"><svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span id="nline"></span></div>
+      <div class="otmr" id="ntmr" hidden><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/></svg><span></span></div>
       <button class="btn" id="nwake" style="margin-top:14px">Use the screen</button>
     </div>
     <div class="over idle" id="idle" hidden>
       <div class="c disp" id="iclock"></div>
       <div class="d" id="idate"></div>
       <div class="l" id="iline"></div>
+      <div class="otmr" id="itmr" hidden><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/></svg><span></span></div>
       <img id="iimg" alt="">
     </div>
 
@@ -826,7 +861,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var w = '';
     $('date').parentNode.classList.toggle('warn', !!ui.offline || !!(WX && (WX.stale || !WX.ok)));
     if (WX && WX.ok){
-      $('sun').textContent = ui.offline ? 'Not connected. Showing what it last knew' : WX.stale ? 'Weather is from earlier' : v.dark && v.nowM > 720 ? 'Sunrise ' + tm(WX.sunrise) : v.dark ? 'Sunrise ' + tm(WX.sunrise) : 'Sunset ' + tm(WX.sunset);
+      $('sun').textContent = ui.offline ? 'Not connected. Showing what it last knew' : WX.stale ? 'Weather is from earlier' : v.dark ? 'Sunrise ' + tm(WX.sunrise) : 'Sunset ' + tm(WX.sunset);
       var k = sky(WX.code, WX.day);
       w = '<span class="now">' + SKY[k[0]] + '<span class="t disp">' + WX.temp + '°</span><span>' + k[1] + '<small>' + esc(String(WX.city).split(',')[0]) + ' · feels ' + WX.feels + '°</small></span></span>';
       [3, 6, 9].forEach(function(i){
@@ -982,7 +1017,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function renderComing(){
     var rows = H.coming(S, V.date, 30), r = rows[0];
     stage.querySelector('[data-card="coming"]').innerHTML = '<h2 class="h2">COMING UP</h2>' + (r
-      ? '<div class="when">' + esc(r.label) + '</div><div class="one">' + comingText(r) + '</div><div class="more">' + (rows.length > 1 ? '+ ' + (rows.length - 1) + ' more in two weeks' : 'Nothing else booked') + '</div>'
+      ? '<div class="one">' + comingText(r) + '</div><div class="more">' + esc(r.label) + (rows.length > 1 ? ' · then ' + (rows.length - 1) + ' more' : ' · nothing else booked') + '</div>'
       : '<div class="one">Nothing booked</div><div class="more">Tap to see the next two weeks</div>');
   }
   function renderForecast(){
@@ -1202,9 +1237,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       }
     });
     var pi = PAGES.map(function(pg){ return pg[0]; }).indexOf(ui.page);
-    $('pgnav').innerHTML = '<button class="arr" data-go="' + PAGES[Math.max(0, pi - 1)][0] + '"' + (pi <= 0 ? ' disabled' : '') + ' aria-label="Page before">‹</button><div class="tabs">'
+    $('pgnav').innerHTML = '<button class="arr" data-go="' + PAGES[Math.max(0, pi - 1)][0] + '"' + (pi <= 0 ? ' disabled' : '') + ' aria-label="Page before"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="tabs">'
       + PAGES.map(function(pg){ return '<button data-go="' + pg[0] + '"' + (pg[0] === ui.page ? ' aria-current="true"' : '') + '>' + pg[1] + '</button>'; }).join('')
-      + '</div><button class="arr" data-go="' + PAGES[Math.min(PAGES.length - 1, pi + 1)][0] + '"' + (pi >= PAGES.length - 1 ? ' disabled' : '') + ' aria-label="Next page">›</button>';
+      + '</div><button class="arr" data-go="' + PAGES[Math.min(PAGES.length - 1, pi + 1)][0] + '"' + (pi >= PAGES.length - 1 ? ' disabled' : '') + ' aria-label="Next page"><svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>';
   }
   function goPage(name, jump){
     var el = pageEl(name); if (!el) return;
@@ -1236,7 +1271,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     renderComing(); renderForecast(); renderCar();
     if (ui.sheet === 'detailsheet') renderDetail();
     renderPages();
-    $('company').setAttribute('aria-pressed', V.company);
+    $('company').setAttribute('aria-pressed', V.company); $('cohint').textContent = V.company ? 'Money hidden' : 'Hides money';
   }
 
   // ---------- sheets ----------
@@ -1392,19 +1427,30 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   var TMR = 0; try { TMR = +localStorage.getItem('homeit-timer') || 0; if (TMR < Date.now()) TMR = 0; } catch(e){}
   function beep(n){ try { var a = new (window.AudioContext || window.webkitAudioContext)(); for (var i = 0; i < n; i++){ var o = a.createOscillator(), g = a.createGain(), t = a.currentTime + i * .7; o.frequency.value = 880; g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.55); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.55); } } catch(e){} }
   function setTimer(min){ TMR = min ? Date.now() + min * 60e3 : 0; try { if (TMR) localStorage.setItem('homeit-timer', TMR); else localStorage.removeItem('homeit-timer'); } catch(e){} timerTick(); }
+  function closeTimer(){ $('tmenu').hidden = true; $('tmrbtn').setAttribute('aria-expanded', 'false'); }
   function timerTick(){
-    var b = $('tmrbtn'), left = TMR ? Math.ceil((TMR - Date.now()) / 1000) : 0;
+    var left = TMR ? Math.ceil((TMR - Date.now()) / 1000) : 0;
     if (TMR && left <= 0){
-      setTimer(0); var el = $('timeup');
-      if (!el){ el = document.createElement('div'); el.id = 'timeup'; el.className = 'timeup'; el.setAttribute('role', 'alert'); el.innerHTML = '<span>Time’s up!</span><button class="btn">OK</button>'; stage.appendChild(el); el.addEventListener('click', function(){ el.hidden = true; }); }
-      el.hidden = false; ui.awake = Date.now() + 60e3; beep(3); return;
+      setTimer(0); closeTimer(); var el = $('timeup');
+      if (!el){ el = document.createElement('div'); el.id = 'timeup'; el.className = 'timeup'; el.setAttribute('role', 'alert');
+        el.innerHTML = '<svg class="ic" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15zM10 21h4M2.5 6.5 5 4M21.5 6.5 19 4"/></svg><b>Time’s up!</b><button class="btn" data-add="1">+1 min</button><button class="btn ok">OK</button>';
+        stage.appendChild(el); el.addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; el.hidden = true; clearTimeout(ui.tupT); if (b.dataset.add) setTimer(+b.dataset.add); }); }
+      el.hidden = false; ui.awake = Date.now() + 60e3; beep(3);
+      clearTimeout(ui.tupT); ui.tupT = setTimeout(function(){ el.hidden = true; }, 10 * 60e3);   // nobody home: don't leave it up all day
+      return;
     }
-    b.textContent = TMR ? Math.floor(left / 60) + ':' + ('0' + left % 60).slice(-2) : 'Timer';
-    b.classList.toggle('run', !!TMR); $('tmenu').classList.toggle('on', !!TMR);
+    var txt = TMR ? (left >= 3600 ? Math.floor(left / 3600) + ':' + ('0' + Math.floor(left / 60) % 60).slice(-2) : Math.floor(left / 60)) + ':' + ('0' + left % 60).slice(-2) : '';
+    $('tmrtxt').textContent = txt || 'Timer'; $('tmrbtn').setAttribute('aria-label', TMR ? 'Timer, ' + txt + ' left' : 'Timer');
+    $('tmrbtn').classList.toggle('run', !!TMR); $('tmset').hidden = !!TMR; $('tmrun').hidden = !TMR;
+    var d = new Date(TMR), ends = d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+    $('tmt').innerHTML = TMR ? '<b>' + txt + '</b><small>rings at ' + tm(ends) + '</small>' : 'Ring me in…';
+    ['ntmr', 'itmr'].forEach(function(id){ var o = $(id); o.hidden = !TMR; o.lastChild.textContent = 'Timer ' + txt; });
   }
   on('tmrbtn', 'click', function(e){ e.stopPropagation(); var m = $('tmenu'); m.hidden = !m.hidden; $('tmrbtn').setAttribute('aria-expanded', String(!m.hidden)); });
-  on('tmenu', 'click', function(e){ var b = e.target.closest('button'); if (!b) return; setTimer(+b.dataset.min); $('tmenu').hidden = true; $('tmrbtn').setAttribute('aria-expanded', 'false'); });
-  document.addEventListener('click', function(e){ if (!e.target.closest('#tmr')){ $('tmenu').hidden = true; } });
+  on('tmenu', 'click', function(e){ var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.add){ TMR += b.dataset.add * 60e3; try { localStorage.setItem('homeit-timer', TMR); } catch(x){} timerTick(); return; }   // stays open so you can tap it again
+    setTimer(+b.dataset.min); closeTimer(); });
+  document.addEventListener('click', function(e){ if (!e.target.closest('#tmr')) closeTimer(); });
   setInterval(timerTick, 1000); timerTick();
   on('tabs', 'click', function(e){ var b = e.target.closest('button'); if (!b) return; ui.list = b.dataset.list; renderItems(); });
   on('items', 'click', function(e){

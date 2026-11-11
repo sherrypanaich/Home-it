@@ -219,8 +219,8 @@
     if (!C.linked) return { big:'Add your car', sub:'Tap to set it up' };
     if (running()) return { big:'On till ' + clock(C.run.until), sub: P.words(C.run.plan).split(' · ').slice(1).join(' · '), on:true };
     if (moving()) return { big:'Starting…', sub:'Waiting for the car' };
-    if (C.status && problems(C.status).length) return { big:'Ready · ' + d.minutes + ' min', sub: problems(C.status)[0].replace(/\.$/, '') };
-    return { big:'Ready · ' + d.minutes + ' min', sub: C.status ? (C.status.locked ? 'Locked · ' : '') + (C.status.fuel != null ? C.status.fuel + '% fuel' : fuelLine(C.status)) : P.words(d).split(' · ').slice(1, 3).join(' · ') };
+    if (C.status && problems(C.status).length) return { big:'Car is off', sub: problems(C.status)[0].replace(/\.$/, '') };
+    return { big:'Car is off', sub: 'Tap to warm it up' };
   }
   // a short line for a button on the home screen
   function short(tiny){
