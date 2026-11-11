@@ -157,7 +157,7 @@
   function demoView(){
     var wx = o.demoWeather ? o.demoWeather() : { ok:true, temp:-4, feels:-11, code:71 };
     if (demo.run && demo.run.state === 'on' && demo.run.until < Date.now()) demo.run = null;
-    return { linked: demo.linked, car: { name:'My Kona', model:'KONA', year:2022, fuel:'gas' }, email:'s•••@gmail.com', prefs: demo.prefs,
+    return { linked: demo.linked, car: { name:'My Elantra', model:'ELANTRA', year:2022, fuel:'gas' }, email:'s•••@gmail.com', prefs: demo.prefs,
       plan: P.plan(wx, demo.prefs), weather: wx && wx.ok ? { temp: wx.temp, feels: wx.feels, code: wx.code } : null, run: demo.run, adding: null };
   }
   function demoSend(path, body){
