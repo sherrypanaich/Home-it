@@ -57,7 +57,7 @@ button{cursor:pointer}
 .stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;
   background-color:var(--bg);color:var(--ink);
   background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;
-  padding:16px 18px 18px;display:grid;grid-template-rows:60px minmax(0,1fr) 128px;gap:14px}
+  padding:16px 18px 10px;display:grid;grid-template-rows:60px minmax(0,1fr) 34px;gap:12px}
 .card{background:var(--surface);border:2.5px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--pop);min-width:0}
 .h2{display:inline-block;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:400;font-size:.84rem;
   padding:4px 12px 3px;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--hl);margin:0;white-space:nowrap;font-variant-numeric:normal}
@@ -257,8 +257,8 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .idle .corner{position:absolute;left:24px;bottom:18px;text-align:left;font-size:2.6rem;line-height:1.15;text-shadow:3px 3px 0 rgba(20,17,42,.4)}
 .idle .corner small{display:block;font-family:var(--body);font-weight:800;font-size:1rem;text-shadow:none}
 .backdrop{position:absolute;inset:0;z-index:6;background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;cursor:pointer}
-.sheet{position:absolute;left:50%;transform:translateX(-50%);top:16px;bottom:18px;width:720px;z-index:7;background:var(--surface);border:3px solid var(--edge);border-radius:16px;
-  box-shadow:6px 6px 0 var(--pop);padding:16px 22px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.sheet{position:absolute;left:18px;right:24px;top:16px;bottom:18px;z-index:7;background:var(--surface);border:3px solid var(--edge);border-radius:16px;
+  box-shadow:6px 6px 0 var(--pop);padding:16px max(22px, calc(50% - 400px));display:flex;flex-direction:column;gap:8px;overflow:auto}
 .sheet .row{min-height:44px;border-top:1.5px solid var(--line)}
 .sheet .row.first{border-top:0;min-height:0}
 .sheet > .row.first:first-child{flex-direction:row-reverse;justify-content:flex-end;gap:14px}
@@ -278,8 +278,29 @@ html,body{height:100%}
 body{overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 input,select{user-select:text;-webkit-user-select:text}
 .fit{position:fixed;left:0;right:0;bottom:0;top:var(--top,0px);overflow:hidden}
-.stage.nolow{grid-template-rows:60px minmax(0,1fr)}
-.stage.nomid{grid-template-rows:60px 128px}
+.pager{display:flex;gap:44px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding:0 18px;margin:0 -18px -8px;padding:0 18px 8px;min-height:0;scrollbar-width:none;overscroll-behavior-x:contain}
+.pager::-webkit-scrollbar{display:none}
+.pg{flex:0 0 100%;min-width:0;min-height:0;scroll-snap-align:start;scroll-snap-stop:always}
+.pg.home{display:grid;grid-template-rows:minmax(0,1fr) 128px;gap:14px}
+.pg.home.nolow{grid-template-rows:minmax(0,1fr)}
+.pg.home.nomid{grid-template-rows:128px}
+.pg.full{background:var(--surface);border:3px solid var(--edge);border-radius:16px;box-shadow:6px 6px 0 var(--pop);margin-right:6px;flex-basis:calc(100% - 6px);display:flex;justify-content:center;overflow:hidden}
+.pgin{width:100%;max-width:1060px;padding:14px 22px 16px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.pghd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none}
+.pgact{display:flex;gap:8px}
+.pgin .dbody{flex:1;padding-right:6px}
+.pgin h3{margin:8px 0 0;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.pgin .cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+.pgin .cols > div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pgnav{display:flex;align-items:center;justify-content:center;gap:6px}
+.pgnav button{font:inherit;font-weight:800;font-size:.84rem;color:var(--muted);background:none;border:2.5px solid transparent;border-radius:999px;padding:2px 14px;min-height:32px;cursor:pointer}
+.pgnav button[aria-current="true"]{color:var(--ink);background:var(--surface);border-color:var(--edge);box-shadow:2px 2px 0 var(--pop)}
+.news{display:flex;flex-direction:column}
+.news button{font:inherit;color:inherit;background:none;border:0;border-top:1.5px solid var(--line);text-align:left;padding:10px 0;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.news button:first-child{border-top:0}
+.news b{font-weight:800;font-size:1.04rem;line-height:1.25}
+.news small{color:var(--muted);font-weight:700;font-size:.78rem}
+.news span{font-weight:600;font-size:.92rem;line-height:1.35}
 .wx .off{font-weight:600;color:var(--muted);font-size:.86rem}
 .evbtn{position:absolute;right:14px;top:12px;background:rgba(255,255,255,.16);color:var(--panel-ink);border-color:rgba(255,255,255,.7);box-shadow:none;font-size:.86rem}
 .today.soon .evbtn{display:none}
@@ -364,6 +385,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .stack .bar .gear{margin-left:auto}
 .stack .wx{margin-left:0;flex-wrap:wrap;order:5;width:100%}
 .stack .mid,.stack .low{flex-direction:column}
+.stack .pager{flex-direction:column;overflow:visible;margin:0;padding:0;gap:14px}
+.stack .pg{flex:none}
+.stack .pg.home{display:flex;flex-direction:column}
+.stack .pg.full{margin:0}
+.stack .pgin .cols{grid-template-columns:1fr}
+.stack .pgnav{display:none}
 .stack .mid > .card,.stack .low > .card{flex:none}
 .stack .today{padding-bottom:0}
 .stack .today .shift{font-size:1.72rem;white-space:normal}
@@ -410,6 +437,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       </button>
     </div>
 
+    <div class="pager" id="pager">
+    <section class="pg home" id="pghome" data-pg="home" aria-label="Home">
     <div class="mid" id="mid">
       <section class="card today" id="today" data-card="today" aria-label="Today"></section>
 
@@ -450,6 +479,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       </section>
     </div>
 
+    </section>
+    <section class="pg full" data-pg="today" aria-label="Today"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    <section class="pg full" data-pg="week" aria-label="Week"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    <section class="pg full" data-pg="weather" aria-label="Weather"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    <section class="pg full" data-pg="money" aria-label="Money"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    <section class="pg full" data-pg="news" aria-label="News"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    </div>
+    <nav class="pgnav" id="pgnav" aria-label="Pages"></nav>
+
     <div class="over night" id="night" hidden>
       <div class="c disp" id="nclock"></div>
       <div class="n"><svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span id="nline"></span></div>
@@ -487,6 +525,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <h3>Your other apps</h3>
       <div class="row"><form id="calform"><label>Calendar link (Apple, Google or Outlook)<input class="kb" id="set-calUrl" type="text" inputmode="url" maxlength="400" placeholder="webcal://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="note" id="calnote"></div>
+      <div class="row"><form id="newsform"><label>News feed link (RSS)<input class="kb" id="set-newsUrl" type="text" inputmode="url" maxlength="400" placeholder="Leave empty for CBC top stories" autocomplete="off"></label><button class="btn">Save</button></form></div>
+      <div class="note">The News page shows headlines from this feed. Most news sites have one; search for the site’s name and “RSS”.</div>
       <div class="row"><form id="splitform"><label>Split it address<input class="kb" id="set-splitUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="row"><form id="budgetform"><label>Budget it address<input class="kb" id="set-budgetUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="row" id="acct"><div><div class="name" id="who"></div><div class="st" id="ver"></div></div><a class="btn" href="api/logout">Sign out</a></div>
@@ -544,7 +584,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   var $ = function(id){ return document.getElementById(id); };
   var stage = $('stage'), fit = $('fit'), root = document.documentElement;
   var S = null, ME = { name:'', kiosk:false }, VERSION = '', WX = null, V = null, MONEY = {}, CAL = '';
-  var ui = { list:'later', weekOff:0, rep:'', sheet:null, sday:null, srep:false, good:false, goodNight:false, awake:0, peek:0, touch:Date.now(), forceIdle:false, fake:null, minute:-1, day:'' };
+  var ui = { page:'home', news:-1, list:'later', weekOff:0, rep:'', sheet:null, sday:null, srep:false, good:false, goodNight:false, awake:0, peek:0, touch:Date.now(), forceIdle:false, fake:null, minute:-1, day:'' };
   var store = { get:function(k){ try { return localStorage.getItem('homeit.' + k); } catch(e){ return null; } }, set:function(k, v){ try { localStorage.setItem('homeit.' + k, v); } catch(e){} } };
 
   var SKY = {
@@ -612,6 +652,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (DEMO){ WX = demoWeather(); renderTick(true); return; }
     api('api/weather').then(function(w){ WX = w; renderTick(true); }).catch(function(){});
     loadMoney();
+  }
+  var NEWS = null, newsAt = 0;
+  function loadNews(){
+    if (DEMO){ if (!NEWS){ NEWS = demoNews(); renderPages(); } return; }
+    if (Date.now() - newsAt < 5 * 60e3) return; newsAt = Date.now();
+    api('api/news').then(function(n){ NEWS = n; renderPages(); }).catch(function(){ if (!NEWS){ NEWS = { ok:false }; renderPages(); } });
   }
   function loadMoney(){
     if (DEMO){ MONEY = demoMoney(); return; }
@@ -793,13 +839,13 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function stat(label, big, sub, cls){ return '<div class="stat"><small>' + label + '</small><b class="' + (cls || '') + '">' + big + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</div>'; }
   function dayWx(date){ var d = WX && WX.ok && (WX.days || []).filter(function(x){ return x.date === date; })[0]; return d && isFinite(d.hi) ? d : null; }
-  function renderDetail(){
-    var k = ui.detail, h = '';
-    $('dtitle').textContent = TITLES[k] || '';
+  // The title and body of one page. null means "leave it as it is" (someone is typing in it).
+  function detailHtml(k){
+    var h = '', title = TITLES[k] || '';
     if (k === 'today'){
       var v = V, x = v.shift, wk = H.week(S, v.date);
-      $('dtitle').textContent = 'TODAY · ' + H.fmtDate(v.date, true).toUpperCase();
-      if ($('tdadd') && document.activeElement === $('tdadd')) return;
+      title = 'TODAY · ' + H.fmtDate(v.date, true).toUpperCase();
+      if ($('tdadd') && document.activeElement === $('tdadd')) return null;
       var left = S.lists.today.filter(function(t){ return !t.d; }).length;
       h = '<div class="stats">'
         + (x ? stat('Shift', span(x.start, endOf(x), true), esc(x.place) + ' · ' + H.fmtHours(x.mins) + (pay(x.mins) ? ' · ' + pay(x.mins) : ''))
@@ -825,8 +871,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     }
     if (k === 'todo'){
       var td = S.lists[ui.todo.list].filter(function(y){ return y.id === ui.todo.id; })[0];
-      if (!td) return show(null);
-      $('dtitle').textContent = 'TO-DO';
+      if (!td){ show(null); return null; }
+      title = 'TO-DO';
       if ($('tdname') && document.activeElement === $('tdname')) return;      // don't redraw under someone typing
       h = '<form id="tdform" style="flex-direction:column;align-items:stretch"><label>What<input class="kb" id="tdname" type="text" maxlength="80" autocomplete="off" value="' + esc(td.t) + '"></label><button class="btn primary">Save</button></form><h3>Move to</h3><div class="row first">'
         + [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn" data-mv="' + l[0] + '"' + (l[0] === ui.todo.list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('')
@@ -883,18 +929,77 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         if (url) h += '<a class="btn primary" href="' + esc(url) + '" target="_blank" rel="noopener" style="margin-top:8px;text-align:center">Open ' + low(TITLES[k]) + '</a>';
       }
     }
-    $('dbody').innerHTML = h;
+    if (k === 'news'){
+      if (!NEWS) h = '<div class="note">Getting the news…</div>';
+      else if (!NEWS.ok) h = '<div class="note">Can’t reach the news right now. It will try again in a few minutes.</div>';
+      else {
+        h = '<div class="note" style="font-weight:700">' + esc(NEWS.title || 'Headlines') + (NEWS.stale ? ' · from earlier, can’t reach the news right now' : '') + ' · tap a headline to read more</div><div class="news">';
+        NEWS.items.forEach(function(n, i){ h += '<button data-news="' + i + '" aria-expanded="' + (ui.news === i) + '"><b>' + esc(n.t) + '</b>' + (n.at ? '<small>' + ago(n.at) + '</small>' : '') + (ui.news === i && n.sum ? '<span>' + esc(n.sum) + '</span>' : '') + '</button>'; });
+        h += '</div>';
+      }
+    }
+    return { t: title, h: h };
   }
+  function ago(at){ var m = Math.max(0, Math.round((Date.now() - at) / 60e3)); return m < 60 ? (m < 2 ? 'just now' : m + ' min ago') : m < 1440 ? Math.round(m / 60) + ' h ago' : m < 2880 ? 'yesterday' : H.fmtDate(H.ymd(new Date(at))); }
+  function renderDetail(){
+    var d = detailHtml(ui.detail); if (!d) return;
+    $('dtitle').textContent = d.t; $('dbody').innerHTML = d.h;
+  }
+
+  // ---------- pages: Home first, then one full page each, swiped left and right ----------
+  var PAGES = [['home','Home'],['today','Today'],['week','Week'],['weather','Weather'],['money','Money'],['news','News']];
+  var PAGE_OF = { today:'today', coming:'week', pay:'week', forecast:'weather', split:'money', budget:'money', news:'news' };
+  var pager = $('pager');
+  function pageEl(name){ return pager.querySelector('[data-pg="' + name + '"]'); }
+  function part(k, heading){ var d = detailHtml(k); return d ? (heading ? '<h3 style="margin-top:0">' + heading + '</h3>' : '') + d.h : ''; }
+  function renderPages(){
+    if (!S || !V) return;
+    PAGES.forEach(function(pg){
+      var name = pg[0], el = pageEl(name); if (name === 'home') return;
+      var t = el.querySelector('[data-pgt]'), b = el.querySelector('[data-pgb]'), a = el.querySelector('[data-pga]'), h, title = pg[1].toUpperCase(), act = '';
+      if (name === 'today'){ var d = detailHtml('today'); if (!d) return; h = d.h; title = d.t; }
+      else if (name === 'week'){ h = '<div class="cols"><div>' + part('pay') + '</div><div>' + part('coming', 'Coming up') + '</div></div>'; title = 'YOUR WEEK'; }
+      else if (name === 'weather') h = part('forecast');
+      else if (name === 'money'){
+        var hide = S.settings.hide, sp = hide.indexOf('split') < 0, bu = hide.indexOf('budget') < 0;
+        h = !sp && !bu ? '<div class="note">Split it and Budget it are switched off in Settings, under Cards.</div>'
+          : '<div class="cols">' + (sp ? '<div>' + part('split', 'Split it') + '</div>' : '') + (bu ? '<div>' + part('budget', 'Budget it') + '</div>' : '') + '</div>';
+        if (!MONEY.split && !MONEY.budget && !(V.company || MONEY.hidden)) h = '<div class="note">Link Split it and Budget it to see your money here. Settings, under Apps, says how.</div>' + h;
+      }
+      else h = part('news');
+      t.textContent = title; if (b.innerHTML !== h) b.innerHTML = h;
+      if (a.innerHTML !== act) a.innerHTML = act;
+    });
+    $('pgnav').innerHTML = PAGES.map(function(pg){ return '<button data-go="' + pg[0] + '"' + (pg[0] === ui.page ? ' aria-current="true"' : '') + '>' + pg[1] + '</button>'; }).join('');
+  }
+  function goPage(name, jump){
+    var el = pageEl(name); if (!el) return;
+    if (ui.sheet) show(null);
+    ui.page = name;
+    if (root.classList.contains('stack')) el.scrollIntoView({ behavior: jump ? 'auto' : 'smooth', block: 'start' });
+    else pager.scrollTo({ left: el.offsetLeft - pager.offsetLeft - 18, behavior: jump ? 'auto' : 'smooth' });
+    renderPages();
+    if (name === 'news') loadNews();
+  }
+  var pgTimer;
+  pager.addEventListener('scroll', function(){
+    clearTimeout(pgTimer); pgTimer = setTimeout(function(){
+      var best = 'home', gap = 1e9;
+      PAGES.forEach(function(pg){ var el = pageEl(pg[0]), g = Math.abs(el.offsetLeft - pager.offsetLeft - 18 - pager.scrollLeft); if (g < gap){ gap = g; best = pg[0]; } });
+      if (best !== ui.page){ ui.page = best; renderPages(); if (best === 'news') loadNews(); }
+    }, 90);
+  });
   function renderCards(){
     var hide = S.settings.hide;
     CARDS.forEach(function(c){ stage.querySelector('[data-card="' + c[0] + '"]').hidden = hide.indexOf(c[0]) >= 0; });
     var nolow = ['coming','forecast','split','budget','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
     $('low').hidden = nolow; $('mid').hidden = nomid;
-    stage.classList.toggle('nolow', nolow); stage.classList.toggle('nomid', nomid && !nolow);
+    $('pghome').classList.toggle('nolow', nolow); $('pghome').classList.toggle('nomid', nomid && !nolow);
     moneyCard($('splitcard'), 'split', S.settings.splitUrl);
     moneyCard($('budgetcard'), 'budget', S.settings.budgetUrl);
     renderComing(); renderForecast();
     if (ui.sheet === 'detailsheet') renderDetail();
+    renderPages();
     $('company').setAttribute('aria-pressed', V.company);
   }
 
@@ -919,7 +1024,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     $('set-travel').innerHTML = opts([0,5,10,15,20,25,30,35,40,45,50,60,75,90,120].map(function(n){ return [n, n + ' min']; }), s.travel);
     $('set-nightFrom').innerHTML = opts(times(30), s.nightFrom); $('set-nightTo').innerHTML = opts(times(30), s.nightTo);
     $('set-idle').innerHTML = opts([[0,'Never'],[5,'After 5 min'],[10,'After 10 min'],[20,'After 20 min'],[30,'After 30 min'],[60,'After an hour']], s.idle);
-    [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl], ['set-calUrl', s.calUrl]].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
+    [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl], ['set-calUrl', s.calUrl], ['set-newsUrl', s.newsUrl || '']].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
     $('calnote').textContent = !s.calUrl ? 'Paste the link of a shared calendar and its events show on Today and Coming up. Home it only reads it.' : CAL === 'ok' ? 'Calendar connected. Checked every 15 minutes.' : CAL === 'fail' ? 'That link can’t be read. Check it is the calendar’s public link.' : 'Reading the calendar…';
     $('kiosksw').setAttribute('aria-pressed', !!ME.kiosk); $('kbsw').setAttribute('aria-pressed', kbOn());
     $('who').textContent = DEMO ? 'Preview' : 'Signed in as ' + ME.name; $('ver').textContent = 'Home it ' + (VERSION || 'preview');
@@ -1000,6 +1105,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     nel.classList.toggle('peek', real < ui.peek);
     // idle
     var idleOn = !nightOn && v.phase !== 'soon' && !ui.sheet && $('osk').hidden && (ui.forceIdle || (ME.kiosk && S.settings.idle > 0 && real - ui.touch > S.settings.idle * 60e3));
+    if (idleOn && $('idle').hidden && ui.page !== 'home') goPage('home', true);
     $('idle').hidden = !idleOn;
     stage.classList.toggle('has-over', nightOn || idleOn);
     if (nightOn || idleOn){
@@ -1062,7 +1168,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var c = e.target.closest('.chk');
     if (c){ var g = goList(); g[c.dataset.go] = !g[c.dataset.go]; store.set('go', JSON.stringify(g)); c.setAttribute('aria-pressed', !!g[c.dataset.go]); return; }
     var td = e.target.closest('[data-td]'); if (td) return op('todo.toggle', { list:'today', id: td.dataset.td }, true);
-    if (e.target.closest('#tdbtn') || e.target.closest('[data-today]')){ ui.detail = 'today'; return show('detailsheet'); }
+    if (e.target.closest('#tdbtn') || e.target.closest('[data-today]')) return goPage('today');
     var ev = e.target.closest('[data-ev]'); if (ev) return op('event.toggle', { id: ev.dataset.ev, date: V.date }, true);
     if (e.target.closest('#evbtn')) return show('eventsheet');
     if (e.target.closest('#figbtn')) op('settings.set', { key:'guide', value: S.settings.guide === 'luffy' ? 'hancock' : 'luffy' }, true);
@@ -1103,26 +1209,38 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function openDetail(e){
     var c = e.target.closest('[data-detail]'); if (!c || c.classList.contains('hid')) return;
     if (e.type === 'keydown'){ if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
+    if (PAGE_OF[c.dataset.detail]) return goPage(PAGE_OF[c.dataset.detail]);
     ui.detail = c.dataset.detail; show('detailsheet');
   }
-  on('dbody', 'submit', function(e){
+  function bodySubmit(e){
     e.preventDefault();
     if (e.target.id === 'tdaddform'){ var a = $('tdadd').value.trim(); if (!a) return; $('tdadd').value = ''; $('tdadd').blur(); return op('todo.add', { list:'today', t: a }, true); }
     if (e.target.id !== 'tdform') return;
     var v = $('tdname').value.trim(); if (!v) return toast('Type something first.');
     $('tdname').blur(); op('todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(){ show(null); });
-  });
-  on('dbody', 'click', function(e){
+  }
+  function bodyClick(e){
+    var nw = e.target.closest('[data-news]'); if (nw){ ui.news = ui.news === +nw.dataset.news ? -1 : +nw.dataset.news; return renderPages(); }
     var tk = e.target.closest('.tk');
     if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);
     if (tk && tk.dataset.ev) return op('event.toggle', { id: tk.dataset.ev, date: V.date }, true);
-    var mo = e.target.closest('[data-more]'); if (mo){ ui.detail = 'todo'; ui.todo = { list:'today', id: mo.dataset.more }; return renderDetail(); }
+    var mo = e.target.closest('[data-more]'); if (mo){ ui.detail = 'todo'; ui.todo = { list:'today', id: mo.dataset.more }; return show('detailsheet'); }
     var mv = e.target.closest('[data-mv]'), rm = e.target.closest('[data-tdrm]'), t = ui.todo;
     if (mv) return op('todo.move', { list: t.list, id: t.id, to: mv.dataset.mv }).then(function(){ show(null); });
     if (!rm) return;
     var x = S.lists[t.list].filter(function(y){ return y.id === t.id; })[0];
     show(null);
     op('todo.del', { list: t.list, id: t.id }, true).then(function(){ if (x) toast('Removed “' + x.t + '”', function(){ op('todo.add', { list: t.list, t: x.t, due: x.due, rep: x.rep }, true); }); });
+  }
+  on('dbody', 'submit', bodySubmit); on('dbody', 'click', bodyClick);
+  pager.addEventListener('submit', function(e){ if (e.target.closest('.pg.full')) bodySubmit(e); });
+  pager.addEventListener('click', function(e){ if (e.target.closest('.pg.full')) bodyClick(e); });
+  on('pgnav', 'click', function(e){ var b = e.target.closest('[data-go]'); if (b) goPage(b.dataset.go); });
+  document.addEventListener('keydown', function(e){
+    if (ui.sheet || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '')) return;
+    var i = PAGES.map(function(p){ return p[0]; }).indexOf(ui.page);
+    if (e.key === 'ArrowRight' && i < PAGES.length - 1) goPage(PAGES[i + 1][0]);
+    if (e.key === 'ArrowLeft' && i > 0) goPage(PAGES[i - 1][0]);
   });
   on('low', 'click', openDetail); on('low', 'keydown', openDetail); on('wkmid', 'click', openDetail);
   on('toast', 'click', function(e){ if (e.target.id === 'undo' && undoFn){ var f = undoFn; undoFn = null; $('toast').hidden = true; f(); } });
@@ -1138,6 +1256,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   ['travel','nightFrom','nightTo','idle'].forEach(function(k){ on('set-' + k, 'change', function(){ op('settings.set', { key: k, value: this.value }); }); });
   on('rateform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'rate', value: $('set-rate').value.replace(/[$,\s]/g, '') || 0 }); });
   on('splitform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'splitUrl', value: $('set-splitUrl').value }); });
+  on('newsform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'newsUrl', value: $('set-newsUrl').value.trim() }).then(function(){ newsAt = 0; NEWS = null; if (ui.page === 'news') loadNews(); }); });
   on('calform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
   on('budgetform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'budgetUrl', value: $('set-budgetUrl').value }); });
   on('cityform', 'submit', function(e){
@@ -1171,6 +1290,16 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   window.addEventListener('resize', scale);
 
   // ---------- preview: sample data and a pretend clock ----------
+  function demoNews(){
+    var t = Date.now(), it = function(m, a, b){ return { t: a, sum: b, at: t - m * 60e3, url: '' }; };
+    return { ok:true, title:'Top stories (sample)', items:[
+      it(12, 'Snow squall watch for the Bay of Quinte tonight', 'Up to 10 cm is possible by morning, with poor visibility on the 401 between Belleville and Kingston.'),
+      it(47, 'City council votes on new transit routes', 'Two routes would run later in the evening on weekdays if the plan passes next week.'),
+      it(95, 'Gas prices expected to drop three cents by Friday', 'Analysts say stations across eastern Ontario should follow by the weekend.'),
+      it(180, 'Local bakery wins provincial butter tart contest', 'The winning recipe uses maple syrup from a farm ten minutes away.'),
+      it(320, 'Hockey: Senators come back to win in overtime', 'A late power-play goal tied it before the winner 90 seconds into extra time.'),
+      it(1500, 'Library extends weekend hours for the winter', 'Saturday closing moves from 5 to 8 PM starting next month.') ] };
+  }
   function demoMoney(){
     return { split: { ok:true, big:'$42.50', sub:'owed to you in total', rows:['Maya owes you $60.00', 'You owe Jordan $17.50'], more:{ title:'Lately', lines:['Nov 9 · Groceries $84.20, paid by you', 'Nov 7 · Internet $70.00, paid by Maya', 'Nov 5 · Jordan paid you $25.00', 'Nov 2 · Hydro $96.40, paid by Jordan'] } },
              budget: { ok:true, big:'$318', sub:'safe to spend · $35 a day until Fri Nov 20', rows:['Phone $55 · Mon Nov 16', 'Internet $70 · Wed Nov 18'], more:{ title:'Budgets this month', lines:['Groceries: $212 of $400, $188 left ($10/day)', 'Eating out: $96 of $120, $24 left - nearly used up', 'Transport: $60 of $150, $90 left', 'Fun: $135 of $120, $15 OVER'] } } };

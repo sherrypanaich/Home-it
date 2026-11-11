@@ -10,7 +10,7 @@ const { spawn, execFileSync } = require('child_process');
 const SERVER = path.join(__dirname, '..', 'server.js');
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'home-it-test-'));
 const PORT = 8911, WX = 8912, BASE = `http://127.0.0.1:${PORT}`;
-const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0.1', WEATHER_URL: `http://127.0.0.1:${WX}/wx`, GEOCODE_URL: `http://127.0.0.1:${WX}/geo`, BACKUP_COPY_DIR: path.join(DATA, 'copy') };
+const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0.1', WEATHER_URL: `http://127.0.0.1:${WX}/wx`, GEOCODE_URL: `http://127.0.0.1:${WX}/geo`, BACKUP_COPY_DIR: path.join(DATA, 'copy'), NEWS_URL: `http://127.0.0.1:${WX}/news.xml` };
 const cli = (args, extra = {}) => execFileSync('node', [SERVER, ...args], { env: { ...env, ...extra }, encoding: 'utf8' });
 let proc, fake, cookie = '';
 
@@ -245,4 +245,14 @@ test('the app says it is up, and the day’s backup also lands in the second fol
   const h = await (await fetch(BASE + '/api/health')).json();
   assert.equal(h.ok, true); assert.match(h.version, /^\d+\.\d+\.\d+$/); assert.equal(h.backup.copy, 'ok');
   assert.deepEqual(fs.readdirSync(path.join(DATA, 'copy')), fs.readdirSync(path.join(DATA, 'backups')));
+});
+
+test('news headlines come from the feed: newest first, tags and unsafe links dropped', async () => {
+  const n = (await call('/api/news')).json;
+  assert.equal(n.ok, true); assert.equal(n.title, 'Test & News');
+  assert.deepEqual(n.items.map(i => i.t), ['Snow on the way – 10 cm', 'Older story']);
+  assert.equal(n.items[0].sum, 'Bundle up.'); assert.equal(n.items[0].url, ''); assert.match(n.items[1].sum, /^First line ?\.$/);
+  assert.equal(n.items[1].url, 'https://news.example/a');
+  const bad = await call('/api/op', { op: 'settings.set', args: { key: 'newsUrl', value: 'not a link' } });
+  assert.equal(bad.status, 400);
 });

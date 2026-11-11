@@ -19,7 +19,7 @@
     rules: [],      // weekly: { id, dow, start, end, place, from, until?, skip: [dates] }
     events: [],     // { id, date, time?, t, d?, rep?: 'weekly'|'monthly'|'yearly', done?: the day a repeating one was last ticked }
     settings: { guide: 'luffy', travel: 25, rate: 0, nightFrom: '23:30', nightTo: '07:00', idle: 10, look: 'auto',
-      city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', calUrl: '', company: '', hide: [] },
+      city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', calUrl: '', newsUrl: '', company: '', hide: [] },
     day: ''         // the last day the lists were tidied for
   });
 
@@ -270,6 +270,7 @@
     nightTo: v => okTime(v) ? v : bad('Pick a time.'),
     splitUrl: v => { v = text(v, 200); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a web address starting with https://'); },
     calUrl: v => { v = text(v, 400).replace(/^webcal:\/\//i, 'https://'); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a calendar link starting with webcal:// or https://'); },
+    newsUrl: v => { v = text(v, 400).replace(/^feed:\/\//i, 'https://'); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a news feed link starting with https://'); },
     budgetUrl: v => { v = text(v, 200); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a web address starting with https://'); }
   };
   // ctx: { today, rid }. Each returns a short message for the page to show.

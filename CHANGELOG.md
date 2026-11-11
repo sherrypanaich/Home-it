@@ -1,5 +1,22 @@
 # What's new in Home it
 
+## v1.2.0 (not released yet)
+
+The big screen is now a set of full pages you swipe between.
+
+### New
+- **Swipe between pages.** Home, Today, Week, Weather, Money and News sit side by side. Swipe left or right, or tap a name at the bottom. Tapping a card on Home jumps to its page.
+- **News.** Headlines from a news feed, newest first. Tap one to read its summary. It starts with CBC top stories; paste another feed's link in Settings, under Apps.
+- **Week page.** Hours and pay by month next to what's coming up.
+- **Money page.** Split it and Budget it side by side.
+
+### Improved
+- **Full pages instead of pop-ups.** Settings, shifts, events and a to-do's page now fill the screen, with Back in the corner.
+- The screen goes back to Home by itself when it has been left alone.
+
+### Fixed
+- The update and screen scripts are marked as runnable in the repository, so the first update no longer stops with "This copy has changes of its own".
+
 ## v1.1.0
 
 The bottom of the big screen is useful now, and the phone screen does more from its first page.

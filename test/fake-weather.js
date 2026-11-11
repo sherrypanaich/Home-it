@@ -10,6 +10,14 @@ module.exports = (port, cb) => http.createServer((req, res) => {
     return res.end(['BEGIN:VCALENDAR', 'BEGIN:VEVENT', 'UID:1', 'SUMMARY:Dinner at Mum’s', `DTSTART:${d}T120000`, 'END:VEVENT',
       'BEGIN:VEVENT', 'UID:2', 'SUMMARY:Maya’s birthday', `DTSTART;VALUE=DATE:2020${d.slice(4)}`, 'RRULE:FREQ=YEARLY', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n'));
   }
+  // and a news feed: two headlines, the newer one second in the file
+  if (u.pathname === '/news.xml') {
+    res.setHeader('Content-Type', 'application/rss+xml');
+    return res.end(`<?xml version="1.0"?><rss version="2.0"><channel><title>Test &amp; News</title>
+      <item><title><![CDATA[Older story]]></title><link>https://news.example/a</link><pubDate>Tue, 10 Nov 2026 10:00:00 GMT</pubDate><description>&lt;p&gt;First <b>line</b>.&lt;/p&gt;</description></item>
+      <item><title>Snow on the way &#8211; 10 cm</title><link>javascript:alert(1)</link><pubDate>Wed, 11 Nov 2026 09:00:00 GMT</pubDate><description><![CDATA[<img src="x.jpg"> Bundle up.]]></description></item>
+      </channel></rss>`);
+  }
   // also a stand-in for Split it's assistant address: answers one tool, only with the right key
   if (u.pathname === '/mcp') {
     if (req.headers.authorization !== 'Bearer good-key') { res.statusCode = 401; return res.end('{}'); }

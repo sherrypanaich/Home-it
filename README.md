@@ -72,6 +72,10 @@ docker compose exec home-it node server.js add-user YOURNAME
 
 Set your time zone in `compose.yaml` (`TZ`), so "today" and the night hours match your clock.
 
+## Pages and news
+
+The big screen is a row of full pages: Home, Today, Week, Weather, Money and News. Swipe left or right, or tap a name at the bottom. The News page reads one news feed (RSS or Atom) every 15 minutes; it starts with CBC top stories, and Settings, under Apps, takes another feed's link. Home it shows the headline and the feed's own summary, nothing else.
+
 ## Connect an AI assistant (MCP)
 
 Home it has a connector so an assistant such as Claude can answer "what's my day like?" or add a to-do, a shift or an event for you. It can read and change shifts, to-do lists and events. It can't change settings or passwords.

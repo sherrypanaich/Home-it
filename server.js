@@ -20,7 +20,7 @@ const crypto = require('crypto');
 const readline = require('readline');
 const zlib = require('zlib');
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 // Optional settings file next to this one: KEY=value per line (see home-it.env.example).
 try {
   for (const line of fs.readFileSync(path.join(__dirname, 'home-it.env'), 'utf8').split(/\r?\n/)) {
@@ -41,6 +41,7 @@ const COPY_DIR = (process.env.BACKUP_COPY_DIR || '').trim();
 let lastBackup = null;
 const KEEP_BACKUPS = 30, SESSION_DAYS = 90, KIOSK_DAYS = 3650;
 // Weather comes from Open-Meteo (free, no key, no account). Tests point these somewhere else.
+const NEWS_URL = process.env.NEWS_URL || 'https://www.cbc.ca/webfeed/rss/rss-topstories';   // used until you set your own feed in Settings
 const WEATHER_URL = process.env.WEATHER_URL || 'https://api.open-meteo.com/v1/forecast';
 const GEOCODE_URL = process.env.GEOCODE_URL || 'https://geocoding-api.open-meteo.com/v1/search';
 fs.mkdirSync(BACKUP_DIR, { recursive: true, mode: 0o700 });
@@ -257,6 +258,23 @@ async function moneyFor(uid) {
   return res;
 }
 
+// ---------- news: headlines from one feed (RSS or Atom), asked at most every 15 minutes, the last answer kept ----------
+const RSS = require('./rss');
+const newsCache = new Map();   // url -> { at, data }
+async function newsFor(set) {
+  const url = set.newsUrl || NEWS_URL, hit = newsCache.get(url);
+  if (hit && Date.now() - hit.at < 15 * 60e3) return hit.data;
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'home-it', Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml' } });
+    if (!r.ok) throw new Error('answered ' + r.status);
+    const feed = RSS.read((await r.text()).slice(0, 2e6), 30);
+    if (!feed.items.length) throw new Error('no headlines');
+    const data = { ok: true, title: feed.title, items: feed.items };
+    if (newsCache.size > 50) newsCache.clear();
+    newsCache.set(url, { at: Date.now(), data }); return data;
+  } catch (e) { return hit ? { ...hit.data, stale: true } : { ok: false }; }
+}
+
 // ---------- a calendar link (Apple, Google, Outlook): read every 15 minutes, the next 60 days kept ----------
 const ICS = require('./ics');
 const calCache = new Map();   // uid -> { url, at, rows, state: 'ok' | 'wait' | 'fail', busy }
@@ -385,6 +403,7 @@ async function handle(req, res) {
     changed(uid);
     return send(res, 200, { ok: true, msg, ...viewFor(uid, req) });
   }
+  if (p === '/api/news' && m === 'GET') return send(res, 200, await newsFor(stateOf(uid).settings));
   if (p === '/api/weather' && m === 'GET') return send(res, 200, await weatherFor(stateOf(uid).settings));
   if (p === '/api/money' && m === 'GET') return send(res, 200, await moneyFor(uid));
   if (p === '/api/city' && m === 'POST') {
