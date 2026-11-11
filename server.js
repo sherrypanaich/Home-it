@@ -309,7 +309,7 @@ async function weatherFor(set) {
   const key = set.lat + ',' + set.lon, hit = weatherCache.get(key);
   if (hit && Date.now() - hit.at < 15 * 60e3) return hit.data;
   try {
-    const q = new URLSearchParams({ latitude: set.lat, longitude: set.lon, timezone: 'auto', forecast_days: '5',
+    const q = new URLSearchParams({ latitude: set.lat, longitude: set.lon, timezone: 'auto', forecast_days: '8',
       current: 'temperature_2m,apparent_temperature,weather_code,is_day',
       hourly: 'temperature_2m,weather_code,precipitation_probability',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max' });
@@ -321,7 +321,7 @@ async function weatherFor(set) {
       temp: Math.round(c.temperature_2m), feels: Math.round(c.apparent_temperature), code: c.weather_code, day: c.is_day !== 0,
       hi: Math.round(d.temperature_2m_max?.[0]), lo: Math.round(d.temperature_2m_min?.[0]), rain: d.precipitation_probability_max?.[0] ?? null,
       sunrise: hm(d.sunrise?.[0]), sunset: hm(d.sunset?.[0]),
-      days: (d.time || []).slice(1, 5).map((t, i) => ({ date: t, code: d.weather_code?.[i + 1], hi: Math.round(d.temperature_2m_max?.[i + 1]), lo: Math.round(d.temperature_2m_min?.[i + 1]), rain: d.precipitation_probability_max?.[i + 1] ?? null })),
+      days: (d.time || []).slice(1, 8).map((t, i) => ({ date: t, code: d.weather_code?.[i + 1], hi: Math.round(d.temperature_2m_max?.[i + 1]), lo: Math.round(d.temperature_2m_min?.[i + 1]), rain: d.precipitation_probability_max?.[i + 1] ?? null })),
       tomorrow: { code: d.weather_code?.[1], hi: Math.round(d.temperature_2m_max?.[1]), lo: Math.round(d.temperature_2m_min?.[1]) },
       hours: (h.time || []).slice(from, from + 24).map((t, i) => ({ t: hm(t), temp: Math.round(h.temperature_2m[from + i]), code: h.weather_code[from + i], rain: h.precipitation_probability?.[from + i] ?? null }))
     };

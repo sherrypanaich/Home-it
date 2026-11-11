@@ -84,6 +84,13 @@ test('weather: read and tidied', async () => {
   assert.equal(json.hours.length, 24); assert.equal(json.tomorrow.hi, 4); assert.equal(json.days[0].hi, 4); assert.equal(json.city, 'Belleville, Ontario');
 });
 
+test('weather: a week of next days, starting tomorrow', async () => {
+  const { json } = await call('/api/weather'), t = new Date(), pad = n => String(n).padStart(2, '0');
+  assert.equal(json.days.length, 7, 'seven days after today');
+  assert.ok(json.days[0].date > `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`, 'today is not in the list');
+  assert.ok(json.days.every((d, i) => Number.isFinite(d.hi) && Number.isFinite(d.lo) && (!i || d.date > json.days[i - 1].date)), 'each day has a high and a low, in order');
+});
+
 test('changing the town looks it up', async () => {
   let r = await call('/api/city', { city: 'Nowhere at all' });
   assert.equal(r.status, 400);

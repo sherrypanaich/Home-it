@@ -362,15 +362,65 @@ input,select{user-select:text;-webkit-user-select:text}
 .g-money{grid-template:"a b" minmax(0,1fr) / 1fr 1fr}
 .g-car{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
 .g-car .pc .dbody{max-width:980px;width:100%;margin:0 auto}
-.g-wx{grid-template:"a b" auto "c b" minmax(0,1fr) / 1.15fr 1fr}
+.g-wx{grid-template:"a b" auto "c b" minmax(0,1fr) / 1.12fr 1fr}
 .now{gap:12px}
-.nowtop{display:flex;align-items:center;gap:18px}
-.nowtop .ic{width:92px;height:92px;flex:none}
-.nowtop .deg{font-family:var(--display);font-size:4rem;line-height:1}
-.weartip{margin-left:auto;max-width:230px;padding:10px 14px;border:var(--bw,3px) solid var(--ink);border-radius:14px;background:var(--yellow,#ffd43b);color:#14122b;font-weight:800;font-size:.95rem;line-height:1.25}
-.nowtop .sk{font-weight:800;font-size:1.1rem;color:var(--muted)}
-.now .stats{grid-template-columns:repeat(4,1fr)}
-.g-wx .pc .dr{padding-top:10px;margin-top:2px}
+.nowtop{display:flex;align-items:center;gap:16px}
+.nowtop .ic{width:88px;height:88px;flex:none}
+.nowtop .deg{font-family:var(--display);font-size:4rem;line-height:1;white-space:nowrap}
+.nowtop .sk{font-weight:800;font-size:1.05rem;color:var(--muted);white-space:nowrap}
+/* what to wear: a comic caption box with its own little black tag, not a loose pill */
+.weartip{position:relative;display:flex;align-items:center;border:2.5px solid var(--edge);border-radius:12px;background:var(--soft);box-shadow:3px 3px 0 var(--pop);padding:16px 14px 10px;margin-top:10px;font-weight:800;font-size:1.12rem;line-height:1.3}
+.weartip em{position:absolute;left:12px;top:-12px;background:var(--hl);color:var(--hl-ink);border:2px solid var(--edge);font-family:var(--display);font-style:normal;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;padding:1px 10px;transform:skew(-9deg)}
+.nowtop .weartip{flex:1;min-width:0;margin-left:6px;align-self:stretch}
+.now .stats{grid-template-columns:1fr 1fr 1fr 1fr}
+.now .stat{padding:7px 10px 8px}
+.now .stat small,.wxs .stat small{font-size:.82rem;letter-spacing:.03em;white-space:nowrap}
+.now .stat b{font-size:1.3rem}
+.now .stat b.wet,.wxs .stat b.wet{color:var(--accent)}
+.wxs .stat span{font-size:.84rem}
+/* weather we could not refresh, and no weather at all */
+.wxold{display:flex;align-items:center;gap:10px;border:2px dashed var(--edge);border-radius:12px;padding:7px 12px;font-size:.9rem;font-weight:600;line-height:1.25}
+.wxold .ic{width:26px;height:26px;flex:none;opacity:.7}
+.wxoff{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:240px;border:3px dashed var(--edge);border-radius:16px;padding:24px}
+.wxoff .ic{width:84px;height:84px;opacity:.55}
+.wxoff b{font-family:var(--display);font-weight:400;font-size:1.5rem;line-height:1.2}
+.wxoff span{color:var(--muted);font-weight:700;max-width:440px}
+/* next days: every row has the same columns (day, sky, words, low, bar, high) */
+.wxdays{display:flex;flex-direction:column;flex:1;min-height:0}
+.wxd{display:grid;grid-template-columns:104px 26px minmax(0,1fr) 40px 84px 40px;align-items:center;gap:10px;flex:1;min-height:46px;max-height:72px;border-top:1.5px solid var(--line);font-weight:600}
+.wxd:first-child{border-top:0}
+.wxd .ic{width:26px;height:26px}
+.wxd .dn{font-weight:800}
+.wxd .dw{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.wxd .dw > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wxd .dw small{font-size:.84rem;font-weight:800;color:var(--muted)}
+.wxd .wet{color:var(--accent);font-weight:800}
+.wxd .lo{color:var(--muted);text-align:right;font-weight:800}
+.wxd .hi{font-weight:800}
+.wxd .trange{width:auto;height:10px}
+.stack .wxd{grid-template-columns:86px 24px minmax(0,1fr) 34px 48px 34px;gap:6px}
+.stack .nowtop{flex-wrap:wrap}
+.stack .now .stats{grid-template-columns:1fr 1fr}
+/* next 12 hours: one temperature line */
+.g-wx .pc .dbody{overflow:hidden}
+.hrline{position:relative;display:grid;grid-template-rows:28px minmax(110px,1fr) 22px;flex:1;min-height:170px;max-height:260px}
+.hrline svg{position:absolute;left:0;right:0;top:28px;width:100%;height:calc(100% - 50px);overflow:visible;border-bottom:1.5px solid var(--line);box-sizing:border-box}
+.hrline polygon{fill:var(--pgc,#22B8E0);opacity:.16}
+.hrline polyline{fill:none;stroke:var(--ink);stroke-width:3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.hrline .hc{display:grid;grid-template-rows:subgrid;grid-row:1 / -1;justify-items:center;min-width:0;position:relative}
+.hrline .hi{align-self:center;height:24px}
+.hrline .hi .ic{width:24px;height:24px}
+.hrline .hp{position:relative;width:100%}
+.hrline .hp b{position:absolute;left:50%;transform:translate(-50%,-27px);font-weight:800;font-size:.94rem;line-height:1;white-space:nowrap}
+.hrline .hp > i{position:absolute;left:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:var(--surface);border:2.5px solid var(--ink);box-sizing:border-box}
+.hrline .cur .hp > i{background:var(--hl);width:15px;height:15px;margin:-7.5px 0 0 -7.5px}
+.hrline .hw{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+.hrline .hw i{width:9px;border-radius:3px 3px 0 0;background:var(--accent)}
+.hrline .hw small{font-size:.82rem;font-weight:800;color:var(--accent);line-height:1.1}
+.hrline .hh{align-self:end;font-size:.84rem;font-weight:800;color:var(--muted);white-space:nowrap;line-height:1.2}
+.hrline .cur .hh{color:var(--ink)}
+.hcap{font-size:.9rem;font-weight:700;color:var(--muted)}
+.hcap.wet{color:var(--accent);font-weight:800}
 .lead{position:relative}
 .lead .reader{position:absolute;right:0;bottom:52px;height:150px;width:auto;pointer-events:none}
 .lead p{padding-right:0}
@@ -1029,13 +1079,49 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     stage.querySelector('[data-card="forecast"]').innerHTML = h;
   }
   function stat(label, big, sub, cls){ return '<div class="stat"><small>' + label + '</small><b class="' + (cls || '') + '">' + big + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</div>'; }
-  // One plain line on what to wear or bring, from the feels-like temperature and today's rain or snow.
+  // One plain line on what to wear or bring, from the feels-like temperature (which already counts wind chill
+  // and humidity) and what the sky does over the next 12 hours.
   function wearTip(){
-    var f = WX.feels, k = sky(WX.code, WX.day)[0];
-    var t = f < -10 ? 'Bundle up: heavy coat, hat and gloves.' : f < 0 ? 'Winter coat and gloves.' : f < 8 ? 'Coat weather.' : f < 15 ? 'A light jacket will do.' : f < 25 ? 'No jacket needed.' : 'Hot one. Bring water.';
-    if (k === 'snow') t += ' Snow, so leave a little early.'; else if (WX.rain >= 40) t += ' Bring an umbrella.';
+    var f = WX.feels, hs = (WX.hours || []).slice(0, 12), codes = [WX.code].concat(hs.map(function(q){ return q.code; }));
+    var has = function(fn){ return codes.some(fn); }, wet = hs.length ? Math.max.apply(null, hs.map(function(q){ return q.rain || 0; })) : (WX.rain || 0);
+    var t = f <= -20 ? 'Bitter cold. Heavy coat, hat, mitts and a scarf over your face.' : f < -10 ? 'Bundle up: heavy coat, hat and mitts.' : f < 0 ? 'Winter coat, hat and gloves.'
+      : f < 8 ? 'A warm coat.' : f < 15 ? 'A light jacket.' : f < 20 ? 'Long sleeves will do.' : f < 27 ? 'T-shirt weather.' : f < 35 ? 'Hot one. Dress light and bring water.' : 'Very hot. Dress light, drink water and find shade.';
+    if (has(function(c){ return c >= 95; })) t += ' Storms around, so check before you head out.';
+    else if (has(function(c){ return c === 56 || c === 57 || c === 66 || c === 67; })) t += ' Freezing rain: steps and roads will be icy.';
+    else if (has(function(c){ return sky(c, true)[0] === 'snow'; })) t += ' Snow, so wear boots and leave a little early.';
+    else if (wet >= 40) t += f < 1 ? ' Could snow, so wear boots.' : ' Bring an umbrella.';
+    else if (WX.temp - f >= 6 && f < 10) t += ' The wind makes it feel colder.';
     return t;
   }
+  // "rain" or "snow": what would fall, from the sky code and how cold it is
+  function wetWord(code, temp){ var k = sky(code, true)[0]; return k === 'snow' ? 'snow' : k === 'rain' || k === 'bolt' ? 'rain' : temp <= 0 ? 'snow' : 'rain'; }
+  // The next 12 hours as one temperature line: a dot and a number each hour, a sky icon only when the sky changes,
+  // and blue bars along the bottom where rain or snow is likely.
+  function hourLine(){
+    var hs = (WX.hours || []).slice(0, 12); if (hs.length < 2) return '<div class="note">No hour by hour forecast right now.</div>';
+    var ts = hs.map(function(q){ return q.temp; }), lo = Math.min.apply(null, ts), hi = Math.max.apply(null, ts), pad = Math.max(0, 4 - (hi - lo)) / 2;
+    lo -= pad; hi += pad;
+    var n = hs.length, ys = ts.map(function(t){ return Math.round(40 + (1 - (t - lo) / (hi - lo)) * 38); }), xs = ts.map(function(t, i){ return (i + .5) * 100; });
+    var pts = xs.map(function(x, i){ return x + ',' + ys[i]; }).join(' '), last = '', peak = null;
+    hs.forEach(function(q){ if (q.rain >= 40 && (!peak || q.rain > peak.rain)) peak = q; });
+    var h = '<div class="hrline" style="grid-template-columns:repeat(' + n + ',1fr)" role="img" aria-label="Temperature for the next ' + n + ' hours, from ' + ts[0] + '° now to ' + ts[n - 1] + '°">'
+      + '<svg viewBox="0 0 ' + n * 100 + ' 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="' + xs[0] + ',100 ' + pts + ' ' + xs[n - 1] + ',100"/><polyline points="' + pts + '"/></svg>';
+    hs.forEach(function(q, i){
+      var m = H.mins(q.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise), ic = sky(q.code, !dk)[0], r = q.rain || 0;
+      h += '<div class="hc' + (i ? '' : ' cur') + '"><span class="hi">' + (ic !== last ? SKY[ic] : '') + '</span><div class="hp"><b style="top:' + ys[i] + '%">' + q.temp + '°</b><i style="top:' + ys[i] + '%"></i>'
+        + '<span class="hw">' + (r >= 20 ? '<i style="height:' + Math.round(r / 100 * 16 + 3) + 'px"></i>' : '') + (q === peak ? '<small>' + r + '%</small>' : '') + '</span></div>'
+        + '<span class="hh">' + (i ? (i % 2 ? '' : hourLabel(q.t)) : 'Now') + '</span></div>';
+      last = ic;
+    });
+    return h + '</div><div class="hcap' + (peak ? ' wet' : '') + '">' + (peak === hs[0] ? 'Likely to ' + wetWord(peak.code, peak.temp) + ' this hour (' + peak.rain + '%)' : peak ? 'Most likely to ' + wetWord(peak.code, peak.temp) + ' around ' + hourLabel(peak.t).toLowerCase().replace('am', 'AM').replace('pm', 'PM') + ' (' + peak.rain + '%)' : 'Looks dry for the next ' + n + ' hours') + '</div>';
+  }
+  // The four small boxes about today. No filler lines: each box says one thing.
+  function wxTiles(){
+    return stat('High and low', WX.hi + '° / ' + WX.lo + '°') + stat('Chance of ' + wetWord(WX.code, WX.hi), WX.rain == null ? '–' : WX.rain + '%', '', WX.rain >= 40 ? 'wet' : '')
+      + stat('Sunrise', tm(WX.sunrise)) + stat('Sunset', tm(WX.sunset));
+  }
+  // When the weather service can't be reached we keep showing the last answer, and say from when.
+  function wxStale(){ return WX && WX.stale ? '<div class="wxold">' + SKY.cloud + '<span><b>Can’t reach the weather right now.</b> This is from ' + (WX.at ? tm(H.hhmm(new Date(WX.at).getHours() * 60 + new Date(WX.at).getMinutes())) : 'earlier') + '. Home it keeps trying.</span></div>' : ''; }
   // "Groceries: $212 of $400, ..." becomes a bar; anything else stays a plain line.
   function budLine(r){
     var m = /^(.+?):\s*\$([\d,.]+) of \$([\d,.]+)(?:,\s*(.*))?$/.exec(r);
@@ -1126,18 +1212,18 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       h += '<div class="row first" style="margin-top:8px"><button class="btn" data-open="shiftsheet">+ Shift</button><button class="btn" data-open="eventsheet">+ Event</button></div>';
     } else if (k === 'forecast'){
       if (WX && WX.ok){
-        h = '<div class="stats">' + stat('Now', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · feels ' + WX.feels + '°') + stat('Today', WX.hi + '° / ' + WX.lo + '°', 'high and low')
-          + stat('Rain today', (WX.rain == null ? '–' : WX.rain + '%'), WX.rain >= 40 ? 'take a jacket' : 'looks dry') + stat('Sun', tm(WX.sunrise, true).replace(' AM', '') + ' – ' + tm(WX.sunset, true).replace(' PM', ''), 'rise ' + tm(WX.sunrise) + ' · set ' + tm(WX.sunset), 'sm') + '</div>'
-          + '<div class="note" style="font-weight:700">' + esc(WX.city) + (WX.stale ? ' · from earlier, can’t reach the weather right now' : '') + '</div><!--cut:days--><h3>Next days</h3>';
-        var dd = (WX.days || []).filter(function(d){ return isFinite(d.hi); }), tmin = Math.min.apply(null, dd.map(function(d){ return d.lo; })), tmax = Math.max.apply(null, dd.map(function(d){ return d.hi; })), tsp = Math.max(1, tmax - tmin);
-        (WX.days || []).forEach(function(d){
-          if (!isFinite(d.hi)) return; var s2 = sky(d.code, true), shd = H.shiftsOn(S, d.date)[0];
-          h += '<div class="dr"><b style="min-width:92px">' + H.DAYS_LONG[H.dow(d.date)] + '</b>' + SKY[s2[0]] + '<span style="flex:1">' + s2[1] + (d.rain != null ? ' · <span class="' + (d.rain >= 40 ? 'wet' : '') + '">' + d.rain + '% rain</span>' : '') + (shd ? ' · shift ' + span(shd.start, endOf(shd), true) : '') + '</span><b class="muted" style="min-width:34px;text-align:right">' + d.lo + '°</b><span class="trange"><i style="left:' + Math.round((d.lo - tmin) / tsp * 100) + '%;right:' + Math.round((tmax - d.hi) / tsp * 100) + '%"></i></span><b style="min-width:30px">' + d.hi + '°</b></div>';
+        h = '<div class="stats wxs">' + stat('Now', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · feels like ' + WX.feels + '°') + wxTiles() + '</div>'
+          + '<div class="weartip"><em>Wear</em><span>' + esc(wearTip()) + '</span></div>' + wxStale() + '<!--cut:days--><h3>Next days</h3><div class="wxdays">';
+        var dd = (WX.days || []).filter(function(d){ return isFinite(d.hi) && isFinite(d.lo); }).slice(0, 7), tmin = Math.min.apply(null, dd.map(function(d){ return d.lo; })), tmax = Math.max.apply(null, dd.map(function(d){ return d.hi; })), tsp = Math.max(1, tmax - tmin);
+        dd.forEach(function(d, i){
+          var s2 = sky(d.code, true), shd = H.shiftsOn(S, d.date)[0];
+          h += '<div class="wxd"><b class="dn">' + (i ? H.DAYS_LONG[H.dow(d.date)] : 'Tomorrow') + '</b>' + SKY[s2[0]]
+            + '<span class="dw"><span>' + s2[1] + (d.rain >= 40 ? ' · <span class="wet">' + d.rain + '% ' + (s2[0] === 'rain' || s2[0] === 'snow' ? 'chance' : wetWord(d.code, d.hi)) + '</span>' : '') + '</span>' + (shd ? '<small>Shift ' + span(shd.start, endOf(shd), true) + '</small>' : '') + '</span>'
+            + '<b class="lo">' + d.lo + '°</b><span class="trange"><i style="left:' + Math.round((d.lo - tmin) / tsp * 100) + '%;right:' + Math.round((tmax - d.hi) / tsp * 100) + '%"></i></span><b class="hi">' + d.hi + '°</b></div>';
         });
-        h += '<!--cut:hours--><h3>Hour by hour</h3><div class="hrs2">' + (WX.hours || []).filter(function(q, i){ return i < 12; }).map(function(q){
-          var m = H.mins(q.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise);
-          return '<div>' + hourLabel(q.t) + SKY[sky(q.code, !dk)[0]] + '<b>' + q.temp + '°</b>' + (q.rain >= 40 ? '<small class="wet">' + q.rain + '%</small>' : '') + '</div>'; }).join('') + '</div>';
-      } else h = '<div class="note">Weather isn’t reachable right now.</div>';
+        if (!dd.length) h += '<div class="note">No forecast for the next days right now.</div>';
+        h += '</div><!--cut:hours--><h3>Next 12 hours</h3>' + hourLine();
+      } else h = '<div class="wxoff">' + SKY.cloud + '<b>' + (WX ? 'Can’t reach the weather right now' : 'Getting the weather…') + '</b>' + (WX ? '<span>Home it tries again on its own every 15 minutes. Everything else still works.</span>' : '') + '</div>';
     } else if (k === 'split' || k === 'budget'){
       var m2 = MONEY[k], url = k === 'split' ? S.settings.splitUrl : S.settings.budgetUrl;
       if (V.company || MONEY.hidden) h = '<div class="note">Hidden while you have company.</div>';
@@ -1208,11 +1294,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       } else if (name === 'weather'){
         p = parts('forecast'); sub = WX && WX.ok ? WX.city : '';
         if (p.days){
-          var sk = sky(WX.code, WX.day), jacket = WX.rain >= 40 ? 'take a jacket' : 'looks dry';
-          h = '<div class="pgrid g-wx"><section class="card pc now" style="grid-area:a"><div class="nowtop">' + SKY[sk[0]] + '<div><div class="deg">' + WX.temp + '°</div><div class="sk">' + sk[1] + ' · feels ' + WX.feels + '°</div></div><div class="weartip">' + esc(wearTip()) + '</div></div>'
-            + '<div class="flat"><div class="stats">' + stat('Today', WX.hi + '° / ' + WX.lo + '°', 'high and low') + stat('Rain', (WX.rain == null ? '–' : WX.rain + '%'), jacket)
-            + stat('Sunrise', tm(WX.sunrise), 'today') + stat('Sunset', tm(WX.sunset), 'today') + '</div></div>' + (WX.stale ? '<div class="note">From earlier. Can’t reach the weather right now.</div>' : '') + '</section>'
-            + panel('c', p.days) + panel('b', p.hours) + '</div>';
+          var sk = sky(WX.code, WX.day);
+          h = '<div class="pgrid g-wx"><section class="card pc now" style="grid-area:a"><div class="nowtop">' + SKY[sk[0]] + '<div><div class="deg">' + WX.temp + '°</div><div class="sk">' + sk[1] + ' · feels like ' + WX.feels + '°</div></div><div class="weartip"><em>Wear</em><span>' + esc(wearTip()) + '</span></div></div>'
+            + '<div class="flat"><div class="stats">' + wxTiles() + '</div></div>' + wxStale() + '</section>'
+            + panel('c', p.hours) + panel('b', p.days) + '</div>';
         } else h = p.head;
       } else if (name === 'money'){
         var hide = S.settings.hide, sp = hide.indexOf('split') < 0, bu = hide.indexOf('budget') < 0, one = function(k){ var m = parts(k); return '<div class="flat">' + m.head + '</div>' + (m.rest || ''); };
@@ -1613,7 +1698,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var n = now(), h0 = n.getHours(), hours = [];
     for (var i = 0; i < 24; i++){ var hh = (h0 + i) % 24; hours.push({ t: H.hhmm(hh * 60), temp: Math.round(3 + 4 * Math.sin((hh - 9) / 24 * 2 * Math.PI)), code: hh > 16 || hh < 7 ? 0 : 3, rain: 10 }); }
     return { ok:true, city:'Belleville, Ontario', temp: hours[0].temp, feels: hours[0].temp - 3, code: hours[0].code, day: h0 >= 7 && h0 < 17, hi: 7, lo: -1, rain: 10, sunrise:'06:56', sunset:'16:44', tomorrow:{ code:1, hi:4, lo:-2 }, hours: hours,
-      days: [[1,4,-2,10],[3,6,0,20],[61,8,3,80],[2,5,-1,30]].map(function(d, i){ return { date: H.addDays(H.ymd(n), i + 1), code: d[0], hi: d[1], lo: d[2], rain: d[3] }; }) };
+      days: [[1,4,-2,10],[3,6,0,20],[61,8,3,80],[2,5,-1,30],[71,1,-4,60],[3,0,-6,20],[0,2,-7,5]].map(function(d, i){ return { date: H.addDays(H.ymd(n), i + 1), code: d[0], hi: d[1], lo: d[2], rain: d[3] }; }) };
   }
   function demoTime(kind){
     ui.demo = kind; ui.fake = null; ui.forceIdle = kind === 'idle'; ui.good = false; ui.awake = 0; ui.touch = Date.now();
