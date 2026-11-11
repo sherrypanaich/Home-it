@@ -220,6 +220,7 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .stat{border:2.5px solid var(--edge);border-radius:12px;box-shadow:3px 3px 0 var(--pop);padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0;background:var(--surface)}
 .stat small{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .stat b{font-family:var(--display);font-weight:400;font-size:1.25rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat b.sm{font-size:1.02rem;line-height:1.4}
 .stat span{font-size:.8rem;font-weight:700;color:var(--muted);line-height:1.2}
 .hrs2{display:flex;gap:6px}
 .hrs2 div{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:2px solid var(--line);border-radius:10px;padding:5px 0;font-size:.78rem;font-weight:800;min-width:0}
@@ -442,8 +443,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <section class="card tap money" data-card="split" data-detail="split" id="splitcard" role="button" tabindex="0" aria-label="Split it, tap for more"></section>
       <section class="card tap money" data-card="budget" data-detail="budget" id="budgetcard" role="button" tabindex="0" aria-label="Budget it, tap for more"></section>
       <section class="card" data-card="room" aria-label="Room">
-        <div class="row"><h2 class="h2">ROOM</h2>
-          <label class="co">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
+        <div class="row">
+          <label class="co" style="flex:1;justify-content:space-between">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
         <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px;margin-top:auto">
           <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
       </section>
@@ -859,7 +860,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     } else if (k === 'forecast'){
       if (WX && WX.ok){
         h = '<div class="stats">' + stat('Now', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · feels ' + WX.feels + '°') + stat('Today', WX.hi + '° / ' + WX.lo + '°', 'high and low')
-          + stat('Rain today', (WX.rain == null ? '–' : WX.rain + '%'), WX.rain >= 40 ? 'take a jacket' : 'looks dry') + stat('Sun', tm(WX.sunrise, true).replace(' AM', '') + ' – ' + tm(WX.sunset, true).replace(' PM', ''), 'rise ' + tm(WX.sunrise) + ' · set ' + tm(WX.sunset)) + '</div>'
+          + stat('Rain today', (WX.rain == null ? '–' : WX.rain + '%'), WX.rain >= 40 ? 'take a jacket' : 'looks dry') + stat('Sun', tm(WX.sunrise, true).replace(' AM', '') + ' – ' + tm(WX.sunset, true).replace(' PM', ''), 'rise ' + tm(WX.sunrise) + ' · set ' + tm(WX.sunset), 'sm') + '</div>'
           + '<div class="note" style="font-weight:700">' + esc(WX.city) + (WX.stale ? ' · from earlier, can’t reach the weather right now' : '') + '</div><h3>Next days</h3>';
         (WX.days || []).forEach(function(d){
           if (!isFinite(d.hi)) return; var s2 = sky(d.code, true), shd = H.shiftsOn(S, d.date)[0];
