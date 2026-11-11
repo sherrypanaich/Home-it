@@ -7,7 +7,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const LISTS = ['today', 'later', 'shop'];
-  const CARDS = ['today', 'todo', 'week', 'split', 'budget', 'tv', 'room'];
+  const CARDS = ['today', 'todo', 'week', 'coming', 'forecast', 'split', 'budget', 'room'];
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const DAYS_LONG = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -160,6 +160,35 @@
     return { who, mood: MOOD[key], line };
   }
 
+  // ---------- what's coming up: the next days' shifts and events, in order ----------
+  function coming(s, date, max = 5, days = 14) {
+    const rows = [];
+    for (let i = 1; i <= days && rows.length < max; i++) {
+      const d = addDays(date, i), label = i === 1 ? 'Tomorrow' : i < 7 ? DAYS[dow(d)] : fmtDate(d);
+      for (const x of shiftsOn(s, d)) rows.push({ date: d, label, kind: 'shift', start: x.start, end: hhmm(mins(x.start) + x.mins), t: x.place });
+      for (const e of s.events.filter(y => y.date === d).sort((a, b) => (a.time || '').localeCompare(b.time || ''))) rows.push({ date: d, label, kind: 'event', time: e.time || '', t: e.t });
+    }
+    return rows.slice(0, max);
+  }
+
+  // ---------- money cards: Split it and Budget it answer in sentences; pull out the headline ----------
+  // Returns { big, sub, rows }. If the wording ever changes, the first line is shown as it is.
+  function moneyCard(kind, textIn) {
+    const t = String(textIn || '').trim(), lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+    const plain = { big: '', sub: (lines[0] || '').slice(0, 120), rows: [] };
+    if (kind === 'split') {
+      if (/all square/i.test(t) && !/^- /m.test(t)) return { big: 'All square', sub: 'Nobody owes anything', rows: [] };
+      const o = /Overall: (you’re owed|you owe) (\$[\d,]+(?:\.\d+)?)/.exec(t);
+      if (!o) return plain;
+      return { big: o[2], sub: o[1] === 'you owe' ? 'you owe in total' : 'owed to you in total', owe: o[1] === 'you owe', rows: lines.filter(l => l.startsWith('- ')).map(l => l.slice(2)).slice(0, 3) };
+    }
+    const m = /^Safe to spend until (\d{4}-\d\d-\d\d) \((\d+) days?\): (-?\$[\d,]+(?:\.\d+)?), about (-?\$[\d,]+(?:\.\d+)?) a day/.exec(t);
+    if (!m) return plain;
+    const b = /bills before payday \$[\d,]+(?:\.\d+)? \(([^)]*)\)/.exec(t);
+    return { big: m[3], sub: 'safe to spend · ' + m[4] + ' a day until ' + fmtDate(m[1]), owe: m[3][0] === '-',
+      rows: b ? b[1].split(', ').map(x => x.replace(/ on (\d{4}-\d\d-\d\d)$/, (_, d) => ' · ' + fmtDate(d))).slice(0, 3) : [] };
+  }
+
   // ---------- changes ----------
   class Bad extends Error { constructor(m) { super(m); this.status = 400; } }
   const bad = m => { throw new Bad(m); };
@@ -275,11 +304,12 @@
     [[0, '09:00', '17:00'], [1, '14:00', '22:00'], [3, '14:00', '22:00'], [4, '14:00', '22:00']].forEach(([d, a, b], i) =>
       s.shifts.push({ id: id('s', i), date: addDays(mon, d), start: a, end: b, place: 'Work' }));
     if (!shiftsOn(s, today).length) s.shifts.push({ id: id('s', 9), date: today, start: '14:00', end: '22:00', place: 'Work' });
-    s.events = [{ id: id('e', 1), date: today, time: '09:00', t: 'Gym', d: true }, { id: id('e', 2), date: today, time: '11:30', t: 'Call the dentist' }];
+    s.events = [{ id: id('e', 1), date: today, time: '09:00', t: 'Gym', d: true }, { id: id('e', 2), date: today, time: '11:30', t: 'Call the dentist' },
+      { id: id('e', 3), date: addDays(today, 2), time: '19:00', t: 'Dinner with Maya' }, { id: id('e', 4), date: addDays(today, 4), t: 'Rent due' }];
     s.settings.rate = 17.5; s.day = today;
     return s;
   }
 
   return { LISTS, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
-    shiftMins, shiftsOn, week, nextShift, normalize, dayView, guide, OPS, apply, text, Bad };
+    shiftMins, shiftsOn, week, nextShift, normalize, dayView, guide, coming, moneyCard, OPS, apply, text, Bad };
 });

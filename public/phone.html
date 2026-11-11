@@ -57,7 +57,7 @@ body{min-height:100vh;-webkit-tap-highlight-color:transparent}
   background-image:repeating-conic-gradient(from 0deg at 90% 120%,var(--rays) 0deg 2.5deg,transparent 2.5deg 8deg)}
 .hero.soon{background-color:var(--hl);color:#14112A}
 .hero .eb{font-weight:800;text-transform:uppercase;letter-spacing:.07em;font-size:.76rem}
-.hero .big{font-size:1.5rem;line-height:1.12;text-shadow:2px 2px 0 rgba(20,17,42,.35)}
+.hero .big{font-size:1.32rem;line-height:1.12;white-space:nowrap;text-shadow:2px 2px 0 rgba(20,17,42,.35)}
 .hero.soon .big{text-shadow:none}
 .hero .chip{align-self:flex-start;background:var(--hl);color:#14112A;border:2.5px solid #14112A;border-radius:10px;box-shadow:2px 2px 0 #14112A;font-weight:800;padding:4px 10px;font-size:.92rem}
 .hero.soon .chip{background:#fff}
@@ -84,6 +84,11 @@ label{font-weight:800;font-size:.86rem;display:flex;flex-direction:column;gap:4p
 input[type=text],select{border:2.5px solid var(--edge);border-radius:12px;min-height:48px;padding:6px 10px;background:var(--surface);width:100%;font-size:16px}
 input::placeholder{color:var(--muted)}
 .addbar{display:flex;gap:8px}
+.up{display:flex;flex-direction:column;gap:6px}
+.up div{display:flex;gap:10px;align-items:baseline;font-weight:600}
+.up b{min-width:82px;font-weight:800;white-space:nowrap}
+.up .sh{color:var(--accent);font-weight:800}
+.toast button{all:unset;cursor:pointer;margin-left:14px;color:var(--hl);text-decoration:underline;font-weight:800;padding:6px 4px}
 .addbar input{flex:1;min-width:0;box-shadow:3px 3px 0 var(--pop)}
 .days{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 .days button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:4px 10px;border-radius:10px;border:2px solid transparent;font-weight:600}
@@ -121,7 +126,14 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
 
   <section id="p-today" class="pane">
     <div class="card hero" id="hero"></div>
-    <div class="card" style="margin-top:14px"><h2 class="h2">TODAY</h2><ul class="list" id="tlist"></ul></div>
+    <div class="card" style="margin-top:14px" id="planscard"><h2 class="h2">PLANS TODAY</h2><ul class="list" id="plist"></ul></div>
+    <div class="card" style="margin-top:14px"><h2 class="h2">TO-DO TODAY</h2>
+      <form id="quickform" style="flex-direction:row" class="addbar">
+        <input id="quickinput" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off" enterkeyhint="done">
+        <button class="btn primary">Add</button>
+      </form>
+      <ul class="list" id="tlist"></ul></div>
+    <div class="card" style="margin-top:14px"><h2 class="h2">COMING UP</h2><div class="up" id="coming"></div></div>
   </section>
 
   <section id="p-todo" class="pane" hidden>
@@ -200,7 +212,12 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   function opts(list, sel){ return list.map(function(o){ return '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(sel) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join(''); }
   function times(step){ var a = []; for (var m = 0; m < 1440; m += step) a.push([H.hhmm(m), tm(H.hhmm(m))]); return a; }
   var toastTimer;
-  function toast(msg){ if (!msg) return; var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.hidden = true; }, 2400); }
+  var undoFn = null;
+  function toast(msg, undo){
+    if (!msg) return; var t = $('toast'); t.textContent = msg; undoFn = undo || null;
+    if (undo){ var b = document.createElement('button'); b.textContent = 'Undo'; b.id = 'undo'; t.appendChild(b); }
+    t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.hidden = true; undoFn = null; }, undo ? 6000 : 2400);
+  }
 
   function api(path, body){
     return fetch(path, { method: body ? 'POST' : 'GET', headers: body ? { 'Content-Type':'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, credentials:'same-origin' })
@@ -232,14 +249,19 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     else if (v.phase === 'working'){ big = 'At work'; sub = x.place + ' until ' + tm(H.hhmm(v.endM)); chip = H.fmtDur((v.endM - v.nowM + 1440) % 1440) + ' to go'; }
     else if (v.phase === 'done'){ big = 'Shift done'; sub = span(x.start, endOf(x)); chip = shiftLine(v); }
     else { big = 'Day off'; sub = v.events.length ? v.events.length + ' thing' + (v.events.length === 1 ? '' : 's') + ' planned' : 'Nothing on the schedule'; chip = shiftLine(v); }
-    var g = H.guide(S, v);
+    var g = H.guide(S, Object.assign({}, v, { night:false }));   // nobody holding a phone is asleep
     $('hero').className = 'card hero' + (v.phase === 'soon' ? ' soon' : '');
     $('hero').innerHTML = '<div class="eb">' + (v.phase === 'before' || v.phase === 'soon' ? 'Today’s shift' : 'Today') + '</div><div class="big disp">' + esc(big) + '</div><div>' + esc(sub) + '</div><div class="chip">' + esc(chip) + '</div><div class="say">“' + esc(g.line) + '”</div>'
       + '<img src="art/' + g.who + '-' + g.mood + '.webp" alt="' + (g.who === 'luffy' ? 'Luffy' : 'Hancock') + ', ' + g.mood + '">';
     var h = '';
-    v.events.forEach(function(e){ h += '<li><button class="it" data-ev="' + esc(e.id) + '" aria-pressed="' + !!e.d + '"><span class="box"></span><span class="t">' + esc(e.t) + '</span>' + (e.time ? '<span class="tagp">' + tm(e.time) + '</span>' : '') + '</button></li>'; });
-    S.lists.today.forEach(function(t){ h += '<li><button class="it" data-todo="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><span class="box"></span><span class="t">' + esc(t.t) + '</span>' + (t.due ? '<span class="tagp">' + tm(t.due) + '</span>' : '') + '</button></li>'; });
-    $('tlist').innerHTML = h || '<li class="empty">Nothing for today yet. Add a to-do or an event below.</li>';
+    v.events.slice().sort(function(a, b){ return (a.time || '').localeCompare(b.time || ''); }).forEach(function(e){ h += '<li><button class="it" data-ev="' + esc(e.id) + '" aria-pressed="' + !!e.d + '"><span class="box"></span><span class="t">' + esc(e.t) + '</span>' + (e.time ? '<span class="tagp">' + tm(e.time) + '</span>' : '') + '</button></li>'; });
+    $('plist').innerHTML = h; $('planscard').hidden = !h;
+    h = '';
+    S.lists.today.forEach(function(t){ h += '<li><button class="it" data-todo="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><span class="box"></span><span class="t">' + esc(t.t) + '</span>' + (t.due ? '<span class="tagp">' + tm(t.due) + '</span>' : t.rep ? '<span class="tagp">' + (t.rep === 'daily' ? 'Daily' : 'Weekly') + '</span>' : '') + '</button></li>'; });
+    $('tlist').innerHTML = h || '<li class="empty">Nothing to do today yet.</li>';
+    h = '';
+    H.coming(S, v.date, 5).forEach(function(r){ h += '<div><b>' + esc(r.label) + '</b>' + (r.kind === 'shift' ? '<span class="sh">Shift ' + span(r.start, r.end, true) + '</span>' : '<span>' + esc(r.t) + (r.time ? ' · ' + tm(r.time) : '') + '</span>') + '</div>'; });
+    $('coming').innerHTML = h || '<div class="note">Nothing booked in the next two weeks.</div>';
   }
   function renderItems(){
     var l = S.lists[ui.list], h = '';
@@ -304,14 +326,21 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   function on(id, ev, fn){ $(id).addEventListener(ev, fn); }
   on('nav', 'click', function(e){ var b = e.target.closest('button'); if (b) go(b.dataset.p); });
   on('morebtn', 'click', function(){ go(ui.pane === 'more' ? 'today' : 'more'); });
-  on('tlist', 'click', function(e){
-    var b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.ev) op('event.toggle', { id: b.dataset.ev }, true); else op('todo.toggle', { list:'today', id: b.dataset.todo }, true);
+  on('plist', 'click', function(e){ var b = e.target.closest('button'); if (b) op('event.toggle', { id: b.dataset.ev }, true); });
+  on('tlist', 'click', function(e){ var b = e.target.closest('button'); if (b) op('todo.toggle', { list:'today', id: b.dataset.todo }, true); });
+  on('quickform', 'submit', function(e){
+    e.preventDefault();
+    var v = $('quickinput').value.trim(); if (!v) return;
+    $('quickinput').value = ''; op('todo.add', { list:'today', t: v }, true);
   });
+  on('toast', 'click', function(e){ if (e.target.id === 'undo' && undoFn){ var f = undoFn; undoFn = null; $('toast').hidden = true; f(); } });
   on('tabs', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.list = b.dataset.list; renderItems(); } });
   on('items', 'click', function(e){
     var b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.del) op('todo.del', { list: ui.list, id: b.dataset.del }, true);
+    if (b.dataset.del){
+      var list = ui.list, x = S.lists[list].filter(function(y){ return y.id === b.dataset.del; })[0];
+      op('todo.del', { list: list, id: b.dataset.del }, true).then(function(){ if (x) toast('Removed “' + x.t + '”', function(){ op('todo.add', { list: list, t: x.t, due: x.due, rep: x.rep }, true); }); });
+    }
     else if (b.dataset.clear) op('todo.clear', { list: ui.list });
     else op('todo.toggle', { list: ui.list, id: b.dataset.id }, true);
   });

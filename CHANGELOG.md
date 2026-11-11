@@ -1,6 +1,26 @@
 # What's new in Home it
 
-## v1.0.0 (not released yet)
+## v1.1.0 (not released yet)
+
+The bottom of the big screen is useful now, and the phone screen does more from its first page.
+
+### New
+- **Coming up.** A card with the next days' shifts and events in order, on the big screen and on the phone.
+- **Next days' weather.** Four days ahead with highs, lows and a warning when it looks wet.
+- **Live money cards.** Link Split it and Budget it once and the screen shows what you're owed or owe, and what's safe to spend until payday with the bills before it. Company mode still hides them.
+- **Undo.** Removing a to-do by mistake can be taken back for a few seconds.
+- **Phone: add a to-do straight from Today,** with plans and to-dos in their own lists.
+
+### Improved
+- Cards with nothing to show are left out instead of showing an empty box. The TV and PS5 card is gone until it can do something.
+- Long to-dos wrap onto a second line instead of being cut off.
+- The marker on Today's timeline says NEXT, since it points at what's next.
+- The guide no longer says goodnight on the phone.
+
+### Security
+- The keys that link Split it and Budget it stay on the computer and are never sent to a screen.
+
+## v1.0.0
 
 The first version: a home screen for your day, made for an old laptop with a touch screen.
 
@@ -25,6 +45,5 @@ The first version: a home screen for your day, made for an old laptop with a tou
 - Everything is stored on your own computer. The only thing asked of the internet is the weather.
 
 ### Not in this version yet
-- The Split it and Budget it cards are link tiles for now. Balances and bills arrive once those apps can share them.
 - TV and PS5 controls, lights and plugs (they come through Home Assistant).
 - Photos on the idle screen, reading shifts from a calendar link, and phone notifications.

@@ -81,7 +81,7 @@ test('other screens hear about a change', async () => {
 test('weather: read and tidied', async () => {
   const { json } = await call('/api/weather');
   assert.equal(json.ok, true); assert.equal(json.temp, 3); assert.equal(json.feels, -1); assert.equal(json.sunset, '16:44'); assert.equal(json.sunrise, '06:56');
-  assert.equal(json.hours.length, 24); assert.equal(json.tomorrow.hi, 4); assert.equal(json.city, 'Belleville, Ontario');
+  assert.equal(json.hours.length, 24); assert.equal(json.tomorrow.hi, 4); assert.equal(json.days[0].hi, 4); assert.equal(json.city, 'Belleville, Ontario');
 });
 
 test('changing the town looks it up', async () => {
@@ -89,6 +89,21 @@ test('changing the town looks it up', async () => {
   assert.equal(r.status, 400);
   r = await call('/api/city', { city: 'Kingston' });
   assert.equal(r.json.state.settings.city, 'Kingston, Ontario'); assert.equal(r.json.state.settings.lat, 44.2298);
+});
+
+test('the money card shows a linked app, and nothing while there is company', async () => {
+  assert.deepEqual((await call('/api/money')).json, {});
+  assert.match(cli(['link-split', 'Sherry'], { APP_URL: `http://127.0.0.1:${WX}`, APP_KEY: 'bad-key' }), /Split it is linked/);
+  assert.equal((await call('/api/money')).json.split.ok, false);
+  cli(['link-split', 'Sherry'], { APP_URL: `http://127.0.0.1:${WX}`, APP_KEY: 'good-key' });
+  const { json } = await call('/api/money');
+  assert.equal(json.split.big, '$40.00'); assert.deepEqual(json.split.rows, ['Maya owes you $40.00']); assert.equal(json.budget, undefined);
+  assert.doesNotMatch(JSON.stringify((await call('/api/state')).json), /good-key/);   // the key never reaches a screen
+  await call('/api/op', { op: 'company.set', args: { on: true } });
+  assert.deepEqual((await call('/api/money')).json, { hidden: true });
+  await call('/api/op', { op: 'company.set', args: { on: false } });
+  assert.match(cli(['unlink-split', 'Sherry']), /no longer shown/);
+  assert.deepEqual((await call('/api/money')).json, {});
 });
 
 test('the bedroom screen link works once and stays signed in', async () => {

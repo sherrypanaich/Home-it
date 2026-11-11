@@ -14,7 +14,15 @@ It is one small Node.js app with no dependencies. Your data stays on your own co
 - **Guides**: Luffy or Hancock comment on your day.
 - **Full screen**: opens as an app on the laptop at startup. It can also be opened from a phone if you choose to share it.
 
-The Split it and Budget it cards, and the TV and PS5 card, are placeholders in this version. See [CHANGELOG.md](CHANGELOG.md).
+The Split it and Budget it cards show live numbers once you link those apps (both are optional):
+
+```
+node server.js mcp-key YOURNAME      # run this in the Split it (or Budget it) folder; it prints a key
+node server.js link-split YOURNAME   # run this in the Home it folder; it asks for that app's address and the key
+node server.js link-budget YOURNAME
+```
+
+Home it asks each app every few minutes, the same way an AI assistant would. The key is kept in `data/users.json` on your computer and never sent to a screen. `unlink-split` and `unlink-budget` undo it. See [CHANGELOG.md](CHANGELOG.md) for what's new.
 
 ## Try it without installing
 
@@ -87,6 +95,7 @@ node server.js set-password NAME   change a password (signs every screen out)
 node server.js kiosk-link NAME     a one-time link that signs a screen in for good
 node server.js sample NAME         fill an empty account with made-up data
 node server.js list-users
+node server.js link-split NAME     show Split it on the screen (also link-budget, unlink-split, unlink-budget)
 node server.js mcp-key NAME        a key for an AI assistant
 node server.js mcp-revoke NAME     sign every assistant out
 ```

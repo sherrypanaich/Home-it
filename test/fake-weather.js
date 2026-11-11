@@ -3,6 +3,11 @@ const http = require('http');
 const pad = n => String(n).padStart(2, '0');
 module.exports = (port, cb) => http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x'); res.setHeader('Content-Type', 'application/json');
+  // also a stand-in for Split it's assistant address: answers one tool, only with the right key
+  if (u.pathname === '/mcp') {
+    if (req.headers.authorization !== 'Bearer good-key') { res.statusCode = 401; return res.end('{}'); }
+    return res.end(JSON.stringify({ jsonrpc: '2.0', id: 1, result: { content: [{ type: 'text', text: 'Balances for Sherry:\n- Maya owes you $40.00\nOverall: you’re owed $40.00.' }] } }));
+  }
   if (u.pathname === '/geo') return res.end(JSON.stringify(u.searchParams.get('name').startsWith('Nowhere') ? {} : { results: [{ name: 'Kingston', admin1: 'Ontario', latitude: 44.2298, longitude: -76.481 }] }));
   const d = new Date(), day = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, t2 = new Date(d.getTime() + 864e5), day2 = `${t2.getFullYear()}-${pad(t2.getMonth() + 1)}-${pad(t2.getDate())}`;
   const time = [], temp = [], code = [], rain = [];

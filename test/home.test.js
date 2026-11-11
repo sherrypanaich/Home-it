@@ -121,8 +121,8 @@ test('copy last week, events, cards, company and settings', () => {
   assert.equal(H.shiftsOn(s, '2026-11-17').length, 1);
   assert.throws(() => H.apply(s, 'shift.add', { date: '2026-11-10', start: '09:00', end: '09:00' }, c), /different time/);
   assert.throws(() => H.apply(s, 'event.add', { t: 'x', date: 'soon' }, c), /Pick a day/);
-  H.apply(s, 'card.toggle', { card: 'tv' }, c); assert.deepEqual(s.settings.hide, ['tv']);
-  H.apply(s, 'card.toggle', { card: 'tv' }, c); assert.deepEqual(s.settings.hide, []);
+  H.apply(s, 'card.toggle', { card: 'coming' }, c); assert.deepEqual(s.settings.hide, ['coming']);
+  H.apply(s, 'card.toggle', { card: 'coming' }, c); assert.deepEqual(s.settings.hide, []);
   H.apply(s, 'company.set', { on: true }, c);
   assert.equal(H.dayView(s, at('2026-11-10', '20:00')).company, true); assert.equal(H.dayView(s, at('2026-11-11', '08:00')).company, false);
   assert.throws(() => H.apply(s, 'settings.set', { key: 'splitUrl', value: 'javascript:alert(1)' }, c), /web address/);
@@ -134,4 +134,25 @@ test('sample data always has a shift today, and fix fills in missing parts', () 
   for (const d of ['2026-11-09', '2026-11-11', '2026-11-15']) assert.ok(H.shiftsOn(H.sample(d), d).length);
   const s = H.fix({ lists: { today: [] }, settings: { guide: 'hancock' } });
   assert.equal(s.settings.travel, 25); assert.equal(s.settings.guide, 'hancock'); assert.deepEqual(s.lists.shop, []); assert.deepEqual(s.rules, []);
+});
+
+test('coming up lists the next days in order, shifts and events together', () => {
+  const s = H.blank();
+  s.shifts.push({ id: 's1', date: '2026-11-12', start: '14:00', end: '22:00', place: 'Work' });
+  s.events.push({ id: 'e2', date: '2026-11-14', time: '18:00', t: 'Dinner' }, { id: 'e1', date: '2026-11-12', t: 'Bins out' }, { id: 'e0', date: '2026-11-11', t: 'Today, not listed' });
+  const rows = H.coming(s, '2026-11-11');
+  assert.deepEqual(rows.map(r => r.label + ' ' + r.kind + ' ' + r.t), ['Tomorrow shift Work', 'Tomorrow event Bins out', 'Sat event Dinner']);
+  assert.equal(rows[0].end, '22:00');
+  assert.equal(H.coming(s, '2026-11-11', 1).length, 1);
+});
+
+test('money cards pull the headline out of what Split it and Budget it say', () => {
+  const a = H.moneyCard('split', 'Balances for Sherry:\n- You owe Sam $12.50\n- Maya owes you $40.00\nOverall: you’re owed $27.50.');
+  assert.equal(a.big, '$27.50'); assert.equal(a.owe, false); assert.deepEqual(a.rows, ['You owe Sam $12.50', 'Maya owes you $40.00']);
+  assert.equal(H.moneyCard('split', 'Balances for Sherry:\n- You owe Sam $12.50\nOverall: you owe $12.50.').owe, true);
+  assert.equal(H.moneyCard('split', 'Sherry, you’re all square with everyone.').big, 'All square');
+  const b = H.moneyCard('budget', 'Safe to spend until 2026-11-20 (9 days): $318, about $35 a day.\nChequing $900, credit cards $400, bills before payday $182 (Phone $55 on 2026-11-16, Internet $127 on 2026-11-18).\nPay: Work, about $1,200, every 2 weeks.');
+  assert.equal(b.big, '$318'); assert.match(b.sub, /\$35 a day until Fri Nov 20/); assert.deepEqual(b.rows, ['Phone $55 · Mon Nov 16', 'Internet $127 · Wed Nov 18']);
+  const c = H.moneyCard('budget', 'Budget it hasn’t spotted a paycheque yet (it needs two pay deposits).');
+  assert.equal(c.big, ''); assert.match(c.sub, /hasn’t spotted a paycheque/);
 });
