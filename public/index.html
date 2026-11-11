@@ -306,6 +306,7 @@ input,select{user-select:text;-webkit-user-select:text}
 .nowtop{display:flex;align-items:center;gap:18px}
 .nowtop .ic{width:92px;height:92px;flex:none}
 .nowtop .deg{font-family:var(--display);font-size:4rem;line-height:1}
+.weartip{margin-left:auto;max-width:230px;padding:10px 14px;border:var(--bw,3px) solid var(--ink);border-radius:14px;background:var(--yellow,#ffd43b);color:#14122b;font-weight:800;font-size:.95rem;line-height:1.25}
 .nowtop .sk{font-weight:800;font-size:1.1rem;color:var(--muted)}
 .now .stats{grid-template-columns:repeat(4,1fr)}
 .g-wx .pc .dr{padding-top:10px;margin-top:2px}
@@ -454,6 +455,37 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .stack .sheet{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;transform:none;box-shadow:4px 4px 0 var(--pop)}
 .stack .toast{position:fixed}
 .stack .osk{position:fixed}
+
+/* timer in the top bar */
+.tmr{position:relative;flex:none}
+.tmr .btn{min-width:74px;font-variant-numeric:tabular-nums}
+.tmr .btn.run{background:var(--hl);color:var(--hl-ink)}
+.tmenu{position:absolute;right:0;top:calc(100% + 10px);z-index:40;display:grid;grid-template-columns:1fr 1fr;gap:6px;width:210px;padding:10px;background:var(--surface);border:3px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--pop)}
+.tmenu[hidden]{display:none}
+.tmenu button{font:inherit;font-weight:800;padding:12px 6px;border:2px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--ink);cursor:pointer}
+.tmenu .stop{color:var(--bad)}
+.tmenu:not(.on) .stop{display:none}
+.tmenu:not(.on) button[data-min="45"]{grid-column:span 2}
+.timeup{position:absolute;left:50%;top:92px;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:14px;background:var(--hl);color:var(--hl-ink);border:3px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--edge);padding:12px 16px;font-size:1.15rem;font-weight:800;white-space:nowrap}
+.timeup[hidden]{display:none}
+/* each page has its own colour */
+.pg[data-pg="today"]{--pgc:#2D5BFF}.pg[data-pg="week"]{--pgc:#8B5CF6}.pg[data-pg="weather"]{--pgc:#22B8E0}.pg[data-pg="money"]{--pgc:#16A765}.pg[data-pg="car"]{--pgc:#F0503C}.pg[data-pg="news"]{--pgc:#FF9A2E}
+.pg.full .h2{box-shadow:3px 3px 0 var(--pgc,var(--hl))}
+.pg.full .pghd .h2{box-shadow:4px 4px 0 var(--pgc,var(--hl))}
+.pgnav .tabs button[aria-current="true"][data-go="today"]{box-shadow:inset 0 -3px 0 #2D5BFF}.pgnav .tabs button[aria-current="true"][data-go="week"]{box-shadow:inset 0 -3px 0 #8B5CF6}.pgnav .tabs button[aria-current="true"][data-go="weather"]{box-shadow:inset 0 -3px 0 #22B8E0}.pgnav .tabs button[aria-current="true"][data-go="money"]{box-shadow:inset 0 -3px 0 #16A765}.pgnav .tabs button[aria-current="true"][data-go="car"]{box-shadow:inset 0 -3px 0 #F0503C}.pgnav .tabs button[aria-current="true"][data-go="news"]{box-shadow:inset 0 -3px 0 #FF9A2E}
+/* bars: budgets and day temperatures */
+.bud{border-top:1.5px solid var(--line);padding-top:8px}
+.dbody h3 + .bud{border-top:0;padding-top:0}
+.bud .l{display:flex;justify-content:space-between;gap:10px;font-weight:700}
+.bud .l small{color:var(--muted);font-weight:700}
+.bud .l small.hot{color:var(--bad)}
+.meter{height:10px;border-radius:99px;background:var(--surface2);border:1.5px solid var(--line);margin-top:5px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--good)}
+.meter i.warn{background:var(--hl)}.meter i.hot{background:var(--bad)}
+.trange{position:relative;flex:none;width:80px;height:8px;border-radius:99px;background:var(--surface2)}
+.trange i{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#22B8E0,#FFD23F)}
+/* easier on the eyes: calmer dots, softer page edges */
+:root{--dot:rgba(20,17,42,.045)}
 </style>
 </head>
 <body>
@@ -476,6 +508,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <div class="clock disp" id="clock"></div>
       <div class="date"><span id="date"></span><small id="sun"></small></div>
       <div class="wx" id="wx"></div>
+      <div class="tmr" id="tmr">
+        <button class="btn sm" id="tmrbtn" aria-haspopup="true" aria-expanded="false">Timer</button>
+        <div class="tmenu" id="tmenu" hidden><button data-min="5">5 min</button><button data-min="10">10 min</button><button data-min="15">15 min</button><button data-min="25">25 min</button><button data-min="45">45 min</button><button data-min="0" class="stop">Stop</button></div>
+      </div>
       <button class="btn gear" id="gear" aria-label="Settings" aria-expanded="false">
         <svg class="ic" viewBox="0 0 24 24"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="17" cy="18" r="2.2"/></svg>
       </button>
@@ -899,6 +935,21 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     stage.querySelector('[data-card="forecast"]').innerHTML = h;
   }
   function stat(label, big, sub, cls){ return '<div class="stat"><small>' + label + '</small><b class="' + (cls || '') + '">' + big + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</div>'; }
+  // One plain line on what to wear or bring, from the feels-like temperature and today's rain or snow.
+  function wearTip(){
+    var f = WX.feels, k = sky(WX.code, WX.day)[0];
+    var t = f < -10 ? 'Bundle up: heavy coat, hat and gloves.' : f < 0 ? 'Winter coat and gloves.' : f < 8 ? 'Coat weather.' : f < 15 ? 'A light jacket will do.' : f < 25 ? 'No jacket needed.' : 'Hot one. Bring water.';
+    if (k === 'snow') t += ' Snow, so leave a little early.'; else if (WX.rain >= 40) t += ' Bring an umbrella.';
+    return t;
+  }
+  // "Groceries: $212 of $400, ..." becomes a bar; anything else stays a plain line.
+  function budLine(r){
+    var m = /^(.+?):\s*\$([\d,.]+) of \$([\d,.]+)(?:,\s*(.*))?$/.exec(r);
+    if (!m) return '<div class="dr"><span>' + esc(r) + '</span></div>';
+    var used = parseFloat(m[2].replace(/,/g, '')), cap = parseFloat(m[3].replace(/,/g, '')), pc = cap > 0 ? used / cap : 0, over = pc > 1;
+    return '<div class="bud"><div class="l"><span>' + esc(m[1]) + '</span><small class="' + (over ? 'hot' : '') + '">$' + esc(m[2]) + ' of $' + esc(m[3]) + (m[4] ? ' · ' + esc(m[4].replace(/^\$(\S+) OVER/, 'over by $$$1').replace(/ - /, ' · ')) : '') + '</small></div>'
+      + '<div class="meter"><i class="' + (over ? 'hot' : pc >= .8 ? 'warn' : '') + '" style="width:' + Math.min(100, Math.round(pc * 100)) + '%"></i></div></div>';
+  }
   function dayWx(date){ var d = WX && WX.ok && (WX.days || []).filter(function(x){ return x.date === date; })[0]; return d && isFinite(d.hi) ? d : null; }
   // The title and body of one page. null means "leave it as it is" (someone is typing in it).
   function detailHtml(k){
@@ -969,9 +1020,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         h = '<div class="stats">' + stat('Now', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · feels ' + WX.feels + '°') + stat('Today', WX.hi + '° / ' + WX.lo + '°', 'high and low')
           + stat('Rain today', (WX.rain == null ? '–' : WX.rain + '%'), WX.rain >= 40 ? 'take a jacket' : 'looks dry') + stat('Sun', tm(WX.sunrise, true).replace(' AM', '') + ' – ' + tm(WX.sunset, true).replace(' PM', ''), 'rise ' + tm(WX.sunrise) + ' · set ' + tm(WX.sunset), 'sm') + '</div>'
           + '<div class="note" style="font-weight:700">' + esc(WX.city) + (WX.stale ? ' · from earlier, can’t reach the weather right now' : '') + '</div><!--cut:days--><h3>Next days</h3>';
+        var dd = (WX.days || []).filter(function(d){ return isFinite(d.hi); }), tmin = Math.min.apply(null, dd.map(function(d){ return d.lo; })), tmax = Math.max.apply(null, dd.map(function(d){ return d.hi; })), tsp = Math.max(1, tmax - tmin);
         (WX.days || []).forEach(function(d){
           if (!isFinite(d.hi)) return; var s2 = sky(d.code, true), shd = H.shiftsOn(S, d.date)[0];
-          h += '<div class="dr"><b style="min-width:92px">' + H.DAYS_LONG[H.dow(d.date)] + '</b>' + SKY[s2[0]] + '<span style="flex:1">' + s2[1] + (d.rain != null ? ' · <span class="' + (d.rain >= 40 ? 'wet' : '') + '">' + d.rain + '% rain</span>' : '') + (shd ? ' · shift ' + span(shd.start, endOf(shd), true) : '') + '</span><b>' + d.hi + '° / ' + d.lo + '°</b></div>';
+          h += '<div class="dr"><b style="min-width:92px">' + H.DAYS_LONG[H.dow(d.date)] + '</b>' + SKY[s2[0]] + '<span style="flex:1">' + s2[1] + (d.rain != null ? ' · <span class="' + (d.rain >= 40 ? 'wet' : '') + '">' + d.rain + '% rain</span>' : '') + (shd ? ' · shift ' + span(shd.start, endOf(shd), true) : '') + '</span><b class="muted" style="min-width:34px;text-align:right">' + d.lo + '°</b><span class="trange"><i style="left:' + Math.round((d.lo - tmin) / tsp * 100) + '%;right:' + Math.round((tmax - d.hi) / tsp * 100) + '%"></i></span><b style="min-width:30px">' + d.hi + '°</b></div>';
         });
         h += '<!--cut:hours--><h3>Hour by hour</h3><div class="hrs2">' + (WX.hours || []).filter(function(q, i){ return i < 12; }).map(function(q){
           var m = H.mins(q.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise);
@@ -985,7 +1037,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           h += '<div class="stats">' + stat(k === 'split' ? 'Overall' : 'Safe to spend', esc(m2.big || '–'), (k === 'budget' && m2.big ? 'after bills and cards' : esc(m2.sub.split(' · ')[0])) + (m2.stale ? ' · from a while ago' : ''), m2.owe ? 'bad' : 'good')
             + (m2.sub.indexOf(' · ') > 0 ? stat(k === 'split' ? 'Details' : 'Until payday', esc(m2.sub.split(' · ')[1].replace(/ until .*/, '')), esc((/until (.*)/.exec(m2.sub) || ['', ''])[1])) : '') + '</div><!--cut:rest-->'
             + ((m2.rows || []).length ? '<h3>' + (k === 'split' ? 'Who owes who' : 'Bills before payday') + '</h3>' + m2.rows.map(function(r){ return '<div class="dr"><span>' + esc(r) + '</span></div>'; }).join('') : '')
-            + (m2.more && m2.more.lines.length ? '<h3>' + esc(m2.more.title) + '</h3>' + m2.more.lines.map(function(r){ return '<div class="dr"><span>' + esc(r) + '</span></div>'; }).join('') : '');
+            + (m2.more && m2.more.lines.length ? '<h3>' + esc(m2.more.title) + '</h3>' + m2.more.lines.map(budLine).join('') : '');
         } else if (m2) h += '<div class="note">Can’t reach ' + low(TITLES[k]) + ' right now. It will try again in a few minutes.</div>';
         if (url) h += '<a class="btn primary" href="' + esc(url) + '" target="_blank" rel="noopener" style="margin-top:8px;text-align:center">Open ' + low(TITLES[k]) + '</a>';
       }
@@ -1045,7 +1097,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         p = parts('forecast'); sub = WX && WX.ok ? WX.city : '';
         if (p.days){
           var sk = sky(WX.code, WX.day), jacket = WX.rain >= 40 ? 'take a jacket' : 'looks dry';
-          h = '<div class="pgrid g-wx"><section class="card pc now" style="grid-area:a"><div class="nowtop">' + SKY[sk[0]] + '<div><div class="deg">' + WX.temp + '°</div><div class="sk">' + sk[1] + ' · feels ' + WX.feels + '°</div></div></div>'
+          h = '<div class="pgrid g-wx"><section class="card pc now" style="grid-area:a"><div class="nowtop">' + SKY[sk[0]] + '<div><div class="deg">' + WX.temp + '°</div><div class="sk">' + sk[1] + ' · feels ' + WX.feels + '°</div></div><div class="weartip">' + esc(wearTip()) + '</div></div>'
             + '<div class="flat"><div class="stats">' + stat('Today', WX.hi + '° / ' + WX.lo + '°', 'high and low') + stat('Rain', (WX.rain == null ? '–' : WX.rain + '%'), jacket)
             + stat('Sunrise', tm(WX.sunrise), 'today') + stat('Sunset', tm(WX.sunset), 'today') + '</div></div>' + (WX.stale ? '<div class="note">From earlier. Can’t reach the weather right now.</div>' : '') + '</section>'
             + panel('c', p.days) + panel('b', p.hours) + '</div>';
@@ -1259,6 +1311,24 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
   // ---------- taps ----------
   function on(id, ev, fn){ $(id).addEventListener(ev, fn); }
+  // Timer: pick minutes from the top bar; it counts down there and chimes when done.
+  var TMR = 0; try { TMR = +localStorage.getItem('homeit-timer') || 0; if (TMR < Date.now()) TMR = 0; } catch(e){}
+  function beep(n){ try { var a = new (window.AudioContext || window.webkitAudioContext)(); for (var i = 0; i < n; i++){ var o = a.createOscillator(), g = a.createGain(), t = a.currentTime + i * .7; o.frequency.value = 880; g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.55); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.55); } } catch(e){} }
+  function setTimer(min){ TMR = min ? Date.now() + min * 60e3 : 0; try { if (TMR) localStorage.setItem('homeit-timer', TMR); else localStorage.removeItem('homeit-timer'); } catch(e){} timerTick(); }
+  function timerTick(){
+    var b = $('tmrbtn'), left = TMR ? Math.ceil((TMR - Date.now()) / 1000) : 0;
+    if (TMR && left <= 0){
+      setTimer(0); var el = $('timeup');
+      if (!el){ el = document.createElement('div'); el.id = 'timeup'; el.className = 'timeup'; el.setAttribute('role', 'alert'); el.innerHTML = '<span>Time’s up!</span><button class="btn">OK</button>'; stage.appendChild(el); el.addEventListener('click', function(){ el.hidden = true; }); }
+      el.hidden = false; ui.awake = Date.now() + 60e3; beep(3); return;
+    }
+    b.textContent = TMR ? Math.floor(left / 60) + ':' + ('0' + left % 60).slice(-2) : 'Timer';
+    b.classList.toggle('run', !!TMR); $('tmenu').classList.toggle('on', !!TMR);
+  }
+  on('tmrbtn', 'click', function(e){ e.stopPropagation(); var m = $('tmenu'); m.hidden = !m.hidden; $('tmrbtn').setAttribute('aria-expanded', String(!m.hidden)); });
+  on('tmenu', 'click', function(e){ var b = e.target.closest('button'); if (!b) return; setTimer(+b.dataset.min); $('tmenu').hidden = true; $('tmrbtn').setAttribute('aria-expanded', 'false'); });
+  document.addEventListener('click', function(e){ if (!e.target.closest('#tmr')){ $('tmenu').hidden = true; } });
+  setInterval(timerTick, 1000); timerTick();
   on('tabs', 'click', function(e){ var b = e.target.closest('button'); if (!b) return; ui.list = b.dataset.list; renderItems(); });
   on('items', 'click', function(e){
     var b = e.target.closest('button'); if (!b) return;

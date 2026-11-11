@@ -2,6 +2,12 @@
 
 ## v1.2.0 (not released yet)
 
+### New (latest pass)
+- Timer in the top bar: pick 5 to 45 minutes, it counts down there and chimes when done.
+- Weather page says what to wear ("Coat weather. Bring an umbrella.") and shows each day's low and high as a bar.
+- Money page shows budgets as bars: green, yellow when nearly used, red when over.
+- Each page has its own colour on its title and tab.
+
 ### Improved (latest pass)
 - Today page: the add box sits at the top of the to-do list, plans and tomorrow share one panel, weather has its own.
 - Home: a "+ To-do" button jumps straight to typing a to-do.
