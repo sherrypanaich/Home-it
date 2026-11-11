@@ -20,7 +20,7 @@ const crypto = require('crypto');
 const readline = require('readline');
 const zlib = require('zlib');
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 // Optional settings file next to this one: KEY=value per line (see home-it.env.example).
 try {
   for (const line of fs.readFileSync(path.join(__dirname, 'home-it.env'), 'utf8').split(/\r?\n/)) {
@@ -41,6 +41,7 @@ const COPY_DIR = (process.env.BACKUP_COPY_DIR || '').trim();
 let lastBackup = null;
 const KEEP_BACKUPS = 30, SESSION_DAYS = 90, KIOSK_DAYS = 3650;
 // Weather comes from Open-Meteo (free, no key, no account). Tests point these somewhere else.
+const NEWS_URL = process.env.NEWS_URL || 'https://www.cbc.ca/webfeed/rss/rss-topstories';   // used until you set your own feed in Settings
 const WEATHER_URL = process.env.WEATHER_URL || 'https://api.open-meteo.com/v1/forecast';
 const GEOCODE_URL = process.env.GEOCODE_URL || 'https://geocoding-api.open-meteo.com/v1/search';
 fs.mkdirSync(BACKUP_DIR, { recursive: true, mode: 0o700 });
@@ -180,7 +181,7 @@ function changed(uid) { for (const [res, id] of listeners) if (id === uid) res.w
 // ---------- sending things ----------
 const SECURITY = {
   'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin', 'X-Frame-Options': 'SAMEORIGIN',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://accounts.google.com"
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://accounts.google.com"
 };
 function out(res, code, headers, body) {
   const req = res.req, h = { ...SECURITY, ...headers };
@@ -249,13 +250,35 @@ async function moneyFor(uid) {
     if (hit && Date.now() - hit.at < 5 * 60e3) return void (res[kind] = hit.card);
     try {
       const ans = await askApp(link, APPS[kind].tool);
-      const card = { ok: true, ...H.moneyCard(kind, ans.text, ans.data) }, [tool, args, title] = APPS[kind].more;
+      const card = { ok: true, at: Date.now(), ...H.moneyCard(kind, ans.text, ans.data) }, [tool, args, title] = APPS[kind].more;
       try { card.more = { title, lines: (await askApp(link, tool, args)).text.split('\n').map(l => l.replace(/^[-•]\s*/, '').trim()).filter(Boolean).slice(0, 8).map(l => l.slice(0, 140)) }; } catch {}
       moneyCache.set(key, { at: Date.now(), card }); res[kind] = card;
     } catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }
   }));
   return res;
 }
+
+// ---------- news: headlines from one feed (RSS or Atom), asked at most every 15 minutes, the last answer kept ----------
+// The answer says when it was read (`at`); if the feed can't be reached the last answer is sent again marked `stale`.
+// Story pictures are only addresses: the screen loads them straight from the news site (the img-src rule above allows https pictures).
+const RSS = require('./rss');
+const newsCache = new Map();   // url -> { at, data }
+async function newsFor(set) {
+  const url = set.newsUrl || NEWS_URL, hit = newsCache.get(url);
+  if (hit && Date.now() - hit.at < 15 * 60e3) return hit.data;
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'home-it', Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml' } });
+    if (!r.ok) throw new Error('answered ' + r.status);
+    const feed = RSS.read((await r.text()).slice(0, 2e6), 30);
+    if (!feed.items.length) throw new Error('no headlines');
+    const data = { ok: true, title: feed.title, items: feed.items, at: Date.now() };
+    if (newsCache.size > 50) newsCache.clear();
+    newsCache.set(url, { at: Date.now(), data }); return data;
+  } catch (e) { return hit ? { ...hit.data, stale: true } : { ok: false }; }
+}
+
+// ---------- the car (car.js): Bluelink sign-in stays in data/car.json ----------
+const car = require('./car')({ DATA_DIR, readBody, send, changed, weatherFor: set => weatherFor(set), settingsOf: uid => stateOf(uid).settings });
 
 // ---------- a calendar link (Apple, Google, Outlook): read every 15 minutes, the next 60 days kept ----------
 const ICS = require('./ics');
@@ -288,7 +311,7 @@ async function weatherFor(set) {
   const key = set.lat + ',' + set.lon, hit = weatherCache.get(key);
   if (hit && Date.now() - hit.at < 15 * 60e3) return hit.data;
   try {
-    const q = new URLSearchParams({ latitude: set.lat, longitude: set.lon, timezone: 'auto', forecast_days: '5',
+    const q = new URLSearchParams({ latitude: set.lat, longitude: set.lon, timezone: 'auto', forecast_days: '8',
       current: 'temperature_2m,apparent_temperature,weather_code,is_day',
       hourly: 'temperature_2m,weather_code,precipitation_probability',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max' });
@@ -300,7 +323,7 @@ async function weatherFor(set) {
       temp: Math.round(c.temperature_2m), feels: Math.round(c.apparent_temperature), code: c.weather_code, day: c.is_day !== 0,
       hi: Math.round(d.temperature_2m_max?.[0]), lo: Math.round(d.temperature_2m_min?.[0]), rain: d.precipitation_probability_max?.[0] ?? null,
       sunrise: hm(d.sunrise?.[0]), sunset: hm(d.sunset?.[0]),
-      days: (d.time || []).slice(1, 5).map((t, i) => ({ date: t, code: d.weather_code?.[i + 1], hi: Math.round(d.temperature_2m_max?.[i + 1]), lo: Math.round(d.temperature_2m_min?.[i + 1]), rain: d.precipitation_probability_max?.[i + 1] ?? null })),
+      days: (d.time || []).slice(1, 8).map((t, i) => ({ date: t, code: d.weather_code?.[i + 1], hi: Math.round(d.temperature_2m_max?.[i + 1]), lo: Math.round(d.temperature_2m_min?.[i + 1]), rain: d.precipitation_probability_max?.[i + 1] ?? null })),
       tomorrow: { code: d.weather_code?.[1], hi: Math.round(d.temperature_2m_max?.[1]), lo: Math.round(d.temperature_2m_min?.[1]) },
       hours: (h.time || []).slice(from, from + 24).map((t, i) => ({ t: hm(t), temp: Math.round(h.temperature_2m[from + i]), code: h.weather_code[from + i], rain: h.precipitation_probability?.[from + i] ?? null }))
     };
@@ -346,6 +369,8 @@ async function handle(req, res) {
   if (PUBLIC_FILES.has(p)) return file(res, p.slice(1), null, p === '/sw.js' ? 'no-cache' : 'public, max-age=86400');
   if (/^\/art\/[a-z0-9-]+\.(webp|png)$/.test(p)) return file(res, p.slice(1), null, 'public, max-age=604800');
   if (p === '/home.js') return file(res, 'home.js', null, 'no-cache', __dirname);
+  if (p === '/carplan.js') return file(res, 'carplan.js', null, 'no-cache', __dirname);
+  if (p === '/car-ui.js') return file(res, 'car-ui.js', null, 'no-cache');
   if (p === '/login' && m === 'GET') return file(res, 'login.html');
   if (p === '/api/login' && m === 'POST') {
     const { name, password } = await readBody(req);
@@ -385,8 +410,10 @@ async function handle(req, res) {
     changed(uid);
     return send(res, 200, { ok: true, msg, ...viewFor(uid, req) });
   }
+  if (p === '/api/news' && m === 'GET') return send(res, 200, await newsFor(stateOf(uid).settings));
   if (p === '/api/weather' && m === 'GET') return send(res, 200, await weatherFor(stateOf(uid).settings));
   if (p === '/api/money' && m === 'GET') return send(res, 200, await moneyFor(uid));
+  if (await car(req, res, uid, p, m)) return;   // start the car (car.js)
   if (p === '/api/city' && m === 'POST') {
     const name = H.text((await readBody(req)).city, 60);
     if (!name) return send(res, 400, { error: 'Type a town or city.' });

@@ -76,7 +76,16 @@ test('next shift and tomorrow', () => {
 test('the guide picks a mood and a line with the real times in it', () => {
   const s = withShift();
   let g = H.guide(s, H.dayView(s, at('2026-11-10', '10:20')));
-  assert.equal(g.who, 'luffy'); assert.equal(g.mood, 'happy'); assert.match(g.line, /1:35 PM/);
+  assert.equal(g.who, 'luffy'); assert.equal(g.mood, 'happy'); assert.doesNotMatch(g.line, /1:35 PM|\{/);   // the card already says when to leave
+  H.apply(s, 'todo.add', { t: 'Pack lunch' }, ctx());
+  g = H.guide(s, H.dayView(s, at('2026-11-10', '10:20')));
+  assert.match(g.line, /1 to-do .*“Pack lunch”/); assert.equal(g.mood, 'happy');
+  g = H.guide(s, H.dayView(s, at('2026-11-10', '15:00')));
+  assert.match(g.line, /1 to-do/); assert.doesNotMatch(g.line, /\{/);
+  H.apply(s, 'event.add', { date: '2026-11-10', time: '11:30', t: 'Call the dentist' }, ctx());
+  g = H.guide(s, H.dayView(s, at('2026-11-10', '10:20')));
+  assert.match(g.line, /Call the dentist at 11:30 AM/);
+  s.lists.today = [];
   g = H.guide(s, H.dayView(s, at('2026-11-10', '13:10')));
   assert.equal(g.mood, 'worried'); assert.doesNotMatch(g.line, /\{/);
   H.apply(s, 'todo.add', { t: 'Laundry' }, ctx()); H.apply(s, 'todo.toggle', { list: 'today', id: s.lists.today[0].id }, ctx());

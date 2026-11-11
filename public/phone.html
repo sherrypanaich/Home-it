@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#14112A">
+<meta name="theme-color" content="#F5F1E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121019" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Home it">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -42,10 +46,13 @@ button{cursor:pointer}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .disp{font-family:var(--display);font-weight:400;font-variant-numeric:normal;letter-spacing:0}
 [hidden]{display:none!important}
-body{min-height:100vh;-webkit-tap-highlight-color:transparent}
-.wrap{max-width:560px;margin:0 auto;padding:14px 16px calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+body{min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overflow-x:hidden}
+.wrap{max-width:560px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(100px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
 .card{background:var(--surface);border:2.5px solid var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--pop);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.h2{display:inline-block;align-self:flex-start;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:400;font-size:.84rem;padding:4px 12px 3px;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--hl);margin:0;white-space:nowrap}
+.h2{display:inline-block;align-self:flex-start;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:400;font-size:.84rem;padding:4px 12px 3px;transform:skewX(-10deg);box-shadow:3px 3px 0 var(--pgc,var(--hl));margin:0;white-space:nowrap}
+/* each part has its own colour, the same ones as the big screen */
+.pane{display:flex;flex-direction:column;gap:14px}
+#p-today,#p-todo{--pgc:#2D5BFF}#p-shifts,#p-events,#comingcard{--pgc:#8B5CF6}#wxcard{--pgc:#22B8E0}#moneycard{--pgc:#16A765}#carcard{--pgc:#F0503C}#p-news{--pgc:#FF9A2E}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .top .d{font-weight:800;line-height:1.15}
 .top .d small{display:block;color:var(--muted);font-weight:600;font-size:.82rem}
@@ -56,8 +63,8 @@ body{min-height:100vh;-webkit-tap-highlight-color:transparent}
 .hero{background-color:var(--panel);color:var(--panel-ink);border-width:3px;position:relative;overflow:hidden;padding-right:112px;min-height:150px;
   background-image:repeating-conic-gradient(from 0deg at 90% 120%,var(--rays) 0deg 2.5deg,transparent 2.5deg 8deg)}
 .hero.soon{background-color:var(--hl);color:#14112A}
-.hero .eb{font-weight:800;text-transform:uppercase;letter-spacing:.07em;font-size:.76rem}
-.hero .big{font-size:1.32rem;line-height:1.12;white-space:nowrap;text-shadow:2px 2px 0 rgba(20,17,42,.35)}
+.hero .eb{font-weight:800;text-transform:uppercase;letter-spacing:.07em;font-size:.82rem}
+.hero .big{font-size:1.32rem;line-height:1.12;text-shadow:2px 2px 0 rgba(20,17,42,.35)}
 .hero.soon .big{text-shadow:none}
 .hero .chip{align-self:flex-start;background:var(--hl);color:#14112A;border:2.5px solid #14112A;border-radius:10px;box-shadow:2px 2px 0 #14112A;font-weight:800;padding:4px 10px;font-size:.92rem}
 .hero.soon .chip{background:#fff}
@@ -65,7 +72,7 @@ body{min-height:100vh;-webkit-tap-highlight-color:transparent}
 .say{font-weight:800}
 .tabs{display:flex;gap:6px}
 .tabs button{flex:1;border:2px solid var(--edge);background:var(--surface);border-radius:10px;font-weight:800;padding:4px 6px;min-height:46px;font-size:.9rem}
-.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:2px 2px 0 var(--hl)}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:2px 2px 0 var(--pgc,var(--hl))}
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .list li{display:flex;align-items:center;border-top:1.5px solid var(--line)}
 .list li:first-child{border-top:0}
@@ -75,13 +82,14 @@ body{min-height:100vh;-webkit-tap-highlight-color:transparent}
 .it[aria-pressed="true"] .box::after{content:"";width:12px;height:7px;border-left:3px solid #14112A;border-bottom:3px solid #14112A;transform:rotate(-45deg) translate(1px,-1px)}
 .it[aria-pressed="true"] .t{text-decoration:line-through;color:var(--muted)}
 .it .t{min-width:0;overflow-wrap:anywhere}
-.tagp{margin-left:auto;font-size:.76rem;font-weight:800;border:2px solid var(--edge);border-radius:8px;padding:1px 7px;white-space:nowrap;background:var(--soft)}
+.tagp{margin-left:auto;font-size:.82rem;font-weight:800;border:2px solid var(--edge);border-radius:8px;padding:1px 7px;white-space:nowrap;background:var(--soft)}
 .x{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:48px;display:grid;place-items:center;color:var(--muted);font-weight:800;font-size:1.3rem;flex:none}
 .empty{color:var(--muted);font-weight:600;padding:12px 2px}
 form{display:flex;flex-direction:column;gap:8px}
 .rowf{display:flex;gap:8px;align-items:flex-end}
 label{font-weight:800;font-size:.86rem;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
-input[type=text],select{border:2.5px solid var(--edge);border-radius:12px;min-height:48px;padding:6px 10px;background:var(--surface);width:100%;font-size:16px}
+input,select{border:2.5px solid var(--edge);border-radius:12px;min-height:48px;padding:6px 10px;background:var(--surface);width:100%;font-size:16px;-webkit-appearance:none;appearance:none}
+select{padding-right:30px;text-overflow:ellipsis;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(-45deg,transparent 50%,var(--ink) 50%);background-size:6px 6px;background-position:right 16px center,right 10px center;background-repeat:no-repeat}
 input::placeholder{color:var(--muted)}
 .addbar{display:flex;gap:8px}
 .up{display:flex;flex-direction:column;gap:6px}
@@ -93,57 +101,119 @@ input::placeholder{color:var(--muted)}
 .pop .rowf .btn{flex:1}
 .pop .btn[disabled]{opacity:.45}
 .have.on{background:var(--soft);border-style:dashed}
-.toast button{all:unset;cursor:pointer;margin-left:14px;color:var(--hl);text-decoration:underline;font-weight:800;padding:6px 4px}
+.toast button{all:unset;cursor:pointer;margin:-10px -8px -10px 8px;color:var(--hl);text-decoration:underline;font-weight:800;padding:12px 10px;min-width:44px;text-align:center}
 .addbar input{flex:1;min-width:0;box-shadow:3px 3px 0 var(--pop)}
 .days{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 .days button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:4px 10px;border-radius:10px;border:2px solid transparent;font-weight:600}
 .days .dn{font-weight:800;width:100px;white-space:nowrap}
 .days .off{color:var(--muted)}
-.days .hrs{margin-left:auto;font-weight:800;font-size:.86rem}
+.days .hrs{margin-left:auto;font-weight:800;font-size:.86rem;white-space:nowrap;flex:none}
 .days li.cur button{background:var(--hl);color:#14112A;border-color:#14112A;box-shadow:2px 2px 0 var(--pop)}
 .days li.cur .off{color:#14112A}
 .days li.sel button{border-color:var(--edge);border-style:dashed}
 .days li.past{opacity:.6}
 .wk{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;text-align:center}
 .wk small{display:block;color:var(--muted);font-weight:600}
-.have{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;border:2px solid var(--edge);border-radius:10px;padding:4px 6px 4px 10px;background:var(--surface2)}
-.have div{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.sw{width:58px;height:34px;border:2.5px solid var(--edge);border-radius:999px;background:var(--surface2);position:relative;padding:0;flex:none}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:var(--ink);transition:left .12s}
+.have{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;border:2px solid var(--edge);border-radius:10px;padding:6px 6px 6px 10px;background:var(--surface2)}
+.have > span{min-width:0;overflow-wrap:anywhere;line-height:1.25}
+.have > span small{display:block;color:var(--muted);font-weight:600;font-size:.86rem}
+.have div{display:flex;gap:6px;flex:none}
+.have .btn.sm{background:var(--surface)}
+.have.rule{flex-direction:column;align-items:stretch}
+.have.rule div{flex-wrap:wrap}.have.rule .btn{flex:1 0 auto}
+@media (max-width:350px){.have{flex-direction:column;align-items:stretch}.have .btn{flex:1 0 auto}.wxd .trange{width:44px}.days .dn{width:88px}}
+.sw{width:72px;height:44px;border:2.5px solid var(--edge);border-radius:999px;background:var(--surface2);position:relative;padding:0;flex:none}
+.sw::after{content:"";position:absolute;top:4px;left:4px;width:31px;height:31px;border-radius:50%;background:var(--ink);transition:left .12s}
 .sw[aria-pressed="true"]{background:var(--hl)}
-.sw[aria-pressed="true"]::after{left:27px;background:#14112A}
+.sw[aria-pressed="true"]::after{left:32px;background:#14112A}
 .line{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;min-height:48px}
 .line small{display:block;color:var(--muted);font-weight:600}
+.line > b{white-space:nowrap;flex:none}
+#copyweek{white-space:normal;text-align:center}
 .note{color:var(--muted);font-size:.86rem;font-weight:600}
 .seg{display:flex;border:2.5px solid var(--edge);border-radius:12px;background:var(--surface2);padding:3px;gap:2px}
-.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-weight:800;min-height:40px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-weight:800;min-height:44px}
 .seg button[aria-pressed="true"]{background:var(--hl);color:var(--hl-ink)}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:3px solid var(--edge);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));gap:4px}
-nav button{flex:1;border:0;background:transparent;border-radius:12px;font-weight:800;font-size:.8rem;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
-nav button[aria-pressed="true"]{background:var(--hl);color:#14112A;box-shadow:inset 0 0 0 2.5px #14112A}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:3px solid var(--edge);display:flex;padding:6px calc(8px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px));gap:2px}
+nav button{flex:1;min-width:0;padding:0;border:0;background:transparent;border-radius:12px;font-weight:800;font-size:.82rem;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
+nav button[aria-pressed="true"]{background:var(--hl);color:#14112A;box-shadow:inset 0 0 0 2.5px #14112A,inset 0 -7px 0 var(--tc,#14112A)}
+nav [data-p="today"],nav [data-p="todo"]{--tc:#2D5BFF}nav [data-p="shifts"],nav [data-p="events"]{--tc:#8B5CF6}nav [data-p="news"]{--tc:#FF9A2E}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--bg);font-weight:800;border-radius:12px;padding:10px 18px;box-shadow:3px 3px 0 var(--hl);max-width:88%;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--bg);font-weight:800;border-radius:12px;padding:10px 18px;box-shadow:3px 3px 0 var(--hl);max-width:88%;width:max-content;text-align:center}
+/* the car on Today: one line of why, the hold button, the rest folded away */
+#carcard .chead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#carsum{font-weight:800;font-size:.86rem;color:var(--muted);text-align:right}
+#carbody{display:flex;flex-direction:column}
+#carbody .carmain .car-stats{display:none}
+#carbody .carmain .car-why{margin:8px 0 0}
+#carbody .carmain .car-stats + .car-why{margin-top:0}
+#carbody .carmain .car-run:first-child{margin-top:0;margin-bottom:8px}
+#carbody .car-hold{touch-action:pan-y}
+#carbody .car-stat small,#carbody .car-h{font-size:.82rem}
+#carbody .car-two .btn{white-space:normal}
+#carbody .car-row{flex-wrap:wrap}
+#carbody .car-row .seg{flex-wrap:wrap}
+#carbody .carmore{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin-top:8px;font-weight:800;color:var(--muted);border-radius:10px}
+#carbody .carmore::after{content:"";width:8px;height:8px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+#carbody .carmore[aria-expanded="true"]::after{transform:translateY(2px) rotate(225deg)}
+#carbody .car-nav{margin-top:4px}
+/* weather and money on Today: what to wear, day bars, budget bars (same as the big screen) */
+.wxnow{display:flex;align-items:center;gap:12px}
+.wxnow .deg{font-size:2rem;line-height:1}
+.wxnow div{display:flex;flex-direction:column;min-width:0}
+.wxnow small{color:var(--muted);font-weight:600;font-size:.86rem}
+.weartip{font-weight:800;background:var(--soft);border:2px solid var(--edge);border-radius:10px;padding:6px 10px}
+.wxd{display:flex;align-items:center;gap:8px;min-height:36px;border-top:1.5px solid var(--line);font-weight:600}
+.wxd b:first-child{width:42px;flex:none}
+.wxd .s{flex:1;min-width:0}
+.wxd .wet{color:var(--accent);font-weight:800}
+.wxd .lo{color:var(--muted);width:34px;text-align:right;flex:none}
+.wxd .hi{width:30px;flex:none}
+.trange{position:relative;flex:none;width:72px;height:8px;border-radius:99px;background:var(--surface2)}
+.trange i{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#22B8E0,#FFD23F)}
+.mstats{display:flex;gap:10px}
+.mstat{flex:1;min-width:0;border:2.5px solid var(--edge);border-radius:12px;box-shadow:3px 3px 0 var(--pop);padding:8px 10px;display:flex;flex-direction:column;gap:1px;background:var(--surface);color:inherit;text-decoration:none}
+.mstat small{font-weight:800;font-size:.82rem;color:var(--muted)}
+.mstat b{font-size:1.35rem;line-height:1.15}
+.mstat b.good{color:var(--good)}.mstat b.bad{color:var(--bad)}
+.mstat span{font-size:.86rem;color:var(--muted);font-weight:600}
+.h3{margin:6px 0 0;font-size:.86rem;font-weight:800;color:var(--muted)}
+.bud .l{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:800;flex-wrap:wrap}
+.bud .l small{color:var(--muted);font-weight:600;font-size:.86rem}
+.bud .l small.hot{color:var(--bad);font-weight:800}
+.meter{height:10px;border-radius:99px;background:var(--surface2);border:1.5px solid var(--line);margin-top:4px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--good)}
+.meter i.warn{background:var(--hl)}.meter i.hot{background:var(--bad)}
+/* news: headlines to tap */
+.nw{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-top:1.5px solid var(--line);color:inherit;text-decoration:none;min-height:48px}
+.nw:first-of-type{border-top:0;padding-top:2px}
+.nw b{line-height:1.25}
+.nw span{color:var(--muted);font-weight:600;font-size:.92rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.nw small{color:var(--muted);font-weight:800;font-size:.82rem}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><div class="d"><span id="date"></span><small id="wx"></small></div><button class="btn sm" id="morebtn" aria-label="Settings" aria-pressed="false">Settings</button></div>
+  <div class="top"><div class="d"><span id="date"></span><small id="wx"></small></div><button class="btn sm" id="morebtn" aria-pressed="false">Settings</button></div>
 
   <section id="p-today" class="pane">
     <div class="card hero" id="hero"></div>
-    <div class="card" style="margin-top:14px" id="planscard"><h2 class="h2">PLANS TODAY</h2><ul class="list" id="plist"></ul></div>
-    <div class="card" style="margin-top:14px"><h2 class="h2">TO-DO TODAY</h2>
+    <div class="card" id="carcard"><div class="chead"><h2 class="h2">CAR</h2><span id="carsum"></span></div><div id="carbody"></div></div>
+    <div class="card" id="planscard"><h2 class="h2">PLANS TODAY</h2><ul class="list" id="plist"></ul></div>
+    <div class="card"><h2 class="h2">TO-DO TODAY</h2>
       <form id="quickform" style="flex-direction:row" class="addbar">
         <input id="quickinput" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off" enterkeyhint="done">
         <button class="btn primary">Add</button>
       </form>
       <ul class="list" id="tlist"></ul></div>
-    <div class="card" style="margin-top:14px"><h2 class="h2">COMING UP</h2><div class="up" id="coming"></div></div>
+    <div class="card" id="comingcard"><h2 class="h2">COMING UP</h2><div class="up" id="coming"></div></div>
+    <div class="card" id="wxcard" hidden><h2 class="h2">WEATHER</h2><div id="wxbody" style="display:flex;flex-direction:column;gap:8px"></div></div>
+    <div class="card" id="moneycard" hidden><h2 class="h2">MONEY</h2><div id="moneybody" style="display:flex;flex-direction:column;gap:8px"></div></div>
   </section>
 
   <section id="p-todo" class="pane" hidden>
     <div class="card">
-      <div class="tabs" id="tabs" role="group" aria-label="Lists"><button data-list="today">Today</button><button data-list="later">Later</button><button data-list="shop">Shopping</button></div>
+      <div class="tabs" id="tabs" role="group" aria-label="Lists" style="flex-wrap:wrap"></div>
       <form id="addform" style="flex-direction:row" class="addbar">
         <input id="addinput" type="text" maxlength="80" placeholder="Add something" aria-label="Add a to-do" autocomplete="off" enterkeyhint="done">
         <button class="btn sm" type="button" id="rep" aria-pressed="false" aria-label="Repeat">Once</button>
@@ -158,7 +228,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
       <div class="wk"><button class="btn sm" id="wkprev" aria-label="Week before">‹</button><div><span id="wktitle"></span><small id="wkh"></small></div><button class="btn sm" id="wknext" aria-label="Week after">›</button></div>
       <ul class="days" id="days"></ul>
     </div>
-    <div class="card" style="margin-top:14px">
+    <div class="card">
       <h2 class="h2" id="sdaytitle"></h2>
       <div id="shave" style="display:flex;flex-direction:column;gap:6px"></div>
       <label id="smovel" hidden>Day<input id="smove" type="date"></label>
@@ -169,7 +239,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
       <button class="btn primary" id="saveshift">Add shift</button>
       <button class="btn" id="copyweek">Copy the week before into this week</button>
     </div>
-    <div class="card" style="margin-top:14px">
+    <div class="card">
       <h2 class="h2">HOURS AND PAY BY MONTH</h2>
       <div id="months"></div>
     </div>
@@ -186,7 +256,11 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
         <button class="btn" type="button" id="ecancel" hidden>Cancel</button>
       </form>
     </div>
-    <div class="card" style="margin-top:14px"><h2 class="h2">COMING UP</h2><div id="ehave" style="display:flex;flex-direction:column;gap:6px"></div></div>
+    <div class="card"><h2 class="h2">COMING UP</h2><div id="ehave" style="display:flex;flex-direction:column;gap:6px"></div></div>
+  </section>
+
+  <section id="p-news" class="pane" hidden>
+    <div class="card"><h2 class="h2">NEWS</h2><div id="newsbody"></div></div>
   </section>
 
   <section id="p-more" class="pane" hidden>
@@ -209,24 +283,27 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   <button data-p="todo"><svg viewBox="0 0 24 24"><path d="M4 7l2 2 3-4M4 16l2 2 3-4M13 7h7M13 16h7"/></svg>To-do</button>
   <button data-p="shifts"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>Shifts</button>
   <button data-p="events"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>Events</button>
+  <button data-p="news"><svg viewBox="0 0 24 24"><path d="M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-2 2h-2M8 9h4M8 13h4"/></svg>News</button>
 </nav>
 <div class="pop" id="pop" hidden>
   <div class="card">
     <div class="line" style="border:0"><h2 class="h2">TO-DO</h2><button class="btn sm" id="popclose">Close</button></div>
     <form id="tdform" style="flex-direction:row" class="addbar"><input id="tdname" type="text" maxlength="80" aria-label="To-do" autocomplete="off" enterkeyhint="done"><button class="btn primary">Save</button></form>
     <div class="note" style="font-weight:800">Move to</div>
-    <div class="rowf" id="tdmove"></div>
+    <div class="rowf" id="tdmove" style="flex-wrap:wrap"></div>
     <button class="btn" id="tdrm">Remove</button>
   </div>
 </div>
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="home.js"></script>
+<script src="carplan.js"></script>
+<script src="car-ui.js"></script>
 <script>
 (function(){
   'use strict';
   var DEMO = !!window.HOMEIT_DEMO, H = window.H, $ = function(id){ return document.getElementById(id); };
-  var S = null, ME = { name:'' }, VERSION = '', WX = null, CAL = '';
+  var S = null, ME = { name:'' }, VERSION = '', WX = null, CAL = '', MONEY = null, NEWS = null;
   var ui = { pane:'today', list:'today', rep:'', weekOff:0, sday:null, srep:false, day:'' };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function tm(t, short){ return H.fmtTime(t, short); }
@@ -288,7 +365,83 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     H.coming(S, v.date, 5).forEach(function(r){ h += '<div><b>' + esc(r.label) + '</b>' + (r.kind === 'shift' ? '<span class="sh">Shift ' + span(r.start, r.end, true) + '</span>' : '<span>' + esc(r.t) + (r.time ? ' · ' + tm(r.time) : '') + '</span>') + '</div>'; });
     $('coming').innerHTML = h || '<div class="note">Nothing booked in the next two weeks.</div>';
   }
+  // ---------- weather, money and news: the same words and bars as the big screen ----------
+  function sky(code){
+    if (code === 0) return 'Clear'; if (code === 1) return 'Mostly clear'; if (code === 2) return 'Partly cloudy'; if (code === 3) return 'Cloudy';
+    if (code === 45 || code === 48) return 'Foggy'; if (code >= 51 && code <= 57) return 'Drizzle';
+    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return 'Rain';
+    if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'Snow';
+    return code >= 95 ? 'Storms' : 'Cloudy';
+  }
+  // One plain line on what to wear or bring, from the feels-like temperature and today's rain or snow.
+  function wearTip(){
+    var f = WX.feels, t = f < -10 ? 'Bundle up: heavy coat, hat and gloves.' : f < 0 ? 'Winter coat and gloves.' : f < 8 ? 'Coat weather.' : f < 15 ? 'A light jacket will do.' : f < 25 ? 'No jacket needed.' : 'Hot one. Bring water.';
+    if (sky(WX.code) === 'Snow') t += ' Snow, so leave a little early.'; else if (WX.rain >= 40) t += ' Bring an umbrella.';
+    return t;
+  }
+  function renderWx(){
+    var ok = WX && WX.ok && isFinite(WX.feels); $('wxcard').hidden = !ok; if (!ok) return;
+    var h = '<div class="wxnow"><b class="deg disp">' + WX.temp + '°</b><div><b>' + sky(WX.code) + ' · feels ' + WX.feels + '°</b><small>' + esc(String(WX.city).split(',')[0]) + ' · high ' + WX.hi + '°' + (isFinite(WX.lo) ? ', low ' + WX.lo + '°' : '') + (WX.stale ? ' · from earlier' : '') + '</small></div></div>'
+      + '<div class="weartip">' + esc(wearTip()) + '</div>';
+    var dd = (WX.days || []).filter(function(d){ return isFinite(d.hi) && isFinite(d.lo); });
+    if (dd.length){
+      var tmin = Math.min.apply(null, dd.map(function(d){ return d.lo; })), tmax = Math.max.apply(null, dd.map(function(d){ return d.hi; })), tsp = Math.max(1, tmax - tmin);
+      h += '<div>' + dd.map(function(d){
+        return '<div class="wxd"><b>' + H.fmtDate(d.date).slice(0, 3) + '</b><span class="s">' + sky(d.code) + (d.rain >= 40 ? ' · <span class="wet">' + d.rain + '% rain</span>' : '') + '</span><b class="lo">' + d.lo + '°</b><span class="trange"><i style="left:' + Math.round((d.lo - tmin) / tsp * 100) + '%;right:' + Math.round((tmax - d.hi) / tsp * 100) + '%"></i></span><b class="hi">' + d.hi + '°</b></div>'; }).join('') + '</div>';
+    }
+    $('wxbody').innerHTML = h;
+  }
+  // "Groceries: $212 of $400, ..." becomes a bar; anything else stays a plain line.
+  function budLine(r){
+    var m = /^(.+?):\s*\$([\d,.]+) of \$([\d,.]+)(?:,\s*(.*))?$/.exec(r);
+    if (!m) return '<div class="note">' + esc(r) + '</div>';
+    var used = parseFloat(m[2].replace(/,/g, '')), cap = parseFloat(m[3].replace(/,/g, '')), pc = cap > 0 ? used / cap : 0, over = pc > 1;
+    return '<div class="bud"><div class="l"><span>' + esc(m[1]) + '</span><small class="' + (over ? 'hot' : '') + '">$' + esc(m[2]) + ' of $' + esc(m[3]) + (m[4] ? ' · ' + esc(m[4].replace(/^\$(\S+) OVER/, 'over by $$$1').replace(/ - .*/, '').replace(/ \(.*\)/, '')) : '') + '</small></div>'
+      + '<div class="meter"><i class="' + (over ? 'hot' : pc >= .8 ? 'warn' : '') + '" style="width:' + Math.min(100, Math.round(pc * 100)) + '%"></i></div></div>';
+  }
+  function renderMoney(v){
+    var hide = S.settings.hide || [], sp = MONEY && MONEY.split && hide.indexOf('split') < 0 ? MONEY.split : null, bu = MONEY && MONEY.budget && hide.indexOf('budget') < 0 ? MONEY.budget : null;
+    var away = v.company || (MONEY && MONEY.hidden);
+    $('moneycard').hidden = !(sp || bu || (MONEY && MONEY.hidden)); if ($('moneycard').hidden) return;
+    var box = function(m, label, name, url){
+      var ok = /^https?:\/\//.test(url || ''), tag = ok ? 'a' : 'div';
+      return '<' + tag + ' class="mstat"' + (ok ? ' href="' + esc(url) + '" target="_blank" rel="noopener" aria-label="Open ' + name + '"' : '') + '><small>' + label + '</small>'
+        + (m.ok ? '<b class="' + (m.owe ? 'bad' : 'good') + '">' + esc(m.big || '–') + '</b><span>' + esc(m.big ? m.sub.replace(/^safe to spend · /, '') : m.sub) + (m.stale ? ' · from a while ago' : '') + '</span>' : '<span>Can’t reach ' + name + ' right now.</span>') + '</' + tag + '>';
+    };
+    var h = '';
+    if (away) h = '<div class="note">Hidden while you have company.</div>';
+    else {
+      h = '<div class="mstats">' + (bu ? box(bu, 'Safe to spend', 'Budget it', S.settings.budgetUrl) : '') + (sp ? box(sp, 'Split it', 'Split it', S.settings.splitUrl) : '') + '</div>';
+      if (sp && sp.ok && (sp.rows || []).length) h += '<div class="note">' + sp.rows.map(esc).join(' · ') + '</div>';
+      if (bu && bu.ok && bu.more && bu.more.lines.length) h += '<h3 class="h3">' + esc(bu.more.title) + '</h3>' + bu.more.lines.map(budLine).join('');
+    }
+    $('moneybody').innerHTML = h;
+  }
+  function ago(at){ var m = Math.max(0, Math.round((Date.now() - at) / 60e3)); return m < 60 ? (m < 2 ? 'just now' : m + ' min ago') : m < 1440 ? Math.round(m / 60) + ' h ago' : m < 2880 ? 'yesterday' : H.fmtDate(H.ymd(new Date(at))); }
+  function renderNews(){
+    var h, mine = H.freshPicks(S), row = function(n, fy){
+      var ok = /^https?:\/\//.test(n.url || ''), tag = ok ? 'a' : 'div';
+      return '<' + tag + ' class="nw"' + (ok ? ' href="' + esc(n.url) + '" target="_blank" rel="noopener"' : '') + '><b>' + esc(n.t) + '</b>' + (n.sum ? '<span>' + esc(n.sum) + '</span>' : '')
+        + '<small>' + (fy ? 'For you' + (n.src ? ' · ' + esc(n.src) : '') + (n.at ? ' · ' : '') : '') + (n.at ? ago(n.at) : '') + '</small></' + tag + '>'; };
+    h = mine.map(function(n){ return row(n, true); }).join('');
+    if (!NEWS) h += '<div class="note">Getting the news…</div>';
+    else if (!NEWS.ok || !(NEWS.items || []).length) h += '<div class="note">Can’t reach the news' + (mine.length ? ' site' : '') + ' right now. It will try again in a few minutes.</div>';
+    else h += NEWS.items.slice(0, 12).map(function(n){ return row(n, false); }).join('')
+      + '<div class="note" style="border-top:1.5px solid var(--line);padding-top:8px">' + esc(NEWS.title || 'Headlines') + (NEWS.stale ? ' · from earlier' : '') + '. Tap a headline to read it.</div>';
+    if ($('newsbody').dataset.h !== h){ $('newsbody').dataset.h = h; $('newsbody').innerHTML = h; }
+  }
+  // The car on Today: why, the hold button, and everything else folded under one line.
+  function drawCar(){
+    var a = document.activeElement; if (a && a.closest && a.closest('#carlink,#carcode')) return;
+    var ch = CarUI.html().split('<!--cut:more-->'), t = CarUI.tile();
+    $('carsum').textContent = ch[1] && !t.on && ch[0].indexOf('car-run failed') < 0 ? t.sub : '';
+    $('carbody').innerHTML = ch[1] ? '<div class="carmain">' + ch[0] + '</div><button class="carmore" data-carmore="1" aria-expanded="' + !!ui.carMore + '">' + (ui.carMore ? 'Show less' : 'Locks, fuel and more') + '</button>' + (ui.carMore ? ch[1] : '') : ch[0];
+  }
   function renderItems(){
+    // the tabs follow the lists she has: Today, Later, Shopping, then her own
+    var keys = H.listKeys(S); if (keys.indexOf(ui.list) < 0) ui.list = 'today';
+    $('tabs').innerHTML = keys.map(function(k){ var n = S.lists[k].filter(function(x){ return !x.d; }).length;
+      return '<button data-list="' + esc(k) + '" aria-pressed="' + (k === ui.list) + '">' + esc(H.listName(S, k)) + (n ? ' · ' + n : '') + '</button>'; }).join('');
     var l = S.lists[ui.list], h = '';
     l.forEach(function(x){
       var tag = x.due ? tm(x.due) : x.rep === 'daily' ? 'Daily' : x.rep === 'weekly' ? 'Weekly' : '';
@@ -296,7 +449,6 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     });
     if (l.some(function(x){ return x.d && !x.rep; })) h += '<li><button class="it" data-clear="1" style="justify-content:center;color:var(--muted);font-weight:800">Clear finished</button></li>';
     $('items').innerHTML = h || '<li class="empty">Nothing here yet.</li>';
-    document.querySelectorAll('#tabs button').forEach(function(b){ var n = S.lists[b.dataset.list].filter(function(x){ return !x.d; }).length; b.setAttribute('aria-pressed', b.dataset.list === ui.list); b.textContent = { today:'Today', later:'Later', shop:'Shopping' }[b.dataset.list] + (n ? ' · ' + n : ''); });
     var r = $('rep'); r.textContent = ui.rep === 'daily' ? 'Daily' : ui.rep === 'weekly' ? 'Weekly' : 'Once'; r.setAttribute('aria-pressed', !!ui.rep);
   }
   function renderShifts(){
@@ -313,7 +465,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     $('sdaytitle').textContent = H.fmtDate(ui.sday, true).toUpperCase();
     var hv = '';
     H.shiftsOn(S, ui.sday).forEach(function(x){
-      hv += '<div class="have' + (x.id === ui.sedit ? ' on' : '') + '"><span>' + span(x.start, endOf(x), true) + ' · ' + esc(x.place) + (x.rule ? ' · weekly' : '') + '</span><div>'
+      hv += '<div class="have' + (x.rule ? ' rule' : '') + (x.id === ui.sedit ? ' on' : '') + '"><span>' + span(x.start, endOf(x), true) + ' · ' + esc(x.place) + (x.rule ? ' · every week' : '') + '</span><div>'
         + '<button class="btn sm" data-eds="' + esc(x.id) + '">Edit</button>' + (x.rule ? '<button class="btn sm" data-rm="' + esc(x.id) + '">Skip this day</button><button class="btn sm" data-rm="' + esc(x.id) + '" data-all="1">Stop repeating</button>' : '<button class="btn sm" data-rm="' + esc(x.id) + '">Remove</button>') + '</div></div>';
     });
     if (ui.sedit && !H.shiftsOn(S, ui.sday).some(function(x){ return x.id === ui.sedit; })) ui.sedit = null;
@@ -330,7 +482,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   }
   var MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var REPW = { weekly:'every week', monthly:'every month', yearly:'every year' };
-  function dayOpts(sel){ var t = today(), from = sel && sel < t ? sel : t, a = []; for (var i = 0; i < 90; i++){ var d = H.addDays(from, i); a.push([d, H.fmtDate(d) + (d === t ? ' (today)' : '')]); } if (sel && sel > a[a.length - 1][0]) a.push([sel, H.fmtDate(sel)]); return opts(a, sel || t); }
+  function dayOpts(sel){ var t = today(), from = sel && sel < t ? sel : t, a = []; for (var i = 0; i < 90; i++){ var d = H.addDays(from, i); a.push([d, d === t ? 'Today' : d === H.addDays(t, 1) ? 'Tomorrow' : H.fmtDate(d)]); } if (sel && sel > a[a.length - 1][0]) a.push([sel, H.fmtDate(sel)]); return opts(a, sel || t); }
   function eventForm(e){
     ui.eedit = e ? e.id : null;
     $('eday').innerHTML = dayOpts(e && e.date); $('etime').innerHTML = opts([['', 'No time']].concat(times(15)), e && e.time || ''); $('erep').value = e && e.rep || ''; $('ename').value = e ? e.t : '';
@@ -338,7 +490,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   function renderEvents(){
     var t = today(), h = '';
     H.eventList(S, t).forEach(function(e){
-      h += '<div class="have' + (e.id === ui.eedit ? ' on' : '') + '"><span>' + H.fmtDate(e.date) + (e.time ? ' · ' + tm(e.time) : '') + ' · ' + esc(e.t) + (e.rep ? ' · ' + REPW[e.rep] : '') + '</span><div><button class="btn sm" data-edev="' + esc(e.id) + '">Edit</button><button class="btn sm" data-rmev="' + esc(e.id) + '">Remove</button></div></div>';
+      h += '<div class="have' + (e.id === ui.eedit ? ' on' : '') + '"><span>' + esc(e.t) + '<small>' + (e.date === t ? 'Today' : H.fmtDate(e.date)) + (e.time ? ' · ' + tm(e.time) : '') + (e.rep ? ' · ' + REPW[e.rep] : '') + '</small></span><div><button class="btn sm" data-edev="' + esc(e.id) + '">Edit</button><button class="btn sm" data-rmev="' + esc(e.id) + '">Remove</button></div></div>';
     });
     $('esave').textContent = ui.eedit ? 'Save changes' : 'Add event'; $('ecancel').hidden = !ui.eedit;
     $('ehave').innerHTML = h || '<div class="note">Nothing coming up.</div>';
@@ -360,10 +512,10 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     ui.day = v.date;
     $('date').textContent = H.fmtDate(v.date, true);
     $('wx').textContent = WX && WX.ok ? WX.temp + '° in ' + String(WX.city).split(',')[0] + ' · high ' + WX.hi + '°' : '';
-    renderToday(v); renderItems(); renderShifts(); renderEvents(); renderMore(v);
-    ['today','todo','shifts','events','more'].forEach(function(p){ $('p-' + p).hidden = p !== ui.pane; });
+    renderToday(v); renderWx(); renderMoney(v); renderItems(); renderShifts(); renderEvents(); renderNews(); renderMore(v);
+    ['today','todo','shifts','events','news','more'].forEach(function(p){ $('p-' + p).hidden = p !== ui.pane; });
     document.querySelectorAll('#nav button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.p === ui.pane); });
-    $('morebtn').setAttribute('aria-pressed', ui.pane === 'more');
+    $('morebtn').setAttribute('aria-pressed', ui.pane === 'more'); $('morebtn').textContent = ui.pane === 'more' ? 'Done' : 'Settings';
   }
   function go(p){ ui.pane = p; try { sessionStorage.setItem('homeit.pane', p); } catch(e){} render(); window.scrollTo(0, 0); }
 
@@ -375,12 +527,12 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   on('quickform', 'submit', function(e){
     e.preventDefault();
     var v = $('quickinput').value.trim(); if (!v) return;
-    $('quickinput').value = ''; op('todo.add', { list:'today', t: v }, true);
+    $('quickinput').value = ''; $('quickinput').focus(); op('todo.add', { list:'today', t: v }, true);
   });
   function openTodo(list, id){
     var x = S.lists[list].filter(function(y){ return y.id === id; })[0]; if (!x) return;
     ui.todo = { list: list, id: id }; $('tdname').value = x.t;
-    $('tdmove').innerHTML = [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn sm" data-mv="' + l[0] + '"' + (l[0] === list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('');
+    $('tdmove').innerHTML = H.listKeys(S).map(function(k){ return '<button class="btn sm" data-mv="' + esc(k) + '"' + (k === list ? ' disabled' : '') + '>' + esc(H.listName(S, k)) + '</button>'; }).join('');
     $('pop').hidden = false;
   }
   function closeTodo(){ $('pop').hidden = true; ui.todo = null; }
@@ -407,7 +559,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   on('addform', 'submit', function(e){
     e.preventDefault();
     var v = $('addinput').value.trim(); if (!v) return;
-    $('addinput').value = ''; op('todo.add', { list: ui.list, t: v, rep: ui.rep || undefined }, true); ui.rep = '';
+    $('addinput').value = ''; $('addinput').focus(); op('todo.add', { list: ui.list, t: v, rep: ui.rep || undefined }, true); ui.rep = '';
   });
   on('wkprev', 'click', function(){ ui.weekOff--; ui.sday = null; renderShifts(); });
   on('wknext', 'click', function(){ ui.weekOff++; ui.sday = null; renderShifts(); });
@@ -435,7 +587,8 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   });
   on('ecancel', 'click', function(){ eventForm(null); renderEvents(); });
   on('ehave', 'click', function(e){
-    var b = e.target.closest('[data-rmev]'); if (b){ if (ui.eedit === b.dataset.rmev) eventForm(null); return op('event.del', { id: b.dataset.rmev }); }
+    var b = e.target.closest('[data-rmev]'); if (b){ if (ui.eedit === b.dataset.rmev) eventForm(null); var old = S.events.filter(function(x){ return x.id === b.dataset.rmev; })[0];
+      return op('event.del', { id: b.dataset.rmev }, true).then(function(){ if (old) toast('Removed “' + old.t + '”', function(){ op('event.add', { t: old.t, date: old.date, time: old.time || undefined, rep: old.rep || undefined }, true); }); }); }
     var ed = e.target.closest('[data-edev]'); if (ed){ var ev = S.events.filter(function(x){ return x.id === ed.dataset.edev; })[0]; if (ev){ eventForm(ev); renderEvents(); window.scrollTo(0, 0); } }
   });
   on('guidepick', 'click', function(e){ var b = e.target.closest('button'); if (b) op('settings.set', { key:'guide', value: b.dataset.v }, true); });
@@ -444,20 +597,49 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   on('calform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
   on('company', 'click', function(){ op('company.set', { on: this.getAttribute('aria-pressed') !== 'true' }); });
 
+  // ---------- preview: sample money and news ----------
+  function demoMoney(){
+    return { split: { ok:true, big:'$42.50', sub:'owed to you in total', rows:['Maya owes you $60.00', 'You owe Jordan $17.50'] },
+             budget: { ok:true, big:'$318', sub:'safe to spend · $35 a day until Fri Nov 20', rows:[], more:{ title:'Budgets this month', lines:['Groceries: $212 of $400, $188 left ($10/day)', 'Eating out: $96 of $120, $24 left - nearly used up', 'Transport: $60 of $150, $90 left', 'Fun: $135 of $120, $15 OVER'] } } };
+  }
+  function demoNews(){
+    var n = Date.now(), it = function(m, a, b){ return { t: a, sum: b, at: n - m * 60e3, url: '' }; };
+    return { ok:true, title:'Top stories (sample)', items:[
+      it(12, 'Snow squall watch for the Bay of Quinte tonight', 'Up to 10 cm is possible by morning, with poor visibility on the 401 between Belleville and Kingston.'),
+      it(47, 'City council votes on new transit routes', 'Two routes would run later in the evening on weekdays if the plan passes next week.'),
+      it(95, 'Gas prices expected to drop three cents by Friday', 'Analysts say stations across eastern Ontario should follow by the weekend.'),
+      it(180, 'Local bakery wins provincial butter tart contest', 'The winning recipe uses maple syrup from a farm ten minutes away.'),
+      it(1500, 'Library extends weekend hours for the winter', 'Saturday closing moves from 5 to 8 PM starting next month.') ] };
+  }
+  // weather, money and news come from the laptop; each keeps its last answer if the internet drops
+  function extras(){
+    api('api/weather').then(function(w){ WX = w; render(); }).catch(function(){});
+    api('api/money').then(function(m){ MONEY = m; render(); }).catch(function(){});
+    api('api/news').then(function(n){ NEWS = n; render(); }).catch(function(){ if (!NEWS){ NEWS = { ok:false }; render(); } });
+  }
   function start(){
+    CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'phone', openPage: function(){ go('today'); $('carcard').scrollIntoView({ behavior:'smooth' }); }, demoWeather: function(){ return WX; }, onChange: drawCar });
+    CarUI.bind($('carbody'));
+    on('carbody', 'click', function(e){ if (e.target.closest('[data-carmore]')){ ui.carMore = !ui.carMore; return drawCar(); } CarUI.click(e); });
+    on('carbody', 'contextmenu', function(e){ if (e.target.closest('.car-hold')) e.preventDefault(); });   // a long press must not open a menu
+    on('carbody', 'submit', function(e){ CarUI.submit(e); });
     try { ui.pane = sessionStorage.getItem('homeit.pane') || 'today'; } catch(e){}
     var t = today(); eventForm(null);
-    if (DEMO){ S = H.sample(t); ME = { name:'You' }; WX = { ok:true, temp:4, hi:7, city:'Belleville', sunrise:'06:56', sunset:'16:44' }; }
+    if (DEMO){ S = H.sample(t); ME = { name:'You' }; WX = { ok:true, temp:4, feels:1, code:3, hi:7, lo:-1, rain:10, city:'Belleville, Ontario', sunrise:'06:56', sunset:'16:44',
+        days: [[1,4,-2,10],[3,6,0,20],[61,8,3,80],[2,5,-1,30]].map(function(d, i){ return { date: H.addDays(t, i + 1), code: d[0], hi: d[1], lo: d[2], rain: d[3] }; }) };
+      MONEY = demoMoney(); NEWS = demoNews(); }
     var first = function(){
       var last = S && (S.shifts[S.shifts.length - 1] || S.rules[S.rules.length - 1]) || { start:'14:00', end:'22:00' };
       $('sstart').innerHTML = opts(times(15), last.start); $('send').innerHTML = opts(times(15), last.end); render();
     };
-    if (DEMO) first();
+    if (DEMO){ first(); CarUI.load().then(function(){ CarUI.status(false); }); }
     else {
-      var boot = function(){ loadState().then(function(){ first(); api('api/weather').then(function(w){ WX = w; render(); }).catch(function(){}); }, function(){ toast('Can’t reach Home it. Trying again…'); setTimeout(boot, 5000); }); };
+      var boot = function(){ loadState().then(function(){ first(); extras(); CarUI.load().then(function(){ CarUI.status(false); }); }, function(){ toast('Can’t reach Home it. Trying again…'); setTimeout(boot, 5000); }); };
       boot();
-      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); }); es.onopen = function(){ if (S) loadState().catch(function(){}); }; } catch(e){}
-      document.addEventListener('visibilitychange', function(){ if (!document.hidden) loadState().catch(function(){}); });
+      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); CarUI.load(); }); es.onopen = function(){ if (S) loadState().catch(function(){}); }; } catch(e){}
+      var lastX = Date.now();
+      document.addEventListener('visibilitychange', function(){ if (!document.hidden){ loadState().catch(function(){}); if (Date.now() - lastX > 5 * 60e3){ lastX = Date.now(); extras(); } } });
+      setInterval(function(){ if (!document.hidden){ lastX = Date.now(); extras(); } }, 10 * 60e3);
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
     }
     setInterval(function(){ if (S && !document.hidden){ var a = document.activeElement; if (!a || !/INPUT|SELECT/.test(a.tagName)) { if (today() !== ui.day && !DEMO) loadState().catch(function(){}); else render(); } } }, 30000);

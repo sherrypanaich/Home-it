@@ -1,5 +1,62 @@
 # What's new in Home it
 
+## v1.2.0 (not released yet)
+
+### Simpler Home and a full polish pass
+- Home is now only today and right now: the Today card, the weather with what to wear, one big "Hold to start" car button set for the weather, and Goodnight.
+- Lists have their own page: Later and Shopping side by side, each with its own add box on top, big rows you tap to tick, finished ones sink to the bottom, and a "Clear done" button. Week, Weather, Money, Car and News keep theirs.
+- Make your own lists: "+ New list" on the Lists page, up to eight, each with its own add box. A to-do can be moved to any of them, and the assistant connector can read and add to them by name.
+- News picked for you: an assistant you connect can send a few stories a day to the top of the News page, marked "For you", on the big screen and the phone. It keeps the newest 12 for three days, and each has a Remove button. Home it itself still has no AI inside.
+- Home's Today card shows the whole day and scrolls if it is long, instead of "+ 2 more today".
+- Company now hides pay as well as money: shift pay, the week's pay and the pay bars show hours only.
+- Settings opens as a small popup under its button, with three tabs: Everyday, Home page, More. Editing a to-do is a small popup too, and the shift and event forms are panels over the page. Tap outside to close.
+- Today page: three clear tiles, tap a to-do row to tick it, done items sink and fade, tomorrow in three short lines.
+- Week page: day blocks, an Edit pill on each shift and plan, week-by-week and month-by-month pay bars.
+- Weather page: the next 12 hours as one temperature line, a full week of days, better what-to-wear advice.
+- Money page: names and amounts in columns, green for owed to you, red for you owe, days until each bill, "Updated x min ago".
+- Car page: big hold button that fills as you hold, clear starting / on / failed states, side pages open beside the button.
+- News page: story pictures, a "News from" picker with ready-made sources, clearer can't-reach messages.
+- Phone: News tab, Weather and Money cards, matching colours, shorter car card.
+- Adding a shift takes two taps (day, then your usual shift). Adding an event has day, time and repeat buttons.
+- Timer: "+1 min" and "+5 min", shows on the idle and night screens, bigger "Time's up!".
+- Dark look is softer on the eyes; the night screen keeps a faint clock; page changes are quicker.
+- Messages no longer cover the page tabs.
+
+### New (latest pass)
+- Timer in the top bar: pick 5 to 45 minutes, it counts down there and chimes when done.
+- Weather page says what to wear ("Coat weather. Bring an umbrella.") and shows each day's low and high as a bar.
+- Money page shows budgets as bars: green, yellow when nearly used, red when over.
+- Each page has its own colour on its title and tab.
+
+### Improved (latest pass)
+- Today page: the add box sits at the top of the to-do list, plans and tomorrow share one panel, weather has its own.
+- Home: a "+ To-do" button jumps straight to typing a to-do.
+- Car page: start on the left, everything else on the right, and a one-tap "Lock it" when the car is unlocked.
+- Faster: only the page you are on and its neighbours are redrawn.
+
+The big screen is now a set of full pages you swipe between, and it can start your car with the heat set for the weather.
+
+### New
+- **Swipe between pages.** Home, Today, Week, Weather, Money and News sit side by side. Swipe left or right, or tap a name at the bottom. Tapping a card on Home jumps to its page.
+- **News.** Headlines from a news feed, newest first. Tap one to read its summary. It starts with CBC top stories; paste another feed's link in Settings, under Apps.
+- **Week page.** Hours and pay by month next to what's coming up.
+- **Money page.** Split it and Budget it side by side.
+- **Start the car.** A Car page on the big screen (swipe to it, or tap the Car card on Home), and a Car card on the phone, start a Hyundai with Bluelink (Canada). Home it picks 2 to 8 minutes, the inside temperature, defrost, rear window, heated wheel and seat from the weather outside. Snow adds time and defrost.
+- **A short car page.** It shows what will happen and the button. Changing this start, your car's settings and past starts each open in the same page, with Back.
+- **Change a start before you press (it's used once, then the weather's plan comes back),** and tell Home it once that you like it warmer or want it to run longer.
+- The bottom cards on Home show a small arrow instead of "More" so their titles have room next to the new Car card.
+- **Locks, fuel and doors.** A page shows whether the car is locked, fuel and range, open doors, trunk or hood, and tire or washer warnings, with Lock and Unlock buttons (Unlock asks twice). Checking doesn't wake the car.
+- **Goodnight checks the car.** If the car is unlocked, Goodnight opens the lock page first; if it's locked, it says so.
+- **"Start the car?"** On a cold or hot day, a few minutes before you need to leave for a shift, the screen chimes and asks. It never starts the car by itself.
+- **Safe by design.** Press and hold to start, at most 3 starts an hour, Stop while it runs, a list of the last starts, and a wrong PIN stops at once so Bluelink doesn't lock it. Your Bluelink sign-in stays on the laptop.
+
+### Improved
+- **Full pages instead of pop-ups.** Settings, shifts, events and a to-do's page now fill the screen, with Back in the corner.
+- The screen goes back to Home by itself when it has been left alone.
+
+### Fixed
+- The update and screen scripts are marked as runnable in the repository, so the first update no longer stops with "This copy has changes of its own".
+
 ## v1.1.0
 
 The bottom of the big screen is useful now, and the phone screen does more from its first page.

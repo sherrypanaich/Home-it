@@ -7,6 +7,10 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const LISTS = ['today', 'later', 'shop'];
+  const LIST_NAMES = { today: 'Today', later: 'Later', shop: 'Shopping' };
+  // every list this person has: the three built-in ones, then their own
+  const listKeys = s => LISTS.concat((s.myLists || []).map(l => l.id));
+  const listName = (s, k) => LIST_NAMES[k] || ((s.myLists || []).find(l => l.id === k) || {}).name || '';
   const KEEP_DAYS = 730;   // how long past shifts and plans stay
   const CARDS = ['today', 'todo', 'week', 'coming', 'forecast', 'split', 'budget', 'room'];
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -15,11 +19,13 @@
 
   const blank = () => ({
     lists: { today: [], later: [], shop: [] },
+    myLists: [],    // lists the person made themselves: { id, name }; their items live in lists[id]
+    picks: [],      // stories an assistant picked for the person: { id, t, sum, src, url, at }; newest first
     shifts: [],     // one-off: { id, date, start, end, place }
     rules: [],      // weekly: { id, dow, start, end, place, from, until?, skip: [dates] }
     events: [],     // { id, date, time?, t, d?, rep?: 'weekly'|'monthly'|'yearly', done?: the day a repeating one was last ticked }
     settings: { guide: 'luffy', travel: 25, rate: 0, nightFrom: '23:30', nightTo: '07:00', idle: 10, look: 'auto',
-      city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', calUrl: '', company: '', hide: [] },
+      city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', calUrl: '', newsUrl: '', company: '', hide: [] },
     day: ''         // the last day the lists were tidied for
   });
 
@@ -93,7 +99,7 @@
   function normalize(s, today) {
     if (s.day === today) return false;
     const monday = weekStart(today);
-    for (const k of LISTS) {
+    for (const k of listKeys(s)) {
       s.lists[k] = s.lists[k].filter(x => !(k === 'today' && x.d && !x.rep && x.on && x.on < today));
       for (const x of s.lists[k]) {
         if (x.d && x.rep === 'daily' && x.on < today) { x.d = false; delete x.on; }
@@ -150,33 +156,43 @@
   const LINES = {
     luffy: {
       off: ['Day off! Let’s do something fun!', 'No shift today. The whole day is yours!', 'Free day! Eat well and take it easy.'],
-      before: ['Shift at {start}. Leave by {leave} and you’re set!', 'Plenty of time. Out the door by {leave}!'],
-      soon: ['{left}! Keys, lunch, jacket. Go go go!', 'Almost time! Leave by {leave}!'],
-      working: ['You’re at work until {end}. You’ve got this!', 'Shift’s on until {end}. Keep going!'],
+      before: ['Nothing to do before work. Eat something good!', 'All clear until work. Take it easy!'],
+      beforePlan: ['First up: {thing} at {at}. Then work!', 'Don’t forget {thing} at {at}!'],
+      beforeTodo: ['{n} before work. Start with {thing}!', '{n} left. Knock out {thing} first!'],
+      soon: ['Tick off your things, then go go go!', 'Almost time! Grab your stuff and run!'],
+      working: ['You’ve got this! Nothing waiting at home.', 'Keep going! Tonight is all yours.'],
+      workingTodo: ['You’ve got this! {n} can wait until after.', 'Keep going! {n} left for later, no rush.'],
       done: ['Shift done! Rest up, you earned it.', 'Work’s over. Time to eat!'],
       cleared: ['List cleared! That calls for a feast!', 'Everything’s done! Amazing!'],
       night: ['Sleep well. I’ll keep watch.']
     },
     hancock: {
       off: ['No shift today. Spend it as you please.', 'A day off. You deserve nothing less.'],
-      before: ['Your shift is at {start}. Leave by {leave}, gracefully.', 'You have time. Be out the door by {leave}.'],
-      soon: ['{left}. Even I would not keep them waiting.', 'It is nearly time. Leave by {leave}.'],
-      working: ['You are at work until {end}. Carry yourself well.', 'Until {end}. They are lucky to have you.'],
+      before: ['Nothing to do before work. Enjoy the quiet.', 'Your morning is free. Use it well.'],
+      beforePlan: ['First, {thing} at {at}. Then work.', 'Do not forget {thing} at {at}.'],
+      beforeTodo: ['{n} before work. Begin with {thing}.', '{n} left. See to {thing} first.'],
+      soon: ['Check your things, then go. Do not keep them waiting.', 'It is nearly time. Gather your things.'],
+      working: ['Carry yourself well. Nothing waits at home.', 'They are lucky to have you. Tonight is yours.'],
+      workingTodo: ['Carry yourself well. {n} can wait until after.', 'They are lucky to have you. {n} left for later.'],
       done: ['Your shift is done. You have earned your rest.', 'Work is finished. Now, relax.'],
       cleared: ['Every task finished. As expected of you.', 'Nothing left to do. Splendid.'],
       night: ['Rest now. Tomorrow will wait.']
     }
   };
   const MOOD = { off: 'calm', before: 'happy', soon: 'worried', working: 'happy', done: 'calm', cleared: 'celebrate', night: 'calm' };
+  // What the guide says is something the card does not already show: the next plan, or how many to-dos are left.
+  const brief = t => { t = String(t); return t.length > 24 ? t.slice(0, 23).trim() + '…' : t; };
   function guide(s, v) {
-    const list = s.lists.today, cleared = list.length > 0 && list.every(x => x.d);
+    const list = s.lists.today, open = list.filter(x => !x.d), cleared = list.length > 0 && !open.length;
     const key = v.night ? 'night' : v.phase === 'soon' ? 'soon' : cleared ? 'cleared' : v.phase;
-    const who = LINES[s.settings.guide] ? s.settings.guide : 'luffy', set = LINES[who][key];
+    const who = LINES[s.settings.guide] ? s.settings.guide : 'luffy';
+    const plan = key === 'before' ? (v.events || []).filter(e => !e.d && e.time && mins(e.time) >= v.nowM && mins(e.time) < v.leaveM).sort((x, y) => mins(x.time) - mins(y.time))[0] : null;
+    const sub = plan ? 'beforePlan' : open.length && key === 'before' ? 'beforeTodo' : open.length && key === 'working' ? 'workingTodo' : key;
+    const set = LINES[who][sub], first = open.filter(x => !x.due)[0] || open[0];
     const line = set[(+v.date.slice(8) + v.date.charCodeAt(6)) % set.length]
-      .replace('{start}', v.startM == null ? '' : fmtTime(hhmm(v.startM), true))
-      .replace('{leave}', v.leaveM == null ? '' : fmtTime(hhmm(v.leaveM)))
-      .replace('{end}', v.endM == null ? '' : fmtTime(hhmm(v.endM), true))
-      .replace('{left}', v.toLeave == null ? '' : v.toLeave > 0 ? fmtDur(v.toLeave) : 'Time to go');
+      .replace('{n}', open.length + (open.length === 1 ? ' to-do' : ' to-dos'))
+      .replace('{thing}', plan ? brief(plan.t) : first ? '“' + brief(first.t) + '”' : '')
+      .replace('{at}', plan ? fmtTime(plan.time) : '');
     return { who, mood: MOOD[key], line };
   }
 
@@ -253,7 +269,9 @@
   class Bad extends Error { constructor(m) { super(m); this.status = 400; } }
   const bad = m => { throw new Bad(m); };
   const text = (v, max = 80) => String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
-  const listOf = (s, k) => LISTS.includes(k) ? s.lists[k] : bad('No such list.');
+  const PICK_MAX = 12, PICK_DAYS = 3;
+  const freshPicks = (s, now) => (s.picks || []).filter(x => x.at > (now || Date.now()) - PICK_DAYS * 864e5);
+  const listOf = (s, k) => listKeys(s).includes(k) ? s.lists[k] : bad('No such list.');
   const need = (ok, m) => ok || bad(m);
   const shiftArgs = a => {
     need(okTime(a.start) && okTime(a.end), 'Pick a start and end time.');
@@ -270,6 +288,7 @@
     nightTo: v => okTime(v) ? v : bad('Pick a time.'),
     splitUrl: v => { v = text(v, 200); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a web address starting with https://'); },
     calUrl: v => { v = text(v, 400).replace(/^webcal:\/\//i, 'https://'); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a calendar link starting with webcal:// or https://'); },
+    newsUrl: v => { v = text(v, 400).replace(/^feed:\/\//i, 'https://'); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a news feed link starting with https://'); },
     budgetUrl: v => { v = text(v, 200); return !v || /^https?:\/\/[^\s]+$/.test(v) ? v : bad('That should be a web address starting with https://'); }
   };
   // ctx: { today, rid }. Each returns a short message for the page to show.
@@ -293,6 +312,32 @@
     },
     'todo.del'(s, a) { const l = listOf(s, a.list), i = l.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.'); l.splice(i, 1); return 'Removed'; },
     'todo.clear'(s, a) { const l = listOf(s, a.list), n = l.filter(x => x.d && !x.rep).length; s.lists[a.list] = l.filter(x => !x.d || x.rep); return n ? 'Cleared ' + n : 'Nothing to clear'; },
+    'list.add'(s, a) {
+      const name = text(a.name, 24); need(name, 'Give the list a name.');
+      need(s.myLists.length < 8, 'That is a lot of lists. Remove one first.');
+      need(!listKeys(s).some(k => listName(s, k).toLowerCase() === name.toLowerCase()), 'You already have a list called that.');
+      const id = this.rid('l'); s.myLists.push({ id, name }); s.lists[id] = []; return 'List added';
+    },
+    'list.rename'(s, a) {
+      const l = s.myLists.find(x => x.id === a.id) || bad('That list is gone.'), name = text(a.name, 24); need(name, 'Give the list a name.');
+      need(!listKeys(s).some(k => k !== l.id && listName(s, k).toLowerCase() === name.toLowerCase()), 'You already have a list called that.');
+      l.name = name; return 'Saved';
+    },
+    'list.del'(s, a) {
+      const i = s.myLists.findIndex(x => x.id === a.id); need(i >= 0, 'That list is gone.');
+      const id = s.myLists[i].id; s.myLists.splice(i, 1); delete s.lists[id]; return 'List removed';
+    },
+    // Stories an assistant sends for the News page. Twelve at most; older than three days fall off.
+    'pick.add'(s, a) {
+      const t = text(a.t, 160); need(t, 'Give the story a headline.');
+      const url = text(a.url, 400); need(!url || /^https:\/\/[^\s]+$/.test(url), 'The link should start with https://');
+      const now = this.now || Date.now();
+      s.picks = freshPicks(s, now).filter(x => x.t.toLowerCase() !== t.toLowerCase());
+      s.picks.unshift({ id: this.rid('n'), t, sum: text(a.sum, 600), src: text(a.src, 40), url, at: now });
+      s.picks.length = Math.min(s.picks.length, PICK_MAX); return 'Story added';
+    },
+    'pick.del'(s, a) { const i = s.picks.findIndex(x => x.id === a.id); need(i >= 0, 'That story is gone.'); s.picks.splice(i, 1); return 'Story removed'; },
+    'pick.clear'(s) { const n = s.picks.length; s.picks = []; return n ? 'Cleared ' + n : 'Nothing to clear'; },
     'todo.move'(s, a) {
       const l = listOf(s, a.list), to = listOf(s, a.to), i = l.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.');
       to.push(l.splice(i, 1)[0]); return 'Moved';
@@ -379,7 +424,7 @@
       s.settings.hide = CARDS.filter(c => h.has(c)); return h.has(a.card) ? 'Hidden' : 'Shown';
     },
     // Company mode hides the money cards until tomorrow morning.
-    'company.set'(s, a) { s.settings.company = a.on ? this.today : ''; return a.on ? 'Money cards hidden until tomorrow' : 'Money cards shown'; }
+    'company.set'(s, a) { s.settings.company = a.on ? this.today : ''; return a.on ? 'Money and pay hidden until tomorrow' : 'Money and pay are showing again'; }
   };
   function apply(s, op, args, ctx) {
     const fn = Object.prototype.hasOwnProperty.call(OPS, op) ? OPS[op] : bad('Unknown change: ' + op);
@@ -389,7 +434,11 @@
   function fix(s) {
     const b = blank();
     for (const k of Object.keys(b)) if (s[k] === undefined) s[k] = b[k];
-    for (const k of LISTS) if (!Array.isArray(s.lists[k])) s.lists[k] = [];
+    if (!Array.isArray(s.myLists)) s.myLists = [];
+    s.myLists = s.myLists.filter(l => l && typeof l.id === 'string' && /^l[\w-]+$/.test(l.id) && !LISTS.includes(l.id) && typeof l.name === 'string' && l.name);
+    for (const k of listKeys(s)) if (!Array.isArray(s.lists[k])) s.lists[k] = [];
+    s.picks = (Array.isArray(s.picks) ? s.picks : []).filter(x => x && typeof x.id === 'string' && typeof x.t === 'string' && x.t && typeof x.at === 'number')
+      .map(x => ({ id: x.id, t: text(x.t, 160), sum: text(x.sum, 600), src: text(x.src, 40), url: /^https:\/\/[^\s]+$/.test(x.url || '') ? x.url : '', at: x.at })).slice(0, PICK_MAX);
     for (const k of Object.keys(b.settings)) if (s.settings[k] === undefined) s.settings[k] = b.settings[k];
     return s;
   }
@@ -405,10 +454,12 @@
     if (!shiftsOn(s, today).length) s.shifts.push({ id: id('s', 9), date: today, start: '14:00', end: '22:00', place: 'Work' });
     s.events = [{ id: id('e', 1), date: today, time: '09:00', t: 'Gym', d: true }, { id: id('e', 2), date: today, time: '11:30', t: 'Call the dentist' },
       { id: id('e', 3), date: addDays(today, 2), time: '19:00', t: 'Dinner with Maya' }, { id: id('e', 4), date: addDays(today, 4), t: 'Rent due' }];
+    s.picks = [{ id: id('n', 1), t: 'Three easy meal-prep lunches for late shifts', sum: 'Rice bowls, wraps and a soup that all keep for four days. Each takes under half an hour on a day off.', src: 'Food blog', url: '', at: Date.now() - 50 * 60e3 },
+      { id: id('n', 2), t: 'Winter tire deals near Belleville this week', sum: 'Two shops have mail-in rebates until Sunday. Booking ahead saves the long wait after the first snow.', src: 'Local deals', url: '', at: Date.now() - 55 * 60e3 }];
     s.settings.rate = 17.5; s.day = today;
     return s;
   }
 
-  return { LISTS, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
+  return { LISTS, listKeys, listName, freshPicks, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
     shiftMins, shiftsOn, week, months, nextShift, KEEP_DAYS, normalize, dayView, guide, coming, moneyCard, eventsOn, eventList, REPS, OPS, apply, text, Bad };
 });
