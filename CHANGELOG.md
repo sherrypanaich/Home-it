@@ -4,7 +4,7 @@
 
 ### Simpler Home and a full polish pass
 - Home is now only today and right now: the Today card, the weather with what to wear, one big "Hold to start" car button set for the weather, and Goodnight.
-- Lists (Later and Shopping) have their own page. Week, Weather, Money, Car and News keep theirs.
+- Lists have their own page: Later and Shopping side by side, each with its own add box on top, big rows you tap to tick, finished ones sink to the bottom, and a "Clear done" button. Week, Weather, Money, Car and News keep theirs.
 - Settings opens as a small popup under its button, with three tabs: Everyday, Home page, More. Editing a to-do is a small popup too, and the shift and event forms are panels over the page. Tap outside to close.
 - Today page: three clear tiles, tap a to-do row to tick it, done items sink and fade, tomorrow in three short lines.
 - Week page: day blocks, an Edit pill on each shift and plan, week-by-week and month-by-month pay bars.

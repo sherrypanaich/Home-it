@@ -318,7 +318,7 @@ input,select{user-select:text;-webkit-user-select:text}
 .hn1 small{display:block;font-size:.9rem;font-weight:700;color:var(--muted)}
 .hn2{font-weight:800;font-size:1.05rem;line-height:1.3;background:var(--soft);border:2px solid var(--line);border-radius:12px;padding:8px 12px}
 .hcar{flex:1}
-.hcar .hd,.pg.lists .todo .hd{display:flex;align-items:center;justify-content:space-between}
+.hcar .hd{display:flex;align-items:center;justify-content:space-between}
 .hcar .car-home{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
 .hcar .car-hold,.hcar .car-stop{flex:1;min-height:84px;max-height:none;width:100%}
 .hcar .car-hline{font-weight:800;font-size:1rem;line-height:1.3}
@@ -328,9 +328,25 @@ input,select{user-select:text;-webkit-user-select:text}
 .hroom .row{flex:1}
 .hroom #gn{flex:1;margin-top:0 !important}
 .pg.lists{--pgc:#EC4899}
-.pg.lists .todo{flex:1;width:100%;max-width:760px;margin:0 auto;padding:16px 20px;font-size:1.08rem}
 .pg.lists .sub{font-weight:800;color:var(--muted)}
-.pg.lists .todo .hd .h2{display:none}
+/* Lists: Later and Shopping side by side, add box on top, big rows */
+.lgrid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 6px 6px 0}
+.lcol{display:flex;flex-direction:column;gap:10px;padding:14px 18px;min-height:0}
+.lcol .hd{display:flex;align-items:center;gap:12px;min-height:44px}
+.lcol .hd .cnt{margin-left:auto;color:var(--muted)}
+.lcol .lclr{min-height:40px;padding:2px 12px;font-size:.86rem}
+.lcol .lclr[hidden]{display:none}
+.lcol .items{font-size:1.1rem}
+.lcol .items button.it{min-height:56px;gap:14px}
+.lcol .items .box{width:26px;height:26px}
+.lcol .items li:has(.it[aria-pressed="true"]){opacity:.6}
+.lcol .items .x{width:48px;height:56px}
+.lcol .items .x svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lcol .lempty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2.5px dashed var(--line);border-radius:14px;padding:26px;margin-top:2px;min-height:160px}
+.lcol .lempty b{font-family:var(--display);font-weight:400;font-size:1.3rem}
+.lcol .lempty span{color:var(--muted);font-weight:700;font-size:.95rem}
+.lcol .items:has(.lempty){overflow:visible}
+.stack .lgrid{grid-template-columns:1fr}
 /* Settings is a panel over the page, not a whole page */
 #sheet{left:auto;right:24px;top:70px;bottom:auto;width:640px;height:auto;max-height:calc(100% - 92px);padding:14px 20px 18px;box-shadow:6px 6px 0 var(--pop)}
 #sheet .setmore{flex-direction:column;gap:8px}
@@ -879,21 +895,19 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
     </section>
     <section class="pg full" data-pg="today" aria-label="Today"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
-    <section class="pg full lists" data-pg="lists" aria-label="Lists"><div class="pgin"><div class="pghd"><h2 class="h2">LISTS</h2><div class="pgact"><span class="sub">Later and Shopping</span></div></div>
-      <section class="card todo" data-card="todo" aria-label="To-do list">
-        <div class="hd"><h2 class="h2">LISTS</h2><span class="cnt" id="cnt"></span></div>
-        <div class="prog" id="prog" aria-hidden="true"></div>
-        <div class="tabs" id="tabs" role="group" aria-label="Lists">
-          <button data-list="later" aria-pressed="true">Later</button>
-          <button data-list="shop" aria-pressed="false">Shopping</button>
-        </div>
-        <ul class="items" id="items"></ul>
-        <form class="add" id="addform">
-          <input class="kb" id="addinput" type="text" maxlength="80" placeholder="Add something" aria-label="Add a to-do" autocomplete="off">
-          <button class="btn primary" type="submit">Add</button>
-          <div class="rep" id="rep" role="group" aria-label="How often"><button type="button" data-rep="" aria-pressed="true">Just once</button><button type="button" data-rep="daily" aria-pressed="false">Every day</button><button type="button" data-rep="weekly" aria-pressed="false">Every week</button></div>
-        </form>
+    <section class="pg full lists" data-pg="lists" aria-label="Lists"><div class="pgin"><div class="pghd"><h2 class="h2">LISTS</h2><div class="pgact"><span class="sub">Tap a line to tick it off</span></div></div>
+      <div class="lgrid" id="lgrid">
+      <section class="card lcol" data-l="later" aria-label="Later">
+        <div class="hd"><h2 class="h2">LATER</h2><span class="cnt" data-lcnt></span><button class="btn sm lclr" data-lclear hidden>Clear done</button></div>
+        <form class="add ladd"><input class="kb" type="text" maxlength="80" placeholder="Add something for later" aria-label="Add something for later" autocomplete="off"><button class="btn primary" type="submit">Add</button><div class="rep" id="rep" role="group" aria-label="How often"><button type="button" data-rep="" aria-pressed="true">Just once</button><button type="button" data-rep="daily" aria-pressed="false">Every day</button><button type="button" data-rep="weekly" aria-pressed="false">Every week</button></div></form>
+        <ul class="items" data-litems></ul>
       </section>
+      <section class="card lcol" data-l="shop" aria-label="Shopping">
+        <div class="hd"><h2 class="h2">SHOPPING</h2><span class="cnt" data-lcnt></span><button class="btn sm lclr" data-lclear hidden>Clear done</button></div>
+        <form class="add ladd"><input class="kb" type="text" maxlength="80" placeholder="Add something to buy" aria-label="Add something to buy" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
+        <ul class="items" data-litems></ul>
+      </section>
+      </div>
     </div></section>
     <section class="pg full" data-pg="week" aria-label="Week"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="weather" aria-label="Weather"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
@@ -1231,20 +1245,18 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
   // ---------- to-dos ----------
   function renderItems(){
-    var l = S.lists[ui.list], h = '', done = 0, p = '';
-    if (!l.length) h = '<li class="empty">Nothing here. Add something below.</li>';
-    l.forEach(function(x){
-      if (x.d) done++;
-      var tag = x.due ? H.fmtTime(x.due) : x.rep === 'daily' ? 'Every day' : x.rep === 'weekly' ? 'Every week' : '';
-      h += '<li><button class="it" data-id="' + esc(x.id) + '" aria-pressed="' + !!x.d + '"><span class="box"></span><span class="t">' + esc(x.t) + '</span>'
-        + (tag ? '<span class="due">' + tag + '</span>' : '') + '</button><button class="x" data-more="' + esc(x.id) + '" aria-label="Edit, move or remove ' + esc(x.t) + '">⋯</button></li>';
+    document.querySelectorAll('#lgrid .lcol').forEach(function(col){
+      var k = col.dataset.l, l = S.lists[k] || [], open = l.filter(function(x){ return !x.d; }), fin = l.filter(function(x){ return x.d; }), h = '';
+      if (!l.length) h = '<li class="lempty"><b>' + (k === 'shop' ? 'Nothing to buy' : 'Nothing for later') + '</b><span>' + (k === 'shop' ? 'Add things as you run out of them.' : 'Park things here that don’t need doing today.') + '</span></li>';
+      open.concat(fin).forEach(function(x){   // finished ones sink to the bottom
+        var tag = x.due ? H.fmtTime(x.due) : x.rep === 'daily' ? 'Every day' : x.rep === 'weekly' ? 'Every week' : '';
+        h += '<li><button class="it" data-id="' + esc(x.id) + '" aria-pressed="' + !!x.d + '"><span class="box"></span><span class="t">' + esc(x.t) + '</span>'
+          + (tag ? '<span class="due">' + tag + '</span>' : '') + '</button><button class="x" data-more="' + esc(x.id) + '" aria-label="Change, move or remove ' + esc(x.t) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg></button></li>';
+      });
+      var ul = col.querySelector('[data-litems]'); if (ul.dataset.h !== h){ ul.dataset.h = h; ul.innerHTML = h; }
+      col.querySelector('[data-lcnt]').textContent = !l.length ? '' : open.length ? open.length + ' left' : 'All done';
+      col.querySelector('[data-lclear]').hidden = !l.some(function(x){ return x.d && !x.rep; });
     });
-    if (l.some(function(x){ return x.d && !x.rep; })) h += '<li><button class="it clr" data-clear="1">Clear finished</button></li>';
-    $('items').innerHTML = h;
-    $('cnt').textContent = l.length ? done + ' of ' + l.length + ' done' : '';
-    for (var i = 0; i < Math.min(l.length, 14); i++) p += '<i class="' + (i < Math.round(done / l.length * Math.min(l.length, 14)) ? 'on' : '') + '"></i>';
-    $('prog').innerHTML = p;
-    document.querySelectorAll('#tabs button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.list === ui.list); });
     document.querySelectorAll('#rep button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.rep === (ui.rep || '')); });
   }
 
@@ -1968,19 +1980,17 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     setTimer(+b.dataset.min); closeTimer(); });
   document.addEventListener('click', function(e){ if (!e.target.closest('#tmr')) closeTimer(); });
   setInterval(timerTick, 1000); timerTick();
-  on('tabs', 'click', function(e){ var b = e.target.closest('button'); if (!b) return; ui.list = b.dataset.list; renderItems(); });
-  on('items', 'click', function(e){
-    var b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.more){ ui.detail = 'todo'; ui.todo = { list: ui.list, id: b.dataset.more }; show('detailsheet'); }
-    else if (b.dataset.clear) op('todo.clear', { list: ui.list });
-    else if (b.dataset.id) op('todo.toggle', { list: ui.list, id: b.dataset.id }, true);
+  on('lgrid', 'click', function(e){
+    var b = e.target.closest('button'), col = e.target.closest('.lcol'); if (!b || !col) return; var k = col.dataset.l;
+    if (b.dataset.rep != null){ ui.rep = b.dataset.rep; renderItems(); }
+    else if (b.dataset.more){ ui.detail = 'todo'; ui.todo = { list: k, id: b.dataset.more }; show('detailsheet'); }
+    else if (b.dataset.lclear != null) op('todo.clear', { list: k });
+    else if (b.dataset.id) op('todo.toggle', { list: k, id: b.dataset.id }, true);
   });
-  on('rep', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.rep = b.dataset.rep; renderItems(); } });
-  on('addform', 'submit', function(e){
-    e.preventDefault();
-    var v = $('addinput').value.trim(); if (!v) return;
-    $('addinput').value = '';
-    op('todo.add', { list: ui.list, t: v, rep: ui.rep || undefined }, true); ui.rep = '';
+  on('lgrid', 'submit', function(e){
+    e.preventDefault(); var col = e.target.closest('.lcol'), inp = col.querySelector('input'), v = inp.value.trim(); if (!v) return;
+    inp.value = ''; var k = col.dataset.l;
+    op('todo.add', { list: k, t: v, rep: k === 'later' && ui.rep || undefined }, true); ui.rep = '';
   });
   on('today', 'click', function(e){
     var c = e.target.closest('.chk');
