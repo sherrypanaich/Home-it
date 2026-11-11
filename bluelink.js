@@ -133,4 +133,29 @@ async function status(acct, tx) {
   });
 }
 
-module.exports = { login, sendCode, checkCode, vehicles, start, stop, status, hexTemp, newDeviceId, BluelinkError, BAD_PIN };
+// What the car last told Hyundai (does not wake the car, so it costs nothing against the daily limit).
+async function carStatus(acct) {
+  return signedIn(acct, async tok => {
+    const st = (await call('lstvhclsts', { deviceId: acct.deviceId, token: tok.access, vehicleId: acct.car.id })).json.result?.status || {};
+    const d = st.doorOpen || {}, t = st.tirePressureLamp || {};
+    const when = String(st.lastStatusDate || '');   // 20261111203000, Hyundai's local time
+    return {
+      locked: st.doorLock == null ? null : !!st.doorLock,
+      doorsOpen: ['frontLeft', 'frontRight', 'backLeft', 'backRight'].filter(k => d[k]).length,
+      trunkOpen: !!st.trunkOpen, hoodOpen: !!st.hoodOpen, engine: !!st.engine,
+      fuel: Number.isFinite(+st.fuelLevel) && st.fuelLevel !== null ? +st.fuelLevel : null,
+      range: st.dte && Number.isFinite(+st.dte.value) ? Math.round(+st.dte.value) : null,
+      lowFuel: !!st.lowFuelLight, tires: !!(t.tirePressureLampAll || t.tirePressureLampFL || t.tirePressureLampFR || t.tirePressureLampRL || t.tirePressureLampRR),
+      washer: !!st.washerFluidStatus,
+      seen: /^\d{12}/.test(when) ? when.slice(0, 4) + '-' + when.slice(4, 6) + '-' + when.slice(6, 8) + 'T' + when.slice(8, 10) + ':' + when.slice(10, 12) : null
+    };
+  });
+}
+async function lock(acct, on) {
+  return signedIn(acct, async tok => {
+    const r = await call(on ? 'drlck' : 'drulck', { deviceId: acct.deviceId, token: tok.access, vehicleId: acct.car.id, headers: { pAuth: await pinAuth(acct, tok) }, body: { pin: acct.pin } });
+    return r.headers.get('transactionId') || '';
+  });
+}
+
+module.exports = { carStatus, lock, login, sendCode, checkCode, vehicles, start, stop, status, hexTemp, newDeviceId, BluelinkError, BAD_PIN };

@@ -9,6 +9,9 @@ Start your car from the screen, with the heat set for the weather.
 - **A short car page.** The page shows what will happen and the button. Changing this start, your car's settings and past starts each have their own small page.
 - **Change a start before you press (it's used once, then the weather's plan comes back),** and tell Home it once that you like it warmer or want it to run longer.
 - **Nothing spills out of the bottom row.** The Room card no longer pushes its Company switch past the edge, and the bottom cards show a small arrow instead of "More" so their titles have room.
+- **Locks, fuel and doors.** A page shows whether the car is locked, fuel and range, open doors, trunk or hood, and tire or washer warnings, with Lock and Unlock buttons (Unlock asks twice). Checking doesn't wake the car.
+- **Goodnight checks the car.** If the car is unlocked, Goodnight opens the lock page first; if it's locked, it says so.
+- **"Start the car?"** On a cold or hot day, a few minutes before you need to leave for a shift, the screen chimes and asks. It never starts the car by itself.
 - **Safe by design.** Press and hold to start, at most 3 starts an hour, Stop while it runs, a list of the last starts, and a wrong PIN stops at once so Bluelink doesn't lock it. Your Bluelink sign-in stays on the laptop.
 
 ## v1.1.0 (not released yet)

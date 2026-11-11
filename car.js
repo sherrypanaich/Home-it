@@ -12,6 +12,8 @@ module.exports = function car({ DATA_DIR, readBody, send, changed, weatherFor, s
   try { all = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch {}
   const save = () => { const tmp = FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(all, null, 1), { mode: 0o600 }); fs.renameSync(tmp, FILE); try { fs.chmodSync(FILE, 0o600); } catch {} };
   const pending = new Map();   // uid -> { acct, otp, cars } while adding the car (never saved)
+  const stats = new Map();     // uid -> { at, data, busy } what the car last told Hyundai
+  const locks = new Map();     // uid -> { on, at, state: 'sending' | 'done' | 'failed', msg }
   const runs = new Map();      // uid -> { state: 'sending' | 'waiting' | 'on' | 'failed' | 'stopped', at, until, msg, plan }
   const tries = new Map();     // uid -> { n, at } failed sign-ins, to stay clear of Bluelink's lockout
   const POLL = +process.env.CAR_POLL_MS || 10000, GIVE_UP = 3 * 60e3;
@@ -30,6 +32,7 @@ module.exports = function car({ DATA_DIR, readBody, send, changed, weatherFor, s
       email: a ? mask(a.email) : '', log: (a?.log || []).slice(0, 10), needPin: !!(a && a.car && !a.pin), prefs, plan: CP.plan(wx, prefs),
       weather: wx && wx.ok ? { temp: wx.temp, feels: wx.feels, code: wx.code, stale: !!wx.stale } : null,
       run: run ? { state: run.state, at: run.at, until: run.until, msg: run.msg, plan: run.plan } : null,
+      status: stats.get(uid)?.data ? { ...stats.get(uid).data, at: stats.get(uid).at } : null, lock: locks.get(uid) || null,
       adding: pending.has(uid) ? { step: pending.get(uid).otp?.key ? 'code' : pending.get(uid).otp ? 'how' : 'pick',
         email: mask(pending.get(uid).otp?.email), phone: maskPhone(pending.get(uid).otp?.phone),
         cars: (pending.get(uid).cars || []).map(c => ({ id: c.id, name: c.name, model: c.model, year: c.year })) } : null };
@@ -70,6 +73,16 @@ module.exports = function car({ DATA_DIR, readBody, send, changed, weatherFor, s
     if (!p.startsWith('/api/car')) return false;
     try {
       if (p === '/api/car' && m === 'GET') return send(res, 200, await view(uid)), true;
+      // fuel, locks, doors: asked when the car page opens, at most every 5 minutes unless someone taps Refresh
+      if (p === '/api/car/status' && m === 'GET') {
+        const a = all[uid]; if (!a?.car || !a.pin) return send(res, 200, await view(uid)), true;
+        const hit = stats.get(uid), fresh = new URL(req.url, 'http://x').searchParams.get('fresh') === '1';
+        if (!hit || Date.now() - hit.at > (fresh ? 30e3 : 5 * 60e3)) {
+          try { stats.set(uid, { at: Date.now(), data: await BL.carStatus(a) }); save(); }
+          catch (e) { if (!hit) return fail(res, e, 502), true; }
+        }
+        return send(res, 200, await view(uid)), true;
+      }
       if (m !== 'POST') return send(res, 404, { error: 'not found' }), true;
       const b = await readBody(req, 4000);
 
@@ -124,7 +137,7 @@ module.exports = function car({ DATA_DIR, readBody, send, changed, weatherFor, s
       if (p === '/api/car/start') {
         if (run && (run.state === 'sending' || run.state === 'waiting') && Date.now() - run.at < GIVE_UP) return fail(res, new Error('Already starting the car. Give it a minute.'), 409), true;
         if (run && run.at && Date.now() - run.at < GAP) return fail(res, new Error('Wait a few seconds before trying again.'), 429), true;
-        const hour = (acct.log || []).filter(x => Date.now() - x.at < 3600e3).length;
+        const hour = (acct.log || []).filter(x => !x.kind && Date.now() - x.at < 3600e3).length;
         if (hour >= PER_HOUR) return fail(res, new Error('That’s ' + PER_HOUR + ' starts in the last hour, the most Home it allows. Bluelink allows only a few a day.'), 429), true;
         const base = CP.plan(await weatherFor(settingsOf(uid)), acct.prefs);
         const plan = CP.tidy(b, base);
@@ -144,6 +157,29 @@ module.exports = function car({ DATA_DIR, readBody, send, changed, weatherFor, s
         }
         changed(uid);
         return reply(res, uid, 'Starting the car: ' + CP.words(plan)), true;
+      }
+      if (p === '/api/car/lock') {
+        const on = b.on !== false, l = locks.get(uid);
+        if (l && l.state === 'sending' && Date.now() - l.at < GIVE_UP) return fail(res, new Error('Already asking the car. Give it a minute.'), 409), true;
+        const hour = (acct.log || []).filter(x => Date.now() - x.at < 3600e3).length;
+        if (hour >= PER_HOUR * 2) return fail(res, new Error('That’s a lot of car commands this hour. Bluelink allows only a few a day.'), 429), true;
+        const job = { on, at: Date.now(), state: 'sending', msg: on ? 'Locking the car…' : 'Unlocking the car…' };
+        locks.set(uid, job); changed(uid);
+        let tx;
+        try { tx = await BL.lock(acct, on); save(); }
+        catch (e) { if (BL.BAD_PIN.includes(e.code)) { acct.pin = ''; save(); } job.state = 'failed'; job.msg = e.message; changed(uid); return fail(res, e, 502), true; }
+        acct.log = [{ at: Date.now(), kind: on ? 'lock' : 'unlock', from: b.from === 'phone' ? 'phone' : 'big screen' }, ...(acct.log || [])].slice(0, 30); save();
+        const t0 = Date.now(), tick = async () => {
+          if (locks.get(uid) !== job) return;
+          let r; try { r = await BL.status(acct, tx); } catch { r = 'failed'; }
+          if (r === 'waiting' && Date.now() - t0 < GIVE_UP) return void setTimeout(tick, POLL);
+          job.state = r === 'done' ? 'done' : 'failed';
+          job.msg = r === 'done' ? (on ? 'The car is locked.' : 'The car is unlocked.') : 'The car didn’t answer. Check it in the MyHyundai app.';
+          const hit = stats.get(uid); if (r === 'done' && hit?.data) hit.data.locked = on;
+          changed(uid);
+        };
+        setTimeout(tick, POLL);
+        return reply(res, uid, job.msg), true;
       }
       if (p === '/api/car/stop') {
         try { await BL.stop(acct); save(); }

@@ -44,6 +44,8 @@ Snow or freezing rain adds 2 minutes and turns defrost on. Rain or fog turns def
 
 To set it up, open the car page and type your MyHyundai (Bluelink Canada) email, password and 4-number PIN. The first time, Hyundai sends you a code by email or text. They are saved only in `data/car.json` on this computer (readable by your user only) and only sent to Hyundai. "Remove the car from Home it" deletes them.
 
+The car page also shows locks, fuel and doors (read from what the car last reported, which doesn't wake it), with Lock and Unlock. Goodnight checks the car is locked first. On cold or hot days, a few minutes before you need to leave for a shift, the screen chimes and asks "Start the car?" so you can open the car page.
+
 Safety: you press and hold the button for a second to start (a tap does nothing), the car is never started by a timer, there are at most 3 starts an hour, a Stop button shows while it runs, and the last starts are listed with where they came from. If the PIN is wrong once, Home it stops and asks you to add the car again, so Bluelink never locks it. AI assistants cannot start the car. Don't use remote start in a closed garage.
 
 This uses the same calls as the MyHyundai app, as the open-source [hyundai_kia_connect_api](https://github.com/Hyundai-Kia-Connect/hyundai_kia_connect_api) project documents them. It is not an official Hyundai API and can stop working if Hyundai changes it. The car needs an active Bluelink plan, must be locked, in Park, with the doors, hood and trunk shut.

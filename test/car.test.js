@@ -56,7 +56,7 @@ const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0
   BLUELINK_URL: `http://127.0.0.1:${BLP}/tods/api/`, CAR_POLL_MS: '150', CAR_GAP_MS: '0' };
 let proc, fakeWx, fakeBl, cookie = '';
 const seen = [];   // what Hyundai was asked
-const hy = { otpFirst: true, trusted: new Set(), pinOk: '1234', started: 0 };
+const hy = { otpFirst: true, trusted: new Set(), pinOk: '1234', started: 0, locked: false, statusAsked: 0 };
 
 function bluelink(req, res) {
   let body = ''; req.on('data', d => body += d);
@@ -80,6 +80,9 @@ function bluelink(req, res) {
     if (p === 'vrfypin') return b.pin === hy.pinOk ? ok({ pAuth: 'pa-1' }) : no('7312');
     if (p === 'rmtstrt' || p === 'rmtstp') { if (req.headers.pauth !== 'pa-1') return no('7313'); if (p === 'rmtstrt') hy.started++; return ok({}, { transactionId: 'tx-' + hy.started }); }
     if (p === 'rmtsts') return ok({ transaction: { apiResult: 'C' } });
+    if (p === 'lstvhclsts') { hy.statusAsked++; return ok({ status: { doorLock: hy.locked, doorOpen: { frontLeft: 0, frontRight: 1, backLeft: 0, backRight: 0 }, trunkOpen: false, hoodOpen: false, engine: false,
+      fuelLevel: 22, dte: { value: 61.4, unit: 1 }, lowFuelLight: true, tirePressureLamp: { tirePressureLampAll: 0 }, washerFluidStatus: false, lastStatusDate: '20261111203000' } }); }
+    if (p === 'drlck' || p === 'drulck') { if (req.headers.pauth !== 'pa-1') return no('7313'); hy.locked = p === 'drlck'; return ok({}, { transactionId: 'tx-lock' }); }
     no('9999');
   });
 }
@@ -164,6 +167,21 @@ test('no more than 3 starts an hour', async () => {
   const r = await call('/api/car/start', {});
   assert.equal(r.status, 429); assert.match(r.json.error, /3 starts in the last hour/);
   assert.equal((await call('/api/car')).json.log.length, 3);
+});
+
+test('fuel, doors and locks: read without waking the car, and lock from the screen', async () => {
+  let r = await call('/api/car/status');
+  assert.equal(r.status, 200, r.text);
+  assert.deepEqual({ ...r.json.status, at: 0 }, { locked: false, doorsOpen: 1, trunkOpen: false, hoodOpen: false, engine: false, fuel: 22, range: 61, lowFuel: true, tires: false, washer: false, seen: '2026-11-11T20:30', at: 0 });
+  const asked = hy.statusAsked;
+  await call('/api/car/status');
+  assert.equal(hy.statusAsked, asked, 'asked at most every 5 minutes');
+  r = await call('/api/car/lock', { on: true });
+  assert.equal(r.status, 200, r.text); assert.equal(r.json.lock.state, 'sending');
+  r = await until(async () => { const v = await call('/api/car'); return v.json.lock.state === 'done' && v; });
+  assert.equal(r.json.status.locked, true); assert.equal(r.json.log[0].kind, 'lock');
+  assert.ok(hy.locked);
+  assert.equal((await call('/api/car/start', {})).status, 429, 'a lock is not a start, and the hour is still full of starts');
 });
 
 test('removing the car forgets the sign-in', async () => {

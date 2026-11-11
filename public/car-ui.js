@@ -2,7 +2,7 @@
 // CarUI.init({ api, toast, esc, demo, onChange }), then CarUI.load(), CarUI.html(), CarUI.click(e), CarUI.submit(e).
 (function(){
   'use strict';
-  var P = window.CarPlan, o = null, C = null, d = null, confirmAt = 0, poll = null, busy = false, view = 'main';
+  var P = window.CarPlan, o = null, C = null, d = null, confirmAt = 0, poll = null, busy = false, view = 'main', unlockAt = 0;
   var SEATS_HEAT = [['off','Off'],['low','Low'],['medium','Med'],['high','High']];
   var SEATS_COOL = [['low cool','Cool low'],['medium cool','Cool med'],['high cool','Cool high']];
 
@@ -32,10 +32,14 @@
   function take(j){
     var old = C && JSON.stringify(C.plan); C = j;
     if (!d || old !== JSON.stringify(j.plan)) d = j.plan ? P.tidy({}, j.plan) : null;   // the weather changed: start from its plan again
-    clearTimeout(poll); if (moving()) poll = setTimeout(load, 4000);
+    clearTimeout(poll); if (moving() || (C.lock && C.lock.state === 'sending')) poll = setTimeout(load, 4000);
     o.onChange();
   }
   function load(){ return o.demo ? Promise.resolve(take(demoView())) : o.api('api/car').then(take).catch(function(){}); }
+  function status(fresh){
+    if (o.demo){ demo.asked = true; take(demoView()); return Promise.resolve(); }
+    return o.api('api/car/status' + (fresh ? '?fresh=1' : '')).then(take).catch(function(e){ o.toast(e.message); });
+  }
   function send(path, body){
     if (busy) return; busy = true; o.onChange();
     var p = o.demo ? demoSend(path, body) : o.api(path, body || {});
@@ -51,10 +55,13 @@
     if (view === 'adjust') return back() + adjustPage();
     if (view === 'car') return back() + carPage();
     if (view === 'history') return back() + historyPage();
+    if (view === 'status') return back() + statusPage();
     var c = C.car, w = C.weather, r = C.run, h = '', changed = JSON.stringify(d) !== JSON.stringify(P.tidy({}, C.plan));
     h += '<div class="car-stats">'
       + stat('Outside', w ? w.temp + '°' : '–', w ? (isFinite(w.feels) ? 'feels ' + w.feels + '°' : '') + (w.stale ? ' · from earlier' : '') : 'no weather')
-      + stat('This start', d.minutes + ' min', d.temp + '° inside' + (changed ? ' · changed' : '')) + '</div>';
+      + stat('This start', d.minutes + ' min', d.temp + '° inside' + (changed ? ' · changed' : ''))
+      + (C.status ? stat('Car', C.status.locked === false ? 'Unlocked' : C.status.locked ? 'Locked' : '–', fuelLine(C.status)) : '') + '</div>'
+      + warn();
     h += '<div class="car-why">' + esc(changed ? 'Your own settings for this start.' : C.plan.why) + '</div>';
     if (r && r.state !== 'off') {
       var line = esc(r.msg || '');
@@ -66,10 +73,42 @@
     else h += '<button class="btn primary car-go car-hold" data-car="hold"' + (busy ? ' disabled' : '') + '><i></i><span>Hold to start<small>' + esc(P.words(d)) + '</small></span></button>';
     var last = C.log && C.log[0];
     h += '<div class="car-nav">'
+      + navBtn('status', 'Locks, fuel and doors', C.status ? statusLine(C.status) : 'Tap to ask the car')
       + navBtn('adjust', 'Change this start', changed ? 'Changed · tap to see' : 'Minutes, heat, defrost, seat')
       + navBtn('car', 'Your car', esc(c.name) + ' · ' + esc([c.year, c.model].filter(Boolean).join(' ')))
-      + navBtn('history', 'Past starts', last ? 'Last ' + new Date(last.at).toLocaleString([], { weekday:'short', hour:'numeric', minute:'2-digit' }) : 'None yet')
+      + navBtn('history', 'Past starts and locks', last ? 'Last ' + new Date(last.at).toLocaleString([], { weekday:'short', hour:'numeric', minute:'2-digit' }) : 'None yet')
       + '</div>';
+    return h;
+  }
+  function fuelLine(t){ return [t.fuel != null ? t.fuel + '% fuel' : '', t.range != null ? t.range + ' km' : ''].filter(Boolean).join(' · ') || 'fuel unknown'; }
+  function statusLine(t){ return [t.locked === false ? 'Unlocked' : t.locked ? 'Locked' : '', fuelLine(t), 'checked ' + ago(t.at)].filter(Boolean).join(' · '); }
+  function ago(ms){ var m = Math.round((Date.now() - ms) / 60e3); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : clock(ms); }
+  function problems(t){
+    var a = [];
+    if (t.locked === false) a.push('The car is unlocked.');
+    if (t.doorsOpen) a.push(t.doorsOpen === 1 ? 'A door is open.' : t.doorsOpen + ' doors are open.');
+    if (t.trunkOpen) a.push('The trunk is open.');
+    if (t.hoodOpen) a.push('The hood is open.');
+    if (t.lowFuel || (t.range != null && t.range < 80)) a.push('Fuel is low' + (t.range != null ? ', about ' + t.range + ' km left' : '') + '.');
+    if (t.tires) a.push('Check the tire pressure.');
+    if (t.washer) a.push('Washer fluid is low.');
+    return a;
+  }
+  function warn(){ var a = C.status ? problems(C.status) : []; return a.length ? '<div class="car-run failed" style="margin-top:10px">' + esc(a.join(' ')) + '</div>' : ''; }
+  function statusPage(){
+    var t = C.status, l = C.lock, h = '<div class="car-h" style="margin-top:0">Locks, fuel and doors</div>';
+    if (!t) return h + '<div class="car-note">Asking the car…</div>';
+    h += '<div class="car-stats">' + stat('Doors', t.locked === false ? 'Unlocked' : t.locked ? 'Locked' : '–', t.doorsOpen ? t.doorsOpen + ' open' : 'all shut')
+      + stat('Fuel', t.fuel != null ? t.fuel + '%' : '–', t.range != null ? 'about ' + t.range + ' km' : '')
+      + stat('Engine', t.engine ? 'Running' : 'Off', t.trunkOpen ? 'trunk open' : t.hoodOpen ? 'hood open' : '') + '</div>';
+    h += problems(t).length ? warn() : '<div class="car-why">All good: nothing open, no warnings.</div>';
+    if (l && (l.state !== 'done' || Date.now() - l.at < 60e3)) h += '<div class="car-run ' + (l.state === 'failed' ? 'failed' : l.state === 'done' ? 'on' : '') + '" role="status">' + esc(l.msg) + '</div>';
+    var sending = l && l.state === 'sending';
+    h += '<div class="car-two" style="margin-top:10px">'
+      + '<button class="btn primary car-go" data-car="lock"' + (busy || sending ? ' disabled' : '') + '>Lock the car</button>'
+      + '<button class="btn car-go" data-car="unlock"' + (busy || sending ? ' disabled' : '') + '>' + (unlockAt > Date.now() ? 'Tap again to unlock' : 'Unlock') + '</button></div>'
+      + '<div class="car-note">The car last reported ' + ago(t.at) + '. Locking and unlocking count toward Hyundai’s daily limit; checking doesn’t.</div>'
+      + '<button class="btn" data-car="refresh" style="margin-top:8px">Check again</button>';
     return h;
   }
   function navBtn(v, name, sub){ return '<button class="car-navb" data-car="view" data-v="' + v + '"><b>' + name + '</b><span>' + sub + '</span><i aria-hidden="true">›</i></button>'; }
@@ -99,8 +138,8 @@
   }
   function historyPage(){
     var l = C.log || [];
-    return '<div class="car-h" style="margin-top:0">Past starts</div>'
-      + (l.length ? l.map(function(x){ return row(new Date(x.at).toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }), '', '<span>' + x.minutes + ' min · ' + x.temp + '° · ' + esc(x.from) + '</span>'); }).join('')
+    return '<div class="car-h" style="margin-top:0">Past starts and locks</div>'
+      + (l.length ? l.map(function(x){ return row(new Date(x.at).toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }), '', '<span>' + (x.kind === 'lock' ? 'Locked' : x.kind === 'unlock' ? 'Unlocked' : 'Started · ' + x.minutes + ' min · ' + x.temp + '°') + ' · ' + esc(x.from) + '</span>'); }).join('')
         : '<div class="car-note">No starts yet.</div>')
       + '<div class="car-note">Home it allows 3 starts an hour. Hyundai allows about 24 start or stop commands a day.</div>';
   }
@@ -131,7 +170,10 @@
   function click(e){
     var b = e.target.closest('[data-car]'); if (!b) return false;
     var a = b.dataset.car, k = b.dataset.k;
-    if (a === 'view'){ view = b.dataset.v; o.onChange(); if (o.top) o.top(); }
+    if (a === 'view'){ view = b.dataset.v; if (view === 'status') status(false); o.onChange(); if (o.top) o.top(); }
+    else if (a === 'refresh') status(true);
+    else if (a === 'lock'){ unlockAt = 0; var q0 = send('api/car/lock', { on: true, from: o.from }); if (q0) q0.then(function(){ setTimeout(load, 2500); }); }
+    else if (a === 'unlock'){ if (unlockAt > Date.now()){ unlockAt = 0; send('api/car/lock', { on: false, from: o.from }); } else { unlockAt = Date.now() + 6000; setTimeout(o.onChange, 6100); o.onChange(); } }
     else if (a === 'hold'){ if (e.detail === 0){ confirmAt = Date.now() + 10000; setTimeout(o.onChange, 10100); o.onChange(); } else if (!held) o.toast('Hold the button for a second to start the car'); held = false; }
     else if (a === 'ask'){ confirmAt = Date.now() + 10000; setTimeout(o.onChange, 10100); o.onChange(); }
     else if (a === 'no'){ confirmAt = 0; o.onChange(); }
@@ -177,7 +219,8 @@
     if (!C.linked) return { big:'Add your car', sub:'Tap to set it up' };
     if (running()) return { big:'On till ' + clock(C.run.until), sub: P.words(C.run.plan).split(' · ').slice(1).join(' · '), on:true };
     if (moving()) return { big:'Starting…', sub:'Waiting for the car' };
-    return { big:'Ready · ' + d.minutes + ' min', sub: P.words(d).split(' · ').slice(1, 3).join(' · ') };
+    if (C.status && problems(C.status).length) return { big:'Ready · ' + d.minutes + ' min', sub: problems(C.status)[0].replace(/\.$/, '') };
+    return { big:'Ready · ' + d.minutes + ' min', sub: C.status ? (C.status.locked ? 'Locked · ' : '') + (C.status.fuel != null ? C.status.fuel + '% fuel' : fuelLine(C.status)) : P.words(d).split(' · ').slice(1, 3).join(' · ') };
   }
   // a short line for a button on the home screen
   function short(tiny){
@@ -189,18 +232,36 @@
     return 'Start car · ' + d.minutes + 'm';
   }
 
+  // Goodnight: ask the car if it's locked first. Unlocked opens the lock page; otherwise night(msg).
+  function goodnight(night){
+    if (!C || !C.linked) return night('');
+    status(false).then(function(){
+      if (C.status && C.status.locked === false){ view = 'status'; o.openPage(); o.toast('Your car is unlocked. Lock it, then tap Goodnight again.'); }
+      else night(C.status && C.status.locked ? 'Car is locked. Goodnight!' : '');
+    });
+  }
+  // Before a shift on a cold or hot day: is now the moment to start the car? Home it asks; you press.
+  function nudge(toLeave){
+    if (!C || !C.linked || running() || moving() || !d) return null;
+    if (d.minutes < 4 || toLeave <= 0 || toLeave > d.minutes + 3) return null;
+    return 'Start the car? ' + d.minutes + ' min' + (C.weather ? ' · ' + C.weather.temp + '° outside' : '');
+  }
+
   // ---------- the preview: a made-up car that answers like the real one ----------
-  var demo = { linked: true, run: null, prefs: P.prefsOf({}) };
+  var demo = { linked: true, run: null, prefs: P.prefsOf({}), locked: false, log: [] };
   function demoView(){
     var wx = o.demoWeather ? o.demoWeather() : { ok:true, temp:-4, feels:-11, code:71 };
     if (demo.run && demo.run.state === 'on' && demo.run.until < Date.now()) demo.run = null;
     return { linked: demo.linked, car: { name:'My Elantra', model:'ELANTRA', year:2022, fuel:'gas' }, email:'s•••@gmail.com', prefs: demo.prefs,
-      plan: P.plan(wx, demo.prefs), weather: wx && wx.ok ? { temp: wx.temp, feels: wx.feels, code: wx.code } : null, run: demo.run, adding: null };
+      plan: P.plan(wx, demo.prefs), weather: wx && wx.ok ? { temp: wx.temp, feels: wx.feels, code: wx.code } : null, run: demo.run, adding: null, status: demo.asked ? demoStatus() : null, lock: demo.lock || null, log: demo.log };
   }
+  function demoStatus(){ return { at: Date.now(), locked: demo.locked, doorsOpen: 0, trunkOpen: false, hoodOpen: false, engine: !!(demo.run && demo.run.state === 'on'), fuel: 38, range: 290, lowFuel: false, tires: false, washer: false }; }
   function demoSend(path, body){
+    if (path === 'api/car/lock'){ demo.locked = body.on; demo.asked = true; demo.lock = { on: body.on, at: Date.now(), state:'done', msg: body.on ? 'The car is locked.' : 'The car is unlocked.' }; demo.log.unshift({ at: Date.now(), kind: body.on ? 'lock' : 'unlock', from: o.from }); var v = demoView(); return Promise.resolve(Object.assign(v, { msg: v.lock.msg + ' (preview)' })); }
     if (path === 'api/car/start'){
       var plan = P.tidy(body, demoView().plan);
       demo.run = { state:'waiting', at: Date.now(), plan: plan, msg:'Hyundai has it. Waiting for the car to answer…' };
+      demo.log.unshift({ at: Date.now(), minutes: plan.minutes, temp: plan.temp, from: o.from });
       setTimeout(function(){ if (demo.run && demo.run.state === 'waiting'){ demo.run.state = 'on'; demo.run.until = Date.now() + plan.minutes * 60e3; load(); } }, 2500);
       return Promise.resolve(Object.assign(demoView(), { msg:'Starting the car: ' + P.words(plan) + ' (preview)' }));
     }
@@ -210,5 +271,5 @@
   }
 
   window.CarUI = { init: function(opts){ o = opts; }, bind: bind, load: load, html: html, click: click, submit: submit, short: short,
-    busy: function(){ return moving(); }, reset: function(){ view = 'main'; }, tile: tile, linked: function(){ return !!(C && C.linked); } };
+    busy: function(){ return moving(); }, goodnight: goodnight, nudge: nudge, status: status, reset: function(){ view = 'main'; }, tile: tile, linked: function(){ return !!(C && C.linked); } };
 })();
