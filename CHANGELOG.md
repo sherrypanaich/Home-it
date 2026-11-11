@@ -2,6 +2,22 @@
 
 ## v1.2.0 (not released yet)
 
+### Simpler Home and a full polish pass
+- Home is now only today and right now: the Today card, the weather with what to wear, one big "Hold to start" car button set for the weather, and Goodnight.
+- Lists (Later and Shopping) have their own page. Week, Weather, Money, Car and News keep theirs.
+- Settings opens as a small popup under its button, with three tabs: Everyday, Home page, More. Editing a to-do is a small popup too, and the shift and event forms are panels over the page. Tap outside to close.
+- Today page: three clear tiles, tap a to-do row to tick it, done items sink and fade, tomorrow in three short lines.
+- Week page: day blocks, an Edit pill on each shift and plan, week-by-week and month-by-month pay bars.
+- Weather page: the next 12 hours as one temperature line, a full week of days, better what-to-wear advice.
+- Money page: names and amounts in columns, green for owed to you, red for you owe, days until each bill, "Updated x min ago".
+- Car page: big hold button that fills as you hold, clear starting / on / failed states, side pages open beside the button.
+- News page: story pictures, a "News from" picker with ready-made sources, clearer can't-reach messages.
+- Phone: News tab, Weather and Money cards, matching colours, shorter car card.
+- Adding a shift takes two taps (day, then your usual shift). Adding an event has day, time and repeat buttons.
+- Timer: "+1 min" and "+5 min", shows on the idle and night screens, bigger "Time's up!".
+- Dark look is softer on the eyes; the night screen keeps a faint clock; page changes are quicker.
+- Messages no longer cover the page tabs.
+
 ### New (latest pass)
 - Timer in the top bar: pick 5 to 45 minutes, it counts down there and chimes when done.
 - Weather page says what to wear ("Coat weather. Bring an umbrella.") and shows each day's low and high as a bar.

@@ -279,7 +279,7 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .idle .iwx .disp{font-size:3.4rem;line-height:1;text-shadow:4px 4px 0 rgba(20,17,42,.4)}
 .idle .iwx small{display:block;font-size:1.05rem;font-weight:600;opacity:.9}
 .idle .c small{font-size:.42em;margin-left:.25em}
-.backdrop{position:absolute;inset:0;z-index:6;background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;cursor:pointer}
+.backdrop{position:absolute;inset:0;z-index:6;background:rgba(10,8,20,.42);cursor:pointer}   /* the page stays visible behind a popup; tap it to close */
 .sheet{position:absolute;left:18px;right:24px;top:16px;bottom:18px;z-index:7;background:var(--surface);border:3px solid var(--edge);border-radius:16px;
   box-shadow:6px 6px 0 var(--pop);padding:16px max(22px, calc(50% - 400px));display:flex;flex-direction:column;gap:8px;overflow:auto}
 .sheet .row{min-height:44px;border-top:1.5px solid var(--line)}
@@ -332,8 +332,13 @@ input,select{user-select:text;-webkit-user-select:text}
 .pg.lists .sub{font-weight:800;color:var(--muted)}
 .pg.lists .todo .hd .h2{display:none}
 /* Settings is a panel over the page, not a whole page */
-#sheet{left:50%;right:auto;top:50%;bottom:auto;width:960px;height:600px;padding:16px 30px;max-height:calc(100% - 40px);transform:translate(-50%,-50%);box-shadow:6px 6px 0 var(--pop),0 0 0 2000px rgba(10,8,20,.5)}
-.stack #sheet{left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-height:none;transform:none}
+#sheet{left:auto;right:24px;top:70px;bottom:auto;width:640px;height:auto;max-height:calc(100% - 92px);padding:14px 20px 18px;box-shadow:6px 6px 0 var(--pop)}
+#sheet .setmore{flex-direction:column;gap:8px}
+#sheet .setmore .col{flex:none;width:100%}
+/* small things open as small popups in the middle; the bigger forms are panels, not whole pages */
+#detailsheet.pop{left:50%;right:auto;top:50%;bottom:auto;width:540px;height:auto;max-height:calc(100% - 60px);padding:18px 24px 22px;transform:translate(-50%,-50%)}
+#shiftsheet,#eventsheet{left:70px;right:76px;top:44px;bottom:auto;max-height:calc(100% - 88px)}
+.stack #sheet,.stack #detailsheet.pop,.stack #shiftsheet,.stack #eventsheet{left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-height:none;transform:none}
 .pg.home.nolow{grid-template-rows:minmax(0,1fr)}
 .pg.home.nomid{grid-template-rows:128px}
 .pg.full{display:flex;overflow:hidden;padding:0 6px 6px 0}
@@ -515,9 +520,6 @@ button.wkit:active{transform:translate(1px,1px)}
 .hrline .cur .hh{color:var(--ink)}
 .hcap{font-size:.9rem;font-weight:700;color:var(--muted)}
 .hcap.wet{color:var(--accent);font-weight:800}
-.lead{position:relative}
-.lead .reader{position:absolute;right:0;bottom:52px;height:150px;width:auto;pointer-events:none}
-.lead p{padding-right:0}
 .g-money.solo{grid-template:"a" minmax(0,1fr) / minmax(0,720px);justify-content:center}
 .g-money .pc h3{font-size:.82rem;margin-top:8px}
 .g-money .stats{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
@@ -698,7 +700,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .cols > .col h3:first-child{margin-top:0}
 .stack .cols,.stack .setmore{flex-direction:column}
 .stack .cols > .col{flex:none}
-.toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--bg);font-weight:800;border-radius:12px;padding:10px 18px;box-shadow:3px 3px 0 var(--hl);max-width:80%;text-align:center}
+.toast{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--bg);font-weight:800;border-radius:12px;padding:10px 18px;box-shadow:3px 3px 0 var(--hl);max-width:80%;text-align:center}
 .wait{position:absolute;inset:0;z-index:8;display:grid;place-items:center;text-align:center;font-weight:800;font-size:1.2rem;background:var(--bg)}
 .seg{display:flex;flex-wrap:wrap;border:2.5px solid var(--edge);border-radius:12px;background:var(--surface2);padding:3px;gap:2px}
 .seg button{border:0;background:transparent;padding:8px 14px;border-radius:8px;font-weight:800;min-height:44px}
@@ -1832,6 +1834,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function show(name){
     hideKb(); ferrClear();
     ['sheet','shiftsheet','eventsheet','detailsheet'].forEach(function(id){ $(id).hidden = id !== name; });
+    $('detailsheet').classList.toggle('pop', name === 'detailsheet' && ui.detail === 'todo');
     if (name === 'detailsheet') renderDetail();
     ui.sheet = name; $('gear').setAttribute('aria-expanded', name === 'sheet'); $('backdrop').hidden = !name;
     if (name === 'sheet') renderSettings();
@@ -2082,8 +2085,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     op('todo.del', { list: t.list, id: t.id }, true).then(function(){ if (x) toast('Removed “' + x.t + '”', function(){ op('todo.add', { list: t.list, t: x.t, due: x.due, rep: x.rep }, true); }); });
   }
   on('dbody', 'submit', bodySubmit); on('dbody', 'click', bodyClick);
-  pager.addEventListener('submit', function(e){ if (e.target.closest('.pg.full')) bodySubmit(e); });
-  pager.addEventListener('click', function(e){ if (e.target.closest('.pg.full')) bodyClick(e); });
+  pager.addEventListener('submit', function(e){ if (e.target.closest('.pg.full') && !e.target.closest('.pg.lists')) bodySubmit(e); });
+  pager.addEventListener('click', function(e){ if (e.target.closest('.pg.full') && !e.target.closest('.pg.lists')) bodyClick(e); });
   on('carcard', 'click', function(e){ CarUI.click(e); });
   on('pgnav', 'click', function(e){ var b = e.target.closest('[data-go]'); if (b) goPage(b.dataset.go); });
   document.addEventListener('keydown', function(e){
