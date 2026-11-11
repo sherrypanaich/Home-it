@@ -7,6 +7,10 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const LISTS = ['today', 'later', 'shop'];
+  const LIST_NAMES = { today: 'Today', later: 'Later', shop: 'Shopping' };
+  // every list this person has: the three built-in ones, then their own
+  const listKeys = s => LISTS.concat((s.myLists || []).map(l => l.id));
+  const listName = (s, k) => LIST_NAMES[k] || ((s.myLists || []).find(l => l.id === k) || {}).name || '';
   const KEEP_DAYS = 730;   // how long past shifts and plans stay
   const CARDS = ['today', 'todo', 'week', 'coming', 'forecast', 'split', 'budget', 'room'];
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -15,6 +19,7 @@
 
   const blank = () => ({
     lists: { today: [], later: [], shop: [] },
+    myLists: [],    // lists the person made themselves: { id, name }; their items live in lists[id]
     shifts: [],     // one-off: { id, date, start, end, place }
     rules: [],      // weekly: { id, dow, start, end, place, from, until?, skip: [dates] }
     events: [],     // { id, date, time?, t, d?, rep?: 'weekly'|'monthly'|'yearly', done?: the day a repeating one was last ticked }
@@ -93,7 +98,7 @@
   function normalize(s, today) {
     if (s.day === today) return false;
     const monday = weekStart(today);
-    for (const k of LISTS) {
+    for (const k of listKeys(s)) {
       s.lists[k] = s.lists[k].filter(x => !(k === 'today' && x.d && !x.rep && x.on && x.on < today));
       for (const x of s.lists[k]) {
         if (x.d && x.rep === 'daily' && x.on < today) { x.d = false; delete x.on; }
@@ -263,7 +268,7 @@
   class Bad extends Error { constructor(m) { super(m); this.status = 400; } }
   const bad = m => { throw new Bad(m); };
   const text = (v, max = 80) => String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
-  const listOf = (s, k) => LISTS.includes(k) ? s.lists[k] : bad('No such list.');
+  const listOf = (s, k) => listKeys(s).includes(k) ? s.lists[k] : bad('No such list.');
   const need = (ok, m) => ok || bad(m);
   const shiftArgs = a => {
     need(okTime(a.start) && okTime(a.end), 'Pick a start and end time.');
@@ -304,6 +309,21 @@
     },
     'todo.del'(s, a) { const l = listOf(s, a.list), i = l.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.'); l.splice(i, 1); return 'Removed'; },
     'todo.clear'(s, a) { const l = listOf(s, a.list), n = l.filter(x => x.d && !x.rep).length; s.lists[a.list] = l.filter(x => !x.d || x.rep); return n ? 'Cleared ' + n : 'Nothing to clear'; },
+    'list.add'(s, a) {
+      const name = text(a.name, 24); need(name, 'Give the list a name.');
+      need(s.myLists.length < 8, 'That is a lot of lists. Remove one first.');
+      need(!listKeys(s).some(k => listName(s, k).toLowerCase() === name.toLowerCase()), 'You already have a list called that.');
+      const id = this.rid('l'); s.myLists.push({ id, name }); s.lists[id] = []; return 'List added';
+    },
+    'list.rename'(s, a) {
+      const l = s.myLists.find(x => x.id === a.id) || bad('That list is gone.'), name = text(a.name, 24); need(name, 'Give the list a name.');
+      need(!listKeys(s).some(k => k !== l.id && listName(s, k).toLowerCase() === name.toLowerCase()), 'You already have a list called that.');
+      l.name = name; return 'Saved';
+    },
+    'list.del'(s, a) {
+      const i = s.myLists.findIndex(x => x.id === a.id); need(i >= 0, 'That list is gone.');
+      const id = s.myLists[i].id; s.myLists.splice(i, 1); delete s.lists[id]; return 'List removed';
+    },
     'todo.move'(s, a) {
       const l = listOf(s, a.list), to = listOf(s, a.to), i = l.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.');
       to.push(l.splice(i, 1)[0]); return 'Moved';
@@ -390,7 +410,7 @@
       s.settings.hide = CARDS.filter(c => h.has(c)); return h.has(a.card) ? 'Hidden' : 'Shown';
     },
     // Company mode hides the money cards until tomorrow morning.
-    'company.set'(s, a) { s.settings.company = a.on ? this.today : ''; return a.on ? 'Money cards hidden until tomorrow' : 'Money cards shown'; }
+    'company.set'(s, a) { s.settings.company = a.on ? this.today : ''; return a.on ? 'Money and pay hidden until tomorrow' : 'Money and pay are showing again'; }
   };
   function apply(s, op, args, ctx) {
     const fn = Object.prototype.hasOwnProperty.call(OPS, op) ? OPS[op] : bad('Unknown change: ' + op);
@@ -400,7 +420,9 @@
   function fix(s) {
     const b = blank();
     for (const k of Object.keys(b)) if (s[k] === undefined) s[k] = b[k];
-    for (const k of LISTS) if (!Array.isArray(s.lists[k])) s.lists[k] = [];
+    if (!Array.isArray(s.myLists)) s.myLists = [];
+    s.myLists = s.myLists.filter(l => l && typeof l.id === 'string' && /^l[\w-]+$/.test(l.id) && !LISTS.includes(l.id) && typeof l.name === 'string' && l.name);
+    for (const k of listKeys(s)) if (!Array.isArray(s.lists[k])) s.lists[k] = [];
     for (const k of Object.keys(b.settings)) if (s.settings[k] === undefined) s.settings[k] = b.settings[k];
     return s;
   }
@@ -420,6 +442,6 @@
     return s;
   }
 
-  return { LISTS, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
+  return { LISTS, listKeys, listName, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
     shiftMins, shiftsOn, week, months, nextShift, KEEP_DAYS, normalize, dayView, guide, coming, moneyCard, eventsOn, eventList, REPS, OPS, apply, text, Bad };
 });

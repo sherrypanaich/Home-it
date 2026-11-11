@@ -196,8 +196,10 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
   const tm = (t, short) => H.fmtTime(t, short);
   const endOf = x => H.hhmm(H.mins(x.start) + x.mins);
   const shiftText = x => `${tm(x.start)} to ${tm(endOf(x))} at ${x.place} (${H.fmtHours(x.mins)}${x.rule ? ', repeats weekly' : ''})`;
-  const LIST_HELP = 'today, later or shop (the shopping list). Default today.';
-  const listArg = v => { const x = String(v || 'today').toLowerCase().trim(); return x.startsWith('shop') ? 'shop' : x.startsWith('later') ? 'later' : x === 'today' || !x ? 'today' : null; };
+  const LIST_HELP = 'today, later, shop (the shopping list), or the name of a list the person made. Default today.';
+  const listArg = (v, s) => { const x = String(v || 'today').toLowerCase().trim();
+    const mine = s && (s.myLists || []).find(l => l.name.toLowerCase() === x); if (mine) return mine.id;
+    return x.startsWith('shop') ? 'shop' : x.startsWith('later') ? 'later' : x === 'today' || !x ? 'today' : null; };
   // A day given as YYYY-MM-DD, "today" or "tomorrow"
   const dayArg = (v, dflt) => { const x = String(v || '').toLowerCase().trim(), t = h.today();
     if (!x) return dflt === undefined ? t : dflt; if (x === 'today') return t; if (x === 'tomorrow') return H.addDays(t, 1);
@@ -237,27 +239,27 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
         return out.join('\n');
       } },
     { name: 'list_todos', title: 'To-do lists', annotations: { readOnlyHint: true },
-      description: 'Shows a to-do list: today, later or shop (the shopping list). Leave the list out to see all three.',
+      description: 'Shows a to-do list: today, later or shop (the shopping list). Leave the list out to see them all.',
       inputSchema: { type: 'object', properties: { list: { type: 'string', description: LIST_HELP.replace(' Default today.', '') } } },
       run(uid, a) {
-        const s = h.stateOf(uid), names = { today: 'Today', later: 'Later', shop: 'Shopping' };
-        const one = a.list ? listArg(a.list) : null; if (a.list && !one) throw new Error('The lists are ' + LIST_HELP);
-        return (one ? [one] : H.LISTS).map(k => `${names[k]}:\n${s.lists[k].map(todoLine).join('\n') || '(empty)'}`).join('\n\n');
+        const s = h.stateOf(uid);
+        const one = a.list ? listArg(a.list, h.stateOf(uid)) : null; if (a.list && !one) throw new Error('The lists are ' + LIST_HELP);
+        return (one ? [one] : H.listKeys(s)).map(k => `${H.listName(s, k)}:\n${s.lists[k].map(todoLine).join('\n') || '(empty)'}`).join('\n\n');
       } },
     { name: 'add_todo', title: 'Add a to-do', annotations: { destructiveHint: false },
       description: 'Adds something to a to-do list. Use list "shop" for things to buy. It shows on the home screen straight away.',
       inputSchema: { type: 'object', properties: { text: { type: 'string', description: 'What to do or buy, up to 80 characters' }, list: { type: 'string', description: LIST_HELP }, repeat: { type: 'string', enum: ['daily', 'weekly'], description: 'Leave out for a one-off' }, by: { type: 'string', description: 'A time today it should be done by, 24-hour, like 11:30' } }, required: ['text'] },
       run(uid, a) {
-        const list = listArg(a.list); if (!list) throw new Error('The lists are ' + LIST_HELP);
+        const list = listArg(a.list, h.stateOf(uid)); if (!list) throw new Error('The lists are ' + LIST_HELP);
         h.applyOp(uid, 'todo.add', { t: a.text, list, rep: a.repeat || undefined, due: a.by ? timeArg(a.by, 'time') : undefined });
         const l = h.stateOf(uid).lists[list];
-        return `Added “${l[l.length - 1].t}” to ${{ today: 'Today', later: 'Later', shop: 'Shopping' }[list]}.`;
+        return `Added “${l[l.length - 1].t}” to ${H.listName(h.stateOf(uid), list)}.`;
       } },
     { name: 'complete_todo', title: 'Tick off a to-do', annotations: { destructiveHint: false, idempotentHint: true },
       description: 'Marks a to-do as done (or not done again with done=false). Give its text or part of it.',
       inputSchema: { type: 'object', properties: { text: { type: 'string' }, list: { type: 'string', description: LIST_HELP }, done: { type: 'boolean', default: true } }, required: ['text'] },
       run(uid, a) {
-        const list = listArg(a.list); if (!list) throw new Error('The lists are ' + LIST_HELP);
+        const list = listArg(a.list, h.stateOf(uid)); if (!list) throw new Error('The lists are ' + LIST_HELP);
         const x = findOne(h.stateOf(uid).lists[list], a.text, 'to-do'), want = a.done !== false;
         if (!!x.d !== want) h.applyOp(uid, 'todo.toggle', { list, id: x.id });
         return `“${x.t}” is ${want ? 'done' : 'not done'}.`;
@@ -266,20 +268,20 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
       description: 'Renames a to-do, moves it to another list, or both. Give its text or part of it.',
       inputSchema: { type: 'object', properties: { text: { type: 'string', description: 'The to-do as it is now' }, list: { type: 'string', description: 'The list it is in. ' + LIST_HELP }, new_text: { type: 'string', description: 'Its new wording' }, move_to: { type: 'string', description: 'The list to move it to. ' + LIST_HELP } }, required: ['text'] },
       run(uid, a) {
-        const list = listArg(a.list); if (!list) throw new Error('The lists are ' + LIST_HELP);
-        const to = a.move_to ? listArg(a.move_to) : null; if (a.move_to && !to) throw new Error('The lists are ' + LIST_HELP);
+        const list = listArg(a.list, h.stateOf(uid)); if (!list) throw new Error('The lists are ' + LIST_HELP);
+        const to = a.move_to ? listArg(a.move_to, h.stateOf(uid)) : null; if (a.move_to && !to) throw new Error('The lists are ' + LIST_HELP);
         if (!a.new_text && (!to || to === list)) throw new Error('Say the new wording, the list to move it to, or both.');
         const x = findOne(h.stateOf(uid).lists[list], a.text, 'to-do'), was = x.t;
         if (a.new_text) h.applyOp(uid, 'todo.edit', { list, id: x.id, t: a.new_text });
         if (to && to !== list) h.applyOp(uid, 'todo.move', { list, id: x.id, to });
         const names = NAMES, now = h.stateOf(uid).lists[to || list].find(y => y.id === x.id);
-        return `“${was}” is now “${now.t}” in ${names[to || list]}.`;
+        return `“${was}” is now “${now.t}” in ${H.listName(h.stateOf(uid), to || list)}.`;
       } },
     { name: 'remove_todo', title: 'Remove a to-do', annotations: { destructiveHint: true },
       description: 'Deletes a to-do from a list. Confirm with the user first.',
       inputSchema: { type: 'object', properties: { text: { type: 'string' }, list: { type: 'string', description: LIST_HELP } }, required: ['text'] },
       run(uid, a) {
-        const list = listArg(a.list); if (!list) throw new Error('The lists are ' + LIST_HELP);
+        const list = listArg(a.list, h.stateOf(uid)); if (!list) throw new Error('The lists are ' + LIST_HELP);
         const x = findOne(h.stateOf(uid).lists[list], a.text, 'to-do');
         h.applyOp(uid, 'todo.del', { list, id: x.id }); return `Removed “${x.t}”.`;
       } },

@@ -331,6 +331,18 @@ input,select{user-select:text;-webkit-user-select:text}
 .pg.lists .sub{font-weight:800;color:var(--muted)}
 /* Lists: Later and Shopping side by side, add box on top, big rows */
 .lgrid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 6px 6px 0}
+.lgrid.n3{grid-template-columns:1fr 1fr 1fr}
+.lgrid.many{grid-auto-rows:300px;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin}
+.lgrid.n3 .lcol{padding:12px 14px}
+.lgrid.n3 .ladd .rep button{font-size:.8rem}
+.lcol .ldel{color:var(--bad)}
+.lcol .ldel.sure{background:var(--bad);color:#fff}
+.pg.lists .pgact{display:flex;align-items:center;gap:12px;flex:1}
+.pg.lists .pgact #lnewbtn{margin-left:auto}
+.pg.lists .lnew{display:flex;flex-wrap:nowrap;gap:8px;margin-left:auto;align-items:center}
+.pg.lists .lnew[hidden],.pg.lists .sub[hidden]{display:none}
+.pg.lists .lnew input{width:260px;flex:none;min-height:40px;padding:4px 12px}
+.pg.lists .lnew .btn{min-height:40px;padding:2px 14px}
 .lcol{display:flex;flex-direction:column;gap:10px;padding:14px 18px;min-height:0}
 .lcol .hd{display:flex;align-items:center;gap:12px;min-height:44px}
 .lcol .hd .cnt{margin-left:auto;color:var(--muted)}
@@ -640,7 +652,9 @@ button.wkit:active{transform:translate(1px,1px)}
 .tl .morel button{font-weight:800;justify-content:space-between}
 .tl .morel b{font-weight:800;color:var(--hl);white-space:nowrap}
 .prog{display:none}
-.tl{margin-top:4px;gap:0}
+.tl{margin-top:4px;gap:0;flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:none;padding-bottom:6px}
+.tl::-webkit-scrollbar{display:none}
+.tl li{flex:none}
 .tl li{font-size:1.02rem;align-items:center;gap:10px;min-height:38px;padding:0 8px}
 .tl time{min-width:80px}
 .tl li.done span{text-decoration:line-through}
@@ -895,19 +909,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
     </section>
     <section class="pg full" data-pg="today" aria-label="Today"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
-    <section class="pg full lists" data-pg="lists" aria-label="Lists"><div class="pgin"><div class="pghd"><h2 class="h2">LISTS</h2><div class="pgact"><span class="sub">Tap a line to tick it off</span></div></div>
-      <div class="lgrid" id="lgrid">
-      <section class="card lcol" data-l="later" aria-label="Later">
-        <div class="hd"><h2 class="h2">LATER</h2><span class="cnt" data-lcnt></span><button class="btn sm lclr" data-lclear hidden>Clear done</button></div>
-        <form class="add ladd"><input class="kb" type="text" maxlength="80" placeholder="Add something for later" aria-label="Add something for later" autocomplete="off"><button class="btn primary" type="submit">Add</button><div class="rep" id="rep" role="group" aria-label="How often"><button type="button" data-rep="" aria-pressed="true">Just once</button><button type="button" data-rep="daily" aria-pressed="false">Every day</button><button type="button" data-rep="weekly" aria-pressed="false">Every week</button></div></form>
-        <ul class="items" data-litems></ul>
-      </section>
-      <section class="card lcol" data-l="shop" aria-label="Shopping">
-        <div class="hd"><h2 class="h2">SHOPPING</h2><span class="cnt" data-lcnt></span><button class="btn sm lclr" data-lclear hidden>Clear done</button></div>
-        <form class="add ladd"><input class="kb" type="text" maxlength="80" placeholder="Add something to buy" aria-label="Add something to buy" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
-        <ul class="items" data-litems></ul>
-      </section>
-      </div>
+    <section class="pg full lists" data-pg="lists" aria-label="Lists"><div class="pgin"><div class="pghd"><h2 class="h2">LISTS</h2><div class="pgact"><span class="sub">Tap a line to tick it off</span><form class="add lnew" id="lnew" hidden><input class="kb" id="lnewname" type="text" maxlength="24" placeholder="Name the new list" aria-label="Name the new list" autocomplete="off"><button class="btn primary" type="submit">Add list</button><button class="btn" type="button" id="lnewx">Cancel</button></form><button class="btn sm" id="lnewbtn">+ New list</button></div></div>
+      <div class="lgrid" id="lgrid"></div>
     </div></section>
     <section class="pg full" data-pg="week" aria-label="Week"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="weather" aria-label="Weather"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
@@ -1079,7 +1082,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     return x + ' – ' + y;
   }
   function endOf(x){ return H.hhmm(H.mins(x.start) + x.mins); }
-  function pay(m){ return S.settings.rate ? 'about ' + H.money(m / 60 * S.settings.rate) : ''; }
+  // what an hour pays, or 0 while there is company: Company hides everything about money, pay included
+  function rateNow(){ return V && V.company ? 0 : S.settings.rate; }
+  function pay(m){ return rateNow() ? 'about ' + H.money(m / 60 * rateNow()) : ''; }
   function opts(list, sel){ return list.map(function(o){ return '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(sel) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join(''); }
   function times(step){ var a = []; for (var m = 0; m < 1440; m += step) a.push([H.hhmm(m), tm(H.hhmm(m))]); return a; }
   function days(from, n){ var a = [], t = H.ymd(now()); for (var i = 0; i < n; i++){ var d = H.addDays(from, i); a.push([d, H.fmtDate(d) + (d === t ? ' (today)' : '')]); } return a; }
@@ -1185,10 +1190,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     rows.forEach(function(r, i){ if (next < 0 && !r.done && !r.todo && (r.m < 0 || r.m >= v.nowM)) next = i; r.past = !r.todo && r.m >= 0 && r.m < v.nowM; });
     if (next >= 0) rows[next].now = true;
     if (all) return rows;
-    var open = rows.filter(function(r){ return !r.done && !r.past; }), max = 4, show = (open.length >= max ? open : rows.filter(function(r){ return !r.done; })).slice(0, max);
-    if (!show.length) show = rows.slice(-3);
-    show.more = rows.length - show.length;
-    return show;
+    // Home shows the whole day: what is still to come first, then what is already done or past. It scrolls if it is long.
+    return rows.filter(function(r){ return !r.done && !r.past; }).concat(rows.filter(function(r){ return r.done || r.past; }));
   }
   function tlHtml(rows){
     if (!rows.length) return '';
@@ -1245,9 +1248,23 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
   // ---------- to-dos ----------
   function renderItems(){
+    // the columns are only rebuilt when the set of lists changes, so a box being typed in is left alone
+    var keys = H.listKeys(S).filter(function(k){ return k !== 'today'; }), sig = keys.map(function(k){ return k + ':' + H.listName(S, k); }).join('|'), g = $('lgrid');
+    if (g.dataset.sig !== sig){
+      g.dataset.sig = sig; g.className = 'lgrid n' + Math.min(keys.length, 3) + (keys.length > 3 ? ' many' : '');
+      g.innerHTML = keys.map(function(k){
+        var nm = H.listName(S, k), mine = k !== 'later' && k !== 'shop', ph = k === 'shop' ? 'Add something to buy' : k === 'later' ? 'Add something for later' : 'Add to ' + nm;
+        return '<section class="card lcol" data-l="' + esc(k) + '" aria-label="' + esc(nm) + '"><div class="hd"><h2 class="h2">' + esc(nm.toUpperCase()) + '</h2><span class="cnt" data-lcnt></span><button class="btn sm lclr" data-lclear hidden>Clear done</button>'
+          + (mine ? '<button class="btn sm lclr ldel" data-ldel aria-label="Remove the list ' + esc(nm) + '">Remove list</button>' : '') + '</div>'
+          + '<form class="add ladd"><input class="kb" type="text" maxlength="80" placeholder="' + esc(ph) + '" aria-label="' + esc(ph) + '" autocomplete="off"><button class="btn primary" type="submit">Add</button>'
+          + (k === 'later' ? '<div class="rep" id="rep" role="group" aria-label="How often"><button type="button" data-rep="" aria-pressed="true">Just once</button><button type="button" data-rep="daily" aria-pressed="false">Every day</button><button type="button" data-rep="weekly" aria-pressed="false">Every week</button></div>' : '')
+          + '</form><ul class="items" data-litems></ul></section>';
+      }).join('');
+    }
+    $('lnewbtn').hidden = !$('lnew').hidden || (S.myLists || []).length >= 8;
     document.querySelectorAll('#lgrid .lcol').forEach(function(col){
       var k = col.dataset.l, l = S.lists[k] || [], open = l.filter(function(x){ return !x.d; }), fin = l.filter(function(x){ return x.d; }), h = '';
-      if (!l.length) h = '<li class="lempty"><b>' + (k === 'shop' ? 'Nothing to buy' : 'Nothing for later') + '</b><span>' + (k === 'shop' ? 'Add things as you run out of them.' : 'Park things here that don’t need doing today.') + '</span></li>';
+      if (!l.length) h = '<li class="lempty"><b>' + (k === 'shop' ? 'Nothing to buy' : k === 'later' ? 'Nothing for later' : 'Nothing here yet') + '</b><span>' + (k === 'shop' ? 'Add things as you run out of them.' : k === 'later' ? 'Park things here that don’t need doing today.' : 'Add the first one above.') + '</span></li>';
       open.concat(fin).forEach(function(x){   // finished ones sink to the bottom
         var tag = x.due ? H.fmtTime(x.due) : x.rep === 'daily' ? 'Every day' : x.rep === 'weekly' ? 'Every week' : '';
         h += '<li><button class="it" data-id="' + esc(x.id) + '" aria-pressed="' + !!x.d + '"><span class="box"></span><span class="t">' + esc(x.t) + '</span>'
@@ -1256,6 +1273,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       var ul = col.querySelector('[data-litems]'); if (ul.dataset.h !== h){ ul.dataset.h = h; ul.innerHTML = h; }
       col.querySelector('[data-lcnt]').textContent = !l.length ? '' : open.length ? open.length + ' left' : 'All done';
       col.querySelector('[data-lclear]').hidden = !l.some(function(x){ return x.d && !x.rep; });
+      var del = col.querySelector('[data-ldel]'); if (del){ var sure = ui.ldel === k && ui.ldelAt > Date.now(); del.textContent = sure ? 'Tap again to remove' : 'Remove list'; del.classList.toggle('sure', sure); }
     });
     document.querySelectorAll('#rep button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.rep === (ui.rep || '')); });
   }
@@ -1273,7 +1291,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     $('days').innerHTML = h;
     $('wktitle').textContent = ui.weekOff === 0 ? 'THIS WEEK' : ui.weekOff === 1 ? 'NEXT WEEK' : ui.weekOff === -1 ? 'LAST WEEK' : (H.fmtDate(wk.from).slice(4) + ' – ' + H.fmtDate(H.addDays(wk.from, 6)).slice(4)).toUpperCase();
     $('wkh').textContent = H.fmtHours(wk.mins).replace(' h', ' hours');
-    $('wkp').textContent = wk.pay != null ? 'about ' + H.money(wk.pay) : '';
+    $('wkp').textContent = wk.pay != null && rateNow() ? 'about ' + H.money(wk.pay) : '';
   }
 
   // ---------- bottom cards ----------
@@ -1447,7 +1465,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
              : stat('Your shift', 'Day off', shiftLine(v)))
         + (x && (v.phase === 'before' || v.phase === 'soon') ? stat('Leave by', tm(H.hhmm(v.leaveM)), (v.toLeave > 0 ? 'in ' + H.fmtDur(v.toLeave) : 'time to go') + ' · ' + S.settings.travel + ' min trip')
            : x && v.phase === 'working' ? stat('Home time', tm(H.hhmm(v.endM)), H.fmtDur((v.endM - v.nowM + 1440) % 1440) + ' to go') : '')
-        + (wk.mins ? stat('This week', H.fmtHours(wk.mins), wkDone + ' done so far' + (wk.pay != null ? ' · about ' + H.money(wk.pay) : '')) : stat('This week', 'No shifts', 'Nothing on the schedule'))
+        + (wk.mins ? stat('This week', H.fmtHours(wk.mins), wkDone + ' done so far' + (wk.pay != null && rateNow() ? ' · about ' + H.money(wk.pay) : '')) : stat('This week', 'No shifts', 'Nothing on the schedule'))
         + '</div>';
       // To do: open ones first, ticked ones sink to the bottom. Tap a row to tick it; the pencil edits, moves or removes.
       var tds = S.lists.today.filter(function(t){ return !t.d; }).concat(S.lists.today.filter(function(t){ return t.d; }));
@@ -1484,11 +1502,11 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       title = 'TO-DO';
       if ($('tdname') && document.activeElement === $('tdname')) return;      // don't redraw under someone typing
       h = '<form id="tdform" style="flex-direction:column;align-items:stretch"><label>What needs doing?<input class="kb" id="tdname" type="text" maxlength="80" autocomplete="off" value="' + esc(td.t) + '"></label><button class="btn primary">Save</button></form><h3>Move it to another list</h3><div class="row first">'
-        + [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn" data-mv="' + l[0] + '"' + (l[0] === ui.todo.list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('')
+        + H.listKeys(S).map(function(k){ return [k, H.listName(S, k)]; }).map(function(l){ return '<button class="btn" data-mv="' + esc(l[0]) + '"' + (l[0] === ui.todo.list ? ' disabled' : '') + '>' + esc(l[1]) + '</button>'; }).join('')
         + '</div><button class="btn" data-tdrm="1" style="margin-top:8px;align-self:flex-start">Remove this to-do</button>';
     }
     if (k === 'pay'){
-      var ms = H.months(S, V.date, 12), wk2 = H.week(S, V.date), rate = S.settings.rate, yr = 0, yn = 0, nsh = 0, wks = [], wmax = 0, mmax = 0;
+      var ms = H.months(S, V.date, 12), wk2 = H.week(S, V.date), rate = rateNow(), yr = 0, yn = 0, nsh = 0, wks = [], wmax = 0, mmax = 0;
       var mname = function(ym){ return ['January','February','March','April','May','June','July','August','September','October','November','December'][+ym.slice(5) - 1] + (ym.slice(0, 4) === V.date.slice(0, 4) ? '' : ' ' + ym.slice(0, 4)); };
       // One row: a name, a bar (solid = worked, stripes = still to come) and the pay or hours.
       var bar = function(label, mins, done, max, now){
@@ -1511,7 +1529,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       h += '<h3>Month by month' + (yn > 1 ? '<span class="wkkey">' + V.date.slice(0, 4) + ' so far: ' + (rate ? 'about ' + H.money(yr / 60 * rate) : H.fmtHours(yr)) + '</span>' : '') + '</h3>';
       ms.forEach(function(m, i){ var cur = m.ym === V.date.slice(0, 7); h += bar(mname(m.ym), m.mins, cur ? (m.doneMins || 0) + (V.doneToday || 0) : m.mins, mmax, cur); });
       if (!ms.length) h += '<div class="wkempty sm"><b>No shifts yet</b><span>Add one with + Shift and your hours show up here.</span></div>';
-      h += '<div class="note wknote">' + (rate ? 'Pay is hours × ' + H.money(rate).replace(/\$(\d+)$/, function(a){ return rate % 1 ? '$' + rate.toFixed(2) : a; }) + ' an hour, before tax. Your real pay will be lower.' : 'Add your hourly rate in Settings to see pay here.') + '</div>';
+      h += '<div class="note wknote">' + (V.company ? 'Pay is hidden while you have company.' : rate ? 'Pay is hours × ' + H.money(rate).replace(/\$(\d+)$/, function(a){ return rate % 1 ? '$' + rate.toFixed(2) : a; }) + ' an hour, before tax. Your real pay will be lower.' : 'Add your hourly rate in Settings to see pay here.') + '</div>';
     } else if (k === 'coming'){
       var v = V, days = [], sh = [], evs = [], off = '', wk = H.week(S, v.date), done = v.doneToday || 0, today = v.shift && (v.phase === 'before' || v.phase === 'soon');
       var leave = function(x){ return tm(H.hhmm((H.mins(x.start) - S.settings.travel + 1440) % 1440)); };
@@ -1715,7 +1733,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     renderComing(); renderForecast(); renderNow(); renderCar();
     if (ui.sheet === 'detailsheet') renderDetail();
     renderPages();
-    $('company').setAttribute('aria-pressed', V.company); $('cohint').textContent = V.company ? 'Money hidden' : 'Hides money';
+    $('company').setAttribute('aria-pressed', V.company); $('cohint').textContent = V.company ? 'Money and pay hidden' : 'Hides money and pay';
   }
 
   // ---------- sheets ----------
@@ -1984,8 +2002,19 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var b = e.target.closest('button'), col = e.target.closest('.lcol'); if (!b || !col) return; var k = col.dataset.l;
     if (b.dataset.rep != null){ ui.rep = b.dataset.rep; renderItems(); }
     else if (b.dataset.more){ ui.detail = 'todo'; ui.todo = { list: k, id: b.dataset.more }; show('detailsheet'); }
+    else if (b.dataset.ldel != null){   // asks twice: the list and everything on it goes
+      if (ui.ldel === k && ui.ldelAt > Date.now()){ ui.ldel = ''; op('list.del', { id: k }, true); }
+      else { ui.ldel = k; ui.ldelAt = Date.now() + 5000; renderItems(); setTimeout(renderItems, 5100); }
+    }
     else if (b.dataset.lclear != null) op('todo.clear', { list: k });
     else if (b.dataset.id) op('todo.toggle', { list: k, id: b.dataset.id }, true);
+  });
+  function newList(open){ $('lnew').hidden = !open; $('lnewbtn').hidden = open; stage.querySelector('.pg.lists .sub').hidden = open; if (open) $('lnewname').focus(); else { $('lnewname').value = ''; hideKb(); } }
+  on('lnewbtn', 'click', function(){ newList(true); });
+  on('lnewx', 'click', function(){ newList(false); });
+  on('lnew', 'submit', function(e){
+    e.preventDefault(); var v = $('lnewname').value.trim(); if (!v) return;
+    op('list.add', { name: v }).then(function(){ if ((S.myLists || []).some(function(l){ return l.name.toLowerCase() === v.toLowerCase(); })) newList(false); renderItems(); });
   });
   on('lgrid', 'submit', function(e){
     e.preventDefault(); var col = e.target.closest('.lcol'), inp = col.querySelector('input'), v = inp.value.trim(); if (!v) return;
