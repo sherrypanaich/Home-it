@@ -88,6 +88,11 @@ input::placeholder{color:var(--muted)}
 .up div{display:flex;gap:10px;align-items:baseline;font-weight:600}
 .up b{min-width:82px;font-weight:800;white-space:nowrap}
 .up .sh{color:var(--accent);font-weight:800}
+.pop{position:fixed;inset:0;z-index:8;background:rgba(20,17,42,.45);display:flex;align-items:flex-end;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.pop .card{width:100%;display:flex;flex-direction:column;gap:10px}
+.pop .rowf .btn{flex:1}
+.pop .btn[disabled]{opacity:.45}
+.have.on{background:var(--soft);border-style:dashed}
 .toast button{all:unset;cursor:pointer;margin-left:14px;color:var(--hl);text-decoration:underline;font-weight:800;padding:6px 4px}
 .addbar input{flex:1;min-width:0;box-shadow:3px 3px 0 var(--pop)}
 .days{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
@@ -170,7 +175,9 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
       <form id="eventform">
         <label>What<input id="ename" type="text" maxlength="80" placeholder="Dentist, gym, date night" autocomplete="off"></label>
         <div class="rowf"><label>Day<select id="eday"></select></label><label>Time<select id="etime"></select></label></div>
-        <button class="btn primary">Add event</button>
+        <label>Repeats<select id="erep"><option value="">Just once</option><option value="weekly">Every week</option><option value="monthly">Every month</option><option value="yearly">Every year</option></select></label>
+        <button class="btn primary" id="esave">Add event</button>
+        <button class="btn" type="button" id="ecancel" hidden>Cancel</button>
       </form>
     </div>
     <div class="card" style="margin-top:14px"><h2 class="h2">COMING UP</h2><div id="ehave" style="display:flex;flex-direction:column;gap:6px"></div></div>
@@ -195,6 +202,15 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   <button data-p="shifts"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>Shifts</button>
   <button data-p="events"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>Events</button>
 </nav>
+<div class="pop" id="pop" hidden>
+  <div class="card">
+    <div class="line" style="border:0"><h2 class="h2">TO-DO</h2><button class="btn sm" id="popclose">Close</button></div>
+    <form id="tdform" style="flex-direction:row" class="addbar"><input id="tdname" type="text" maxlength="80" aria-label="To-do" autocomplete="off" enterkeyhint="done"><button class="btn primary">Save</button></form>
+    <div class="note" style="font-weight:800">Move to</div>
+    <div class="rowf" id="tdmove"></div>
+    <button class="btn" id="tdrm">Remove</button>
+  </div>
+</div>
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="home.js"></script>
@@ -267,7 +283,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     var l = S.lists[ui.list], h = '';
     l.forEach(function(x){
       var tag = x.due ? tm(x.due) : x.rep === 'daily' ? 'Daily' : x.rep === 'weekly' ? 'Weekly' : '';
-      h += '<li><button class="it" data-id="' + esc(x.id) + '" aria-pressed="' + !!x.d + '"><span class="box"></span><span class="t">' + esc(x.t) + '</span>' + (tag ? '<span class="tagp">' + tag + '</span>' : '') + '</button><button class="x" data-del="' + esc(x.id) + '" aria-label="Remove ' + esc(x.t) + '">×</button></li>';
+      h += '<li><button class="it" data-id="' + esc(x.id) + '" aria-pressed="' + !!x.d + '"><span class="box"></span><span class="t">' + esc(x.t) + '</span>' + (tag ? '<span class="tagp">' + tag + '</span>' : '') + '</button><button class="x" data-more="' + esc(x.id) + '" aria-label="Edit, move or remove ' + esc(x.t) + '">⋯</button></li>';
     });
     if (l.some(function(x){ return x.d && !x.rep; })) h += '<li><button class="it" data-clear="1" style="justify-content:center;color:var(--muted);font-weight:800">Clear finished</button></li>';
     $('items').innerHTML = h || '<li class="empty">Nothing here yet.</li>';
@@ -288,17 +304,26 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     $('sdaytitle').textContent = H.fmtDate(ui.sday, true).toUpperCase();
     var hv = '';
     H.shiftsOn(S, ui.sday).forEach(function(x){
-      hv += '<div class="have"><span>' + span(x.start, endOf(x), true) + ' · ' + esc(x.place) + (x.rule ? ' · weekly' : '') + '</span><div>'
-        + (x.rule ? '<button class="btn sm" data-rm="' + esc(x.id) + '">Skip this day</button><button class="btn sm" data-rm="' + esc(x.id) + '" data-all="1">Stop repeating</button>' : '<button class="btn sm" data-rm="' + esc(x.id) + '">Remove</button>') + '</div></div>';
+      hv += '<div class="have' + (x.id === ui.sedit ? ' on' : '') + '"><span>' + span(x.start, endOf(x), true) + ' · ' + esc(x.place) + (x.rule ? ' · weekly' : '') + '</span><div>'
+        + '<button class="btn sm" data-eds="' + esc(x.id) + '">Edit</button>' + (x.rule ? '<button class="btn sm" data-rm="' + esc(x.id) + '">Skip this day</button><button class="btn sm" data-rm="' + esc(x.id) + '" data-all="1">Stop repeating</button>' : '<button class="btn sm" data-rm="' + esc(x.id) + '">Remove</button>') + '</div></div>';
     });
+    if (ui.sedit && !H.shiftsOn(S, ui.sday).some(function(x){ return x.id === ui.sedit; })) ui.sedit = null;
+    $('saveshift').textContent = ui.sedit ? 'Save changes' : 'Add shift';
     $('shave').innerHTML = hv || '<div class="note">No shift on this day yet.</div>';
     $('srep').setAttribute('aria-pressed', ui.srep); $('srepst').textContent = 'Repeats every ' + H.DAYS_LONG[H.dow(ui.sday)];
   }
+  var REPW = { weekly:'every week', monthly:'every month', yearly:'every year' };
+  function dayOpts(sel){ var t = today(), from = sel && sel < t ? sel : t, a = []; for (var i = 0; i < 90; i++){ var d = H.addDays(from, i); a.push([d, H.fmtDate(d) + (d === t ? ' (today)' : '')]); } if (sel && sel > a[a.length - 1][0]) a.push([sel, H.fmtDate(sel)]); return opts(a, sel || t); }
+  function eventForm(e){
+    ui.eedit = e ? e.id : null;
+    $('eday').innerHTML = dayOpts(e && e.date); $('etime').innerHTML = opts([['', 'No time']].concat(times(15)), e && e.time || ''); $('erep').value = e && e.rep || ''; $('ename').value = e ? e.t : '';
+  }
   function renderEvents(){
     var t = today(), h = '';
-    S.events.filter(function(e){ return e.date >= t; }).sort(function(a, b){ return (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')); }).forEach(function(e){
-      h += '<div class="have"><span>' + H.fmtDate(e.date) + (e.time ? ' · ' + tm(e.time) : '') + ' · ' + esc(e.t) + '</span><div><button class="btn sm" data-rmev="' + esc(e.id) + '">Remove</button></div></div>';
+    H.eventList(S, t).forEach(function(e){
+      h += '<div class="have' + (e.id === ui.eedit ? ' on' : '') + '"><span>' + H.fmtDate(e.date) + (e.time ? ' · ' + tm(e.time) : '') + ' · ' + esc(e.t) + (e.rep ? ' · ' + REPW[e.rep] : '') + '</span><div><button class="btn sm" data-edev="' + esc(e.id) + '">Edit</button><button class="btn sm" data-rmev="' + esc(e.id) + '">Remove</button></div></div>';
     });
+    $('esave').textContent = ui.eedit ? 'Save changes' : 'Add event'; $('ecancel').hidden = !ui.eedit;
     $('ehave').innerHTML = h || '<div class="note">Nothing coming up.</div>';
   }
   function renderMore(v){
@@ -326,21 +351,36 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   function on(id, ev, fn){ $(id).addEventListener(ev, fn); }
   on('nav', 'click', function(e){ var b = e.target.closest('button'); if (b) go(b.dataset.p); });
   on('morebtn', 'click', function(){ go(ui.pane === 'more' ? 'today' : 'more'); });
-  on('plist', 'click', function(e){ var b = e.target.closest('button'); if (b) op('event.toggle', { id: b.dataset.ev }, true); });
+  on('plist', 'click', function(e){ var b = e.target.closest('button'); if (b) op('event.toggle', { id: b.dataset.ev, date: today() }, true); });
   on('tlist', 'click', function(e){ var b = e.target.closest('button'); if (b) op('todo.toggle', { list:'today', id: b.dataset.todo }, true); });
   on('quickform', 'submit', function(e){
     e.preventDefault();
     var v = $('quickinput').value.trim(); if (!v) return;
     $('quickinput').value = ''; op('todo.add', { list:'today', t: v }, true);
   });
+  function openTodo(list, id){
+    var x = S.lists[list].filter(function(y){ return y.id === id; })[0]; if (!x) return;
+    ui.todo = { list: list, id: id }; $('tdname').value = x.t;
+    $('tdmove').innerHTML = [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn sm" data-mv="' + l[0] + '"' + (l[0] === list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('');
+    $('pop').hidden = false;
+  }
+  function closeTodo(){ $('pop').hidden = true; ui.todo = null; }
+  on('popclose', 'click', closeTodo);
+  on('pop', 'click', function(e){ if (e.target === $('pop')) closeTodo(); });
+  on('tdform', 'submit', function(e){
+    e.preventDefault(); var v = $('tdname').value.trim(), t = ui.todo; if (!v) return toast('Type something first.');
+    closeTodo(); op('todo.edit', { list: t.list, id: t.id, t: v }, true);
+  });
+  on('tdmove', 'click', function(e){ var b = e.target.closest('[data-mv]'), t = ui.todo; if (b){ closeTodo(); op('todo.move', { list: t.list, id: t.id, to: b.dataset.mv }); } });
+  on('tdrm', 'click', function(){
+    var t = ui.todo, x = S.lists[t.list].filter(function(y){ return y.id === t.id; })[0]; closeTodo();
+    op('todo.del', { list: t.list, id: t.id }, true).then(function(){ if (x) toast('Removed “' + x.t + '”', function(){ op('todo.add', { list: t.list, t: x.t, due: x.due, rep: x.rep }, true); }); });
+  });
   on('toast', 'click', function(e){ if (e.target.id === 'undo' && undoFn){ var f = undoFn; undoFn = null; $('toast').hidden = true; f(); } });
   on('tabs', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.list = b.dataset.list; renderItems(); } });
   on('items', 'click', function(e){
     var b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.del){
-      var list = ui.list, x = S.lists[list].filter(function(y){ return y.id === b.dataset.del; })[0];
-      op('todo.del', { list: list, id: b.dataset.del }, true).then(function(){ if (x) toast('Removed “' + x.t + '”', function(){ op('todo.add', { list: list, t: x.t, due: x.due, rep: x.rep }, true); }); });
-    }
+    if (b.dataset.more) openTodo(ui.list, b.dataset.more);
     else if (b.dataset.clear) op('todo.clear', { list: ui.list });
     else op('todo.toggle', { list: ui.list, id: b.dataset.id }, true);
   });
@@ -352,17 +392,32 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   });
   on('wkprev', 'click', function(){ ui.weekOff--; ui.sday = null; renderShifts(); });
   on('wknext', 'click', function(){ ui.weekOff++; ui.sday = null; renderShifts(); });
-  on('days', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.sday = b.dataset.date; renderShifts(); } });
+  on('days', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.sday = b.dataset.date; ui.sedit = null; renderShifts(); } });
   on('srep', 'click', function(){ ui.srep = !ui.srep; this.setAttribute('aria-pressed', ui.srep); });
-  on('saveshift', 'click', function(){ op('shift.add', { date: ui.sday, start: $('sstart').value, end: $('send').value, place: $('splace').value, repeat: ui.srep }).then(function(){ ui.srep = false; renderShifts(); }); });
+  on('saveshift', 'click', function(){
+    if (ui.sedit) return op('shift.edit', { id: ui.sedit, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(){ ui.sedit = null; renderShifts(); });
+    op('shift.add', { date: ui.sday, start: $('sstart').value, end: $('send').value, place: $('splace').value, repeat: ui.srep }).then(function(){ ui.srep = false; renderShifts(); }); });
   on('copyweek', 'click', function(){ op('shift.copyweek', { week: ui.sday }); });
-  on('shave', 'click', function(e){ var b = e.target.closest('[data-rm]'); if (b) op('shift.del', { id: b.dataset.rm, date: ui.sday, all: !!b.dataset.all }); });
+  on('shave', 'click', function(e){
+    var b = e.target.closest('[data-rm]'); if (b) return op('shift.del', { id: b.dataset.rm, date: ui.sday, all: !!b.dataset.all });
+    var ed = e.target.closest('[data-eds]'); if (!ed) return;
+    var x = H.shiftsOn(S, ui.sday).filter(function(y){ return y.id === ed.dataset.eds; })[0]; if (!x) return;
+    ui.sedit = ui.sedit === x.id ? null : x.id;
+    if (ui.sedit){ $('sstart').value = x.start; $('send').value = endOf(x); $('splace').value = x.place === 'Work' ? '' : x.place; }
+    renderShifts();
+  });
   on('eventform', 'submit', function(e){
     e.preventDefault();
     var t = $('ename').value.trim(); if (!t) return toast('Give it a name.');
-    op('event.add', { t: t, date: $('eday').value, time: $('etime').value || undefined }).then(function(){ $('ename').value = ''; });
+    var a = { t: t, date: $('eday').value, time: $('etime').value || undefined, rep: $('erep').value || undefined };
+    if (ui.eedit){ a.id = ui.eedit; op('event.edit', a).then(function(){ eventForm(null); renderEvents(); }); }
+    else op('event.add', a).then(function(){ $('ename').value = ''; });
   });
-  on('ehave', 'click', function(e){ var b = e.target.closest('[data-rmev]'); if (b) op('event.del', { id: b.dataset.rmev }); });
+  on('ecancel', 'click', function(){ eventForm(null); renderEvents(); });
+  on('ehave', 'click', function(e){
+    var b = e.target.closest('[data-rmev]'); if (b){ if (ui.eedit === b.dataset.rmev) eventForm(null); return op('event.del', { id: b.dataset.rmev }); }
+    var ed = e.target.closest('[data-edev]'); if (ed){ var ev = S.events.filter(function(x){ return x.id === ed.dataset.edev; })[0]; if (ev){ eventForm(ev); renderEvents(); window.scrollTo(0, 0); } }
+  });
   on('guidepick', 'click', function(e){ var b = e.target.closest('button'); if (b) op('settings.set', { key:'guide', value: b.dataset.v }, true); });
   on('set-travel', 'change', function(){ op('settings.set', { key:'travel', value: this.value }); });
   on('rateform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'rate', value: $('set-rate').value.replace(/[$,\s]/g, '') || 0 }); });
@@ -370,8 +425,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
 
   function start(){
     try { ui.pane = sessionStorage.getItem('homeit.pane') || 'today'; } catch(e){}
-    var t = today(), days = []; for (var i = 0; i < 90; i++){ var d = H.addDays(t, i); days.push([d, H.fmtDate(d) + (i === 0 ? ' (today)' : '')]); }
-    $('eday').innerHTML = opts(days, t); $('etime').innerHTML = opts([['', 'No time']].concat(times(15)), '');
+    var t = today(); eventForm(null);
     if (DEMO){ S = H.sample(t); ME = { name:'You' }; WX = { ok:true, temp:4, hi:7, city:'Belleville', sunrise:'06:56', sunset:'16:44' }; }
     var first = function(){
       var last = S && (S.shifts[S.shifts.length - 1] || S.rules[S.rules.length - 1]) || { start:'14:00', end:'22:00' };

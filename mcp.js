@@ -297,24 +297,24 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
       inputSchema: { type: 'object', properties: { days: { type: 'integer', minimum: 1, maximum: 365, default: 30 } } },
       run(uid, a) {
         const s = h.stateOf(uid), t = h.today(), to = H.addDays(t, Math.min(365, Math.max(1, a.days | 0 || 30)));
-        const l = s.events.filter(e => e.date >= t && e.date <= to).sort((x, y) => (x.date + (x.time || '')).localeCompare(y.date + (y.time || '')));
-        return l.map(e => `${H.fmtDate(e.date, true)} (${e.date})${e.time ? ' at ' + tm(e.time) : ''}: ${e.t}${e.d ? ' (done)' : ''}`).join('\n') || 'Nothing coming up.';
+        const l = H.eventList(s, t).filter(e => e.date <= to);
+        return l.map(e => `${H.fmtDate(e.date, true)} (${e.date})${e.time ? ' at ' + tm(e.time) : ''}: ${e.t}${e.rep ? ' (repeats ' + e.rep + ')' : ''}${e.d ? ' (done)' : ''}`).join('\n') || 'Nothing coming up.';
       } },
     { name: 'add_event', title: 'Add an event', annotations: { destructiveHint: false },
       description: 'Adds an event or appointment on a day, with an optional time (24-hour). It shows on Today and in the week.',
-      inputSchema: { type: 'object', properties: { what: { type: 'string' }, date: { type: 'string', description: 'YYYY-MM-DD, or "today" / "tomorrow"' }, time: { type: 'string', description: 'Like 15:30. Leave out for no set time.' } }, required: ['what', 'date'] },
+      inputSchema: { type: 'object', properties: { what: { type: 'string' }, date: { type: 'string', description: 'YYYY-MM-DD, or "today" / "tomorrow"' }, time: { type: 'string', description: 'Like 15:30. Leave out for no set time.' }, repeat: { type: 'string', enum: ['weekly', 'monthly', 'yearly'], description: 'Leave out for a one-off.' } }, required: ['what', 'date'] },
       run(uid, a) {
         const date = dayArg(a.date, null); if (!date) throw new Error('Say which day.');
         const time = a.time ? timeArg(a.time, 'time') : undefined;
-        h.applyOp(uid, 'event.add', { t: a.what, date, time });
-        return `Added “${H.text(a.what)}” on ${H.fmtDate(date, true)}${time ? ' at ' + tm(time) : ''}.`;
+        h.applyOp(uid, 'event.add', { t: a.what, date, time, rep: a.repeat || undefined });
+        return `Added “${H.text(a.what)}” on ${H.fmtDate(date, true)}${time ? ' at ' + tm(time) : ''}${a.repeat ? ', repeating ' + a.repeat : ''}.`;
       } },
     { name: 'remove_event', title: 'Remove an event', annotations: { destructiveHint: true },
       description: 'Deletes an upcoming event. Give its name or part of it. Confirm with the user first.',
       inputSchema: { type: 'object', properties: { what: { type: 'string' }, date: { type: 'string', description: 'YYYY-MM-DD, only needed when two events share a name' } }, required: ['what'] },
       run(uid, a) {
         const t = h.today(), date = a.date ? dayArg(a.date) : null;
-        const x = findOne(h.stateOf(uid).events.filter(e => date ? e.date === date : e.date >= t), a.what, 'event');
+        const x = findOne(date ? H.eventsOn(h.stateOf(uid), date) : H.eventList(h.stateOf(uid), t), a.what, 'event');
         h.applyOp(uid, 'event.del', { id: x.id }); return `Removed “${x.t}” (${H.fmtDate(x.date, true)}).`;
       } }
   ];

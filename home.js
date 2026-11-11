@@ -16,7 +16,7 @@
     lists: { today: [], later: [], shop: [] },
     shifts: [],     // one-off: { id, date, start, end, place }
     rules: [],      // weekly: { id, dow, start, end, place, from, until?, skip: [dates] }
-    events: [],     // { id, date, time?, t, d? }
+    events: [],     // { id, date, time?, t, d?, rep?: 'weekly'|'monthly'|'yearly', done?: the day a repeating one was last ticked }
     settings: { guide: 'luffy', travel: 25, rate: 0, nightFrom: '23:30', nightTo: '07:00', idle: 10, look: 'auto',
       city: 'Belleville, Ontario', lat: 44.1628, lon: -77.3832, splitUrl: '', budgetUrl: '', company: '', hide: [] },
     day: ''         // the last day the lists were tidied for
@@ -83,7 +83,7 @@
       }
     }
     const old = addDays(today, -7);
-    s.events = s.events.filter(e => e.date >= old);
+    s.events = s.events.filter(e => e.rep || e.date >= old);
     s.shifts = s.shifts.filter(x => x.date >= addDays(today, -60));
     s.day = today;
     return true;
@@ -111,7 +111,7 @@
     const night = inRange(mins(set.nightFrom), mins(set.nightTo)) && phase !== 'soon';
     const rise = sun && sun.rise != null ? sun.rise : 420, sunset = sun && sun.set != null ? sun.set : 1140;
     const dark = nowM >= sunset || nowM < rise;
-    const todayEvents = s.events.filter(e => e.date === date).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    const todayEvents = eventsOn(s, date);
     const tomorrow = addDays(date, 1);
     const doneM = todays.filter(x => mins(x.start) + x.mins <= nowM).reduce((a, x) => a + x.mins, 0);
     return {
@@ -120,7 +120,7 @@
       endM: shift ? (late ? mins(shift.start) + shift.mins - 1440 : mins(shift.start) + shift.mins) : null,
       night, dark, look: set.look === 'auto' ? (dark ? 'dark' : 'light') : set.look,
       events: todayEvents,
-      tomorrow: { date: tomorrow, shifts: shiftsOn(s, tomorrow), events: s.events.filter(e => e.date === tomorrow) },
+      tomorrow: { date: tomorrow, shifts: shiftsOn(s, tomorrow), events: eventsOn(s, tomorrow) },
       next: nextShift(s, date, nowM), doneToday: doneM,
       company: !!set.company && set.company >= date
     };
@@ -160,13 +160,37 @@
     return { who, mood: MOOD[key], line };
   }
 
+  // ---------- events: one-off, or repeating every week, month or year from their first day ----------
+  const REPS = ['weekly', 'monthly', 'yearly'];
+  const monthLen = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+  function falls(e, date) {
+    if (!e.rep) return e.date === date;
+    if (date < e.date) return false;
+    if (e.rep === 'weekly') return dow(e.date) === dow(date);
+    const [y, m, d] = date.split('-').map(Number), d0 = +e.date.slice(8);
+    if (e.rep === 'yearly' && m !== +e.date.slice(5, 7)) return false;
+    return d === Math.min(d0, monthLen(y, m));   // the 31st falls on the last day of a shorter month
+  }
+  // That day's events in time order. A repeating one comes back as that day's copy, ticked only if ticked that day.
+  const eventsOn = (s, date) => s.events.filter(e => falls(e, date)).map(e => e.rep ? { ...e, date, d: e.done === date } : e)
+    .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  // Everything still ahead, soonest first. A repeating event is listed once, at its next day.
+  function eventList(s, today) {
+    const out = [];
+    for (const e of s.events) {
+      if (!e.rep) { if (e.date >= today) out.push(e); continue; }
+      for (let i = 0, d = e.date > today ? e.date : today; i < 367; i++, d = addDays(d, 1)) if (falls(e, d)) { out.push({ ...e, date: d }); break; }
+    }
+    return out.sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+  }
+
   // ---------- what's coming up: the next days' shifts and events, in order ----------
   function coming(s, date, max = 5, days = 14) {
     const rows = [];
     for (let i = 1; i <= days && rows.length < max; i++) {
       const d = addDays(date, i), label = i === 1 ? 'Tomorrow' : i < 7 ? DAYS[dow(d)] : fmtDate(d);
       for (const x of shiftsOn(s, d)) rows.push({ date: d, label, kind: 'shift', start: x.start, end: hhmm(mins(x.start) + x.mins), t: x.place });
-      for (const e of s.events.filter(y => y.date === d).sort((a, b) => (a.time || '').localeCompare(b.time || ''))) rows.push({ date: d, label, kind: 'event', time: e.time || '', t: e.t });
+      for (const e of eventsOn(s, d)) rows.push({ date: d, label, kind: 'event', time: e.time || '', t: e.t });
     }
     return rows.slice(0, max);
   }
@@ -226,6 +250,10 @@
       x.d = !x.d; if (x.d) x.on = this.today; else delete x.on;
       return x.d ? 'Done' : 'Not done';
     },
+    'todo.edit'(s, a) {
+      const x = listOf(s, a.list).find(y => y.id === a.id) || bad('That one is gone.');
+      const t = text(a.t); need(t, 'Type something first.'); x.t = t; return 'Saved';
+    },
     'todo.del'(s, a) { const l = listOf(s, a.list), i = l.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.'); l.splice(i, 1); return 'Removed'; },
     'todo.clear'(s, a) { const l = listOf(s, a.list), n = l.filter(x => x.d && !x.rep).length; s.lists[a.list] = l.filter(x => !x.d || x.rep); return n ? 'Cleared ' + n : 'Nothing to clear'; },
     'todo.move'(s, a) {
@@ -235,6 +263,7 @@
     'shift.add'(s, a) {
       need(okDate(a.date), 'Pick a day.');
       const f = shiftArgs(a);
+      need(!shiftsOn(s, a.date).some(x => x.start === f.start), 'There’s already a shift at that time on that day.');
       if (a.repeat) { need(s.rules.length < 60, 'Too many repeating shifts.'); s.rules.push({ id: this.rid('r'), dow: dow(a.date), ...f, from: a.date, skip: [] }); return 'Shift added, every ' + DAYS_LONG[dow(a.date)]; }
       need(s.shifts.length < 2000, 'Too many shifts.');
       s.shifts.push({ id: this.rid('s'), date: a.date, ...f }); return 'Shift added';
@@ -266,9 +295,24 @@
       const t = text(a.t); need(t, 'Give it a name.'); need(okDate(a.date), 'Pick a day.'); need(s.events.length < 2000, 'Too many events.');
       const e = { id: this.rid('e'), date: a.date, t };
       if (a.time) { need(okTime(a.time), 'Pick a time.'); e.time = a.time; }
-      s.events.push(e); return 'Added';
+      if (a.rep) { need(REPS.includes(a.rep), 'Repeat weekly, monthly or yearly.'); e.rep = a.rep; }
+      s.events.push(e); return e.rep ? 'Added, repeats ' + e.rep : 'Added';
     },
-    'event.toggle'(s, a) { const e = s.events.find(y => y.id === a.id) || bad('That one is gone.'); e.d = !e.d; return e.d ? 'Done' : 'Not done'; },
+    'event.edit'(s, a) {
+      const e = s.events.find(y => y.id === a.id) || bad('That one is gone.');
+      const t = text(a.t); need(t, 'Give it a name.'); need(okDate(a.date), 'Pick a day.');
+      need(!a.time || okTime(a.time), 'Pick a time.'); need(!a.rep || REPS.includes(a.rep), 'Repeat weekly, monthly or yearly.');
+      e.t = t; e.date = a.date;
+      if (a.time) e.time = a.time; else delete e.time;
+      if (a.rep) e.rep = a.rep; else { delete e.rep; delete e.done; }
+      return 'Saved';
+    },
+    // A repeating event is ticked for one day (date, today when left out); the next time it comes round it is fresh.
+    'event.toggle'(s, a) {
+      const e = s.events.find(y => y.id === a.id) || bad('That one is gone.');
+      if (e.rep) { const day = okDate(a.date) ? a.date : this.today; if (e.done === day) delete e.done; else e.done = day; return e.done ? 'Done' : 'Not done'; }
+      e.d = !e.d; return e.d ? 'Done' : 'Not done';
+    },
     'event.del'(s, a) { const i = s.events.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.'); s.events.splice(i, 1); return 'Removed'; },
     'settings.set'(s, a) {
       const fn = Object.prototype.hasOwnProperty.call(SETTINGS, a.key) ? SETTINGS[a.key] : bad('No such setting.');
@@ -311,5 +355,5 @@
   }
 
   return { LISTS, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
-    shiftMins, shiftsOn, week, nextShift, normalize, dayView, guide, coming, moneyCard, OPS, apply, text, Bad };
+    shiftMins, shiftsOn, week, nextShift, normalize, dayView, guide, coming, moneyCard, eventsOn, eventList, REPS, OPS, apply, text, Bad };
 });

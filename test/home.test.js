@@ -156,3 +156,35 @@ test('money cards pull the headline out of what Split it and Budget it say', () 
   const c = H.moneyCard('budget', 'Budget it hasn’t spotted a paycheque yet (it needs two pay deposits).');
   assert.equal(c.big, ''); assert.match(c.sub, /hasn’t spotted a paycheque/);
 });
+
+test('events can repeat, be edited, and are ticked one day at a time', () => {
+  const s = H.blank(), c = { today: '2026-11-11', rid: p => p + Math.random() };
+  H.apply(s, 'event.add', { t: 'Rent', date: '2026-01-31', rep: 'monthly' }, c);
+  H.apply(s, 'event.add', { t: 'Gym', date: '2026-11-04', time: '09:00', rep: 'weekly' }, c);
+  H.apply(s, 'event.add', { t: 'Birthday', date: '2024-02-29', rep: 'yearly' }, c);
+  assert.deepEqual(H.eventsOn(s, '2026-02-28').map(e => e.t).sort(), ['Birthday', 'Rent']);   // no 31st (or 29th) this February
+  assert.deepEqual(H.eventsOn(s, '2026-03-31').map(e => e.t), ['Rent']);
+  assert.deepEqual(H.eventsOn(s, '2027-02-28').map(e => e.t).sort(), ['Birthday', 'Rent']);
+  assert.deepEqual(H.eventsOn(s, '2026-11-11').map(e => e.t), ['Gym']);
+  assert.deepEqual(H.eventsOn(s, '2026-10-28').map(e => e.t), []);              // not before it starts
+  const gym = s.events[1];
+  H.apply(s, 'event.toggle', { id: gym.id }, c);
+  assert.equal(H.eventsOn(s, '2026-11-11')[0].d, true); assert.equal(H.eventsOn(s, '2026-11-18')[0].d, false);
+  assert.deepEqual(H.eventList(s, '2026-11-11').map(e => e.t + ' ' + e.date), ['Gym 2026-11-11', 'Rent 2026-11-30', 'Birthday 2027-02-28']);
+  H.normalize(s, '2026-12-25'); assert.equal(s.events.length, 3);               // repeating ones are never tidied away
+  H.apply(s, 'event.edit', { id: gym.id, t: 'Swim', date: '2026-11-12', time: '' }, c);
+  assert.deepEqual(H.eventsOn(s, '2026-11-12').map(e => e.t + (e.time || '') + (e.rep || '')), ['Swim']);
+  assert.equal(H.coming(s, '2026-11-11')[0].t, 'Swim');
+});
+
+test('to-dos can be renamed, and the same shift can’t be added twice', () => {
+  const s = H.blank(), c = { today: '2026-11-11', rid: p => p + Math.random() };
+  H.apply(s, 'todo.add', { t: 'Milk' }, c);
+  H.apply(s, 'todo.edit', { list: 'today', id: s.lists.today[0].id, t: 'Oat milk' }, c);
+  assert.equal(s.lists.today[0].t, 'Oat milk');
+  H.apply(s, 'shift.add', { date: '2026-11-12', start: '14:00', end: '22:00' }, c);
+  assert.throws(() => H.apply(s, 'shift.add', { date: '2026-11-12', start: '14:00', end: '20:00' }, c), /already a shift/);
+  assert.throws(() => H.apply(s, 'shift.add', { date: '2026-11-12', start: '14:00', end: '20:00', repeat: true }, c), /already a shift/);
+  H.apply(s, 'shift.edit', { id: s.shifts[0].id, start: '15:00', end: '23:00' }, c);
+  assert.equal(H.shiftsOn(s, '2026-11-12')[0].start, '15:00');
+});

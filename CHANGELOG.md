@@ -9,7 +9,10 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 - **Coming up.** The next thing on your schedule, and the next two weeks of shifts and events when you tap it. Also on the phone.
 - **Next days' weather.** Tomorrow at a glance; tap for four days and the next hours.
 - **Live money cards.** Link Split it and Budget it once and the screen shows what you're owed or owe, and what's safe to spend until payday with the bills before it. Company mode still hides them.
+- **Edit anything.** To-dos, events and shifts can be changed after saving, on the big screen and the phone. To-dos can move between Today, Later and Shopping.
+- **Repeating events.** Every week, month or year: rent, gym, birthdays. Tick one off and it comes back fresh next time.
 - **Undo.** Removing a to-do by mistake can be taken back for a few seconds.
+- **A warning when the screen is out of date.** If Home it or the weather can't be reached, the top bar says so instead of quietly showing old information.
 - **Phone: add a to-do straight from Today,** with plans and to-dos in their own lists.
 
 ### Improved
@@ -19,6 +22,10 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 - The guide no longer says goodnight on the phone.
 - The bottom row is shorter, so Today, the to-do list and the week get more room.
 - The leaving-soon checklist fits on one line.
+- Settings are in tabs (Screen, Look, Work, Cards, Apps) instead of one long list.
+- The same shift can't be added twice by tapping Save again.
+- AI assistants can add repeating events too.
+- Tests now run automatically on GitHub for every change.
 
 ### Security
 - The keys that link Split it and Budget it stay on the computer and are never sent to a screen.
