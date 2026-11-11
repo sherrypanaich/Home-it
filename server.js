@@ -20,7 +20,7 @@ const crypto = require('crypto');
 const readline = require('readline');
 const zlib = require('zlib');
 
-const VERSION = '1.3.0';
+const VERSION = '1.2.0';
 // Optional settings file next to this one: KEY=value per line (see home-it.env.example).
 try {
   for (const line of fs.readFileSync(path.join(__dirname, 'home-it.env'), 'utf8').split(/\r?\n/)) {
