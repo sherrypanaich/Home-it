@@ -213,7 +213,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
 
   <section id="p-todo" class="pane" hidden>
     <div class="card">
-      <div class="tabs" id="tabs" role="group" aria-label="Lists"><button data-list="today">Today</button><button data-list="later">Later</button><button data-list="shop">Shopping</button></div>
+      <div class="tabs" id="tabs" role="group" aria-label="Lists" style="flex-wrap:wrap"></div>
       <form id="addform" style="flex-direction:row" class="addbar">
         <input id="addinput" type="text" maxlength="80" placeholder="Add something" aria-label="Add a to-do" autocomplete="off" enterkeyhint="done">
         <button class="btn sm" type="button" id="rep" aria-pressed="false" aria-label="Repeat">Once</button>
@@ -290,7 +290,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     <div class="line" style="border:0"><h2 class="h2">TO-DO</h2><button class="btn sm" id="popclose">Close</button></div>
     <form id="tdform" style="flex-direction:row" class="addbar"><input id="tdname" type="text" maxlength="80" aria-label="To-do" autocomplete="off" enterkeyhint="done"><button class="btn primary">Save</button></form>
     <div class="note" style="font-weight:800">Move to</div>
-    <div class="rowf" id="tdmove"></div>
+    <div class="rowf" id="tdmove" style="flex-wrap:wrap"></div>
     <button class="btn" id="tdrm">Remove</button>
   </div>
 </div>
@@ -436,6 +436,10 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     $('carbody').innerHTML = ch[1] ? '<div class="carmain">' + ch[0] + '</div><button class="carmore" data-carmore="1" aria-expanded="' + !!ui.carMore + '">' + (ui.carMore ? 'Show less' : 'Locks, fuel and more') + '</button>' + (ui.carMore ? ch[1] : '') : ch[0];
   }
   function renderItems(){
+    // the tabs follow the lists she has: Today, Later, Shopping, then her own
+    var keys = H.listKeys(S); if (keys.indexOf(ui.list) < 0) ui.list = 'today';
+    $('tabs').innerHTML = keys.map(function(k){ var n = S.lists[k].filter(function(x){ return !x.d; }).length;
+      return '<button data-list="' + esc(k) + '" aria-pressed="' + (k === ui.list) + '">' + esc(H.listName(S, k)) + (n ? ' · ' + n : '') + '</button>'; }).join('');
     var l = S.lists[ui.list], h = '';
     l.forEach(function(x){
       var tag = x.due ? tm(x.due) : x.rep === 'daily' ? 'Daily' : x.rep === 'weekly' ? 'Weekly' : '';
@@ -443,7 +447,6 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     });
     if (l.some(function(x){ return x.d && !x.rep; })) h += '<li><button class="it" data-clear="1" style="justify-content:center;color:var(--muted);font-weight:800">Clear finished</button></li>';
     $('items').innerHTML = h || '<li class="empty">Nothing here yet.</li>';
-    document.querySelectorAll('#tabs button').forEach(function(b){ var n = S.lists[b.dataset.list].filter(function(x){ return !x.d; }).length; b.setAttribute('aria-pressed', b.dataset.list === ui.list); b.textContent = { today:'Today', later:'Later', shop:'Shopping' }[b.dataset.list] + (n ? ' · ' + n : ''); });
     var r = $('rep'); r.textContent = ui.rep === 'daily' ? 'Daily' : ui.rep === 'weekly' ? 'Weekly' : 'Once'; r.setAttribute('aria-pressed', !!ui.rep);
   }
   function renderShifts(){
@@ -527,7 +530,7 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   function openTodo(list, id){
     var x = S.lists[list].filter(function(y){ return y.id === id; })[0]; if (!x) return;
     ui.todo = { list: list, id: id }; $('tdname').value = x.t;
-    $('tdmove').innerHTML = [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn sm" data-mv="' + l[0] + '"' + (l[0] === list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('');
+    $('tdmove').innerHTML = H.listKeys(S).map(function(k){ return '<button class="btn sm" data-mv="' + esc(k) + '"' + (k === list ? ' disabled' : '') + '>' + esc(H.listName(S, k)) + '</button>'; }).join('');
     $('pop').hidden = false;
   }
   function closeTodo(){ $('pop').hidden = true; ui.todo = null; }
