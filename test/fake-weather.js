@@ -13,6 +13,11 @@ module.exports = (port, cb) => http.createServer((req, res) => {
   // also a stand-in for Split it's assistant address: answers one tool, only with the right key
   if (u.pathname === '/mcp') {
     if (req.headers.authorization !== 'Bearer good-key') { res.statusCode = 401; return res.end('{}'); }
+    let body = ''; req.on('data', d => body += d);
+    return req.on('end', () => {
+      const lately = JSON.parse(body).params.name === 'recent_expenses';
+      res.end(JSON.stringify({ jsonrpc: '2.0', id: 1, result: { content: [{ type: 'text', text: lately ? '- Groceries $80.00, paid by you\n- Internet $70.00, paid by Maya' : 'Balances for Sherry:\n- Maya owes you $40.00\nOverall: you’re owed $40.00.' }] } }));
+    });
     return res.end(JSON.stringify({ jsonrpc: '2.0', id: 1, result: { content: [{ type: 'text', text: 'Balances for Sherry:\n- Maya owes you $40.00\nOverall: you’re owed $40.00.' }] } }));
   }
   if (u.pathname === '/geo') return res.end(JSON.stringify(u.searchParams.get('name').startsWith('Nowhere') ? {} : { results: [{ name: 'Kingston', admin1: 'Ontario', latitude: 44.2298, longitude: -76.481 }] }));

@@ -7,6 +7,7 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 ### New
 - **Tap for a full page.** The bottom cards each say one thing. Tap one and its page opens; Back, or a tap beside the page, returns to the home screen. Settings, shifts and events open the same way.
 - **Everything for today in one place.** Today's to-dos now sit inside the Today panel with your plans, and "All of today" opens a page with the shift, plans, to-dos and weather together. The list card keeps Later and Shopping.
+- **Fuller pages.** Each page opens with the key numbers at the top. Today shows your shift, when to leave, what's left to do, the weather through the day and tomorrow. Coming up shows hours, pay and when to leave for every shift, with that day's weather. Split it adds recent expenses, and Budget it adds how each budget is doing.
 - **Your calendar.** Paste the link of a shared Apple, Google or Outlook calendar in Settings and its events show on Today and Coming up. Home it only reads it.
 - **Coming up.** The next thing on your schedule, and the next two weeks of shifts and events when you tap it. Also on the phone.
 - **Next days' weather.** Tomorrow at a glance; tap for four days and the next hours.
@@ -22,6 +23,7 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 - Long to-dos wrap onto a second line instead of being cut off.
 - The marker on Today's timeline says NEXT, since it points at what's next.
 - The guide no longer says goodnight on the phone.
+- **A calmer home screen.** The day rail, the tomorrow chips and the progress bar are gone; Today is one clean list, and the details live on the pages.
 - The bottom row is shorter, so Today, the to-do list and the week get more room.
 - The leaving-soon checklist fits on one line.
 - Settings are in tabs (Screen, Look, Work, Cards, Apps) instead of one long list.

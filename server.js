@@ -212,12 +212,14 @@ const accounts = require('./accounts')({ appName: 'Home it', envFile: 'home-it.e
 
 // ---------- money cards: Home it asks Split it and Budget it the way an assistant would (their /mcp address, with a key) ----------
 // Linked per person with `node server.js link-split NAME` / `link-budget NAME`. Asked at most every 5 minutes; the last answer is kept if an app is down.
-const APPS = { split: { name: 'Split it', tool: 'get_balances' }, budget: { name: 'Budget it', tool: 'safe_to_spend' } };
+// tool: the headline. more: a second question whose answer fills the card's page, shown line by line.
+const APPS = { split: { name: 'Split it', tool: 'get_balances', more: ['recent_expenses', { limit: 6 }, 'Lately'] },
+  budget: { name: 'Budget it', tool: 'safe_to_spend', more: ['budget_status', {}, 'Budgets this month'] } };
 const moneyCache = new Map();   // uid:kind -> { at, card }
-async function askApp(link, tool) {
+async function askApp(link, tool, args = {}) {
   const r = await fetch(link.url.replace(/\/+$/, '') + '/mcp', { method: 'POST', signal: AbortSignal.timeout(8000),
     headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', Authorization: 'Bearer ' + link.key },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: tool, arguments: {} } }) });
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: tool, arguments: args } }) });
   if (!r.ok) throw new Error('answered ' + r.status);
   const j = await r.json(), out = j.result;
   if (!out || out.isError) throw new Error(out?.content?.[0]?.text || j.error?.message || 'no answer');
@@ -230,8 +232,11 @@ async function moneyFor(uid) {
     const link = links[kind]; if (!link) return;
     const key = uid + ':' + kind, hit = moneyCache.get(key);
     if (hit && Date.now() - hit.at < 5 * 60e3) return void (res[kind] = hit.card);
-    try { const card = { ok: true, ...H.moneyCard(kind, await askApp(link, APPS[kind].tool)) }; moneyCache.set(key, { at: Date.now(), card }); res[kind] = card; }
-    catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }
+    try {
+      const card = { ok: true, ...H.moneyCard(kind, await askApp(link, APPS[kind].tool)) }, [tool, args, title] = APPS[kind].more;
+      try { card.more = { title, lines: (await askApp(link, tool, args)).split('\n').map(l => l.replace(/^[-•]\s*/, '').trim()).filter(Boolean).slice(0, 8).map(l => l.slice(0, 140)) }; } catch {}
+      moneyCache.set(key, { at: Date.now(), card }); res[kind] = card;
+    } catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }
   }));
   return res;
 }
