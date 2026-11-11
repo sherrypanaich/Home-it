@@ -1,0 +1,23 @@
+# docker compose up -d
+# Then: docker compose exec home-it node server.js add-user YOURNAME
+services:
+  home-it:
+    build: .
+    container_name: home-it
+    restart: unless-stopped
+    ports:
+      - "8100:8100"
+    volumes:
+      - home-it-data:/data
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      # Your time zone, so "today" and the night hours match your clock
+      TZ: America/Toronto
+    # Optional settings go in home-it.env next to this file (see home-it.env.example)
+    env_file:
+      - path: home-it.env
+        required: false
+volumes:
+  home-it-data:
