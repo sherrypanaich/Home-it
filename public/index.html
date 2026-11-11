@@ -361,7 +361,8 @@ input,select{user-select:text;-webkit-user-select:text}
 .g-two{grid-template:"top top" auto "a b" minmax(0,1fr) / 1.15fr 1fr}
 .g-money{grid-template:"a b" minmax(0,1fr) / 1fr 1fr}
 .g-car{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
-.g-car .pc .dbody{max-width:980px;width:100%;margin:0 auto}
+.g-car .pc .dbody{max-width:640px;width:100%;margin:0 auto}
+.carback{margin:-4px 0;padding:4px 16px}
 .g-wx{grid-template:"a b" auto "c b" minmax(0,1fr) / 1.12fr 1fr}
 .now{gap:12px}
 .nowtop{display:flex;align-items:center;gap:16px}
@@ -1308,8 +1309,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       } else if (name === 'car'){
         var ae = document.activeElement; if (ae && ae.closest && ae.closest('#carlink,#carcode')) return;   // don't redraw under someone typing
         title = 'CAR'; sub = CarUI.linked() ? 'Start it for the weather, check the locks' : 'Add your Hyundai once';
-        var ch = CarUI.html().split('<!--cut:more-->');
-        h = ch[1] ? '<div class="pgrid g-money">' + panel('a', ch[0], 'Start the car') + panel('b', ch[1], 'More') + '</div>' : '<div class="pgrid g-car">' + panel('a', ch[0], 'Car') + '</div>';
+        if (CarUI.holding()) return;   // and not while the start button is being held
+        var ch = CarUI.html(true).split('<!--cut:more-->'), hd = CarUI.heads();
+        h = ch[1] ? '<div class="pgrid g-money">' + panel('a', ch[0], hd.a) + panel('b', ch[1], hd.b, hd.back ? '<button class="btn sm carback" data-car="view" data-v="main">‹ Back</button>' : '') + '</div>' : '<div class="pgrid g-car">' + panel('a', ch[0], hd.a) + '</div>';
       } else {
         p = parts('news'); sub = NEWS && NEWS.ok ? 'Tap a headline to read it' : '';
         h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : p.head;
