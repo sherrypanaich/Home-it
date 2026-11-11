@@ -250,7 +250,7 @@ async function moneyFor(uid) {
     if (hit && Date.now() - hit.at < 5 * 60e3) return void (res[kind] = hit.card);
     try {
       const ans = await askApp(link, APPS[kind].tool);
-      const card = { ok: true, ...H.moneyCard(kind, ans.text, ans.data) }, [tool, args, title] = APPS[kind].more;
+      const card = { ok: true, at: Date.now(), ...H.moneyCard(kind, ans.text, ans.data) }, [tool, args, title] = APPS[kind].more;
       try { card.more = { title, lines: (await askApp(link, tool, args)).text.split('\n').map(l => l.replace(/^[-•]\s*/, '').trim()).filter(Boolean).slice(0, 8).map(l => l.slice(0, 140)) }; } catch {}
       moneyCache.set(key, { at: Date.now(), card }); res[kind] = card;
     } catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }

@@ -104,7 +104,7 @@ test('the money card shows a linked app, and nothing while there is company', as
   assert.equal((await call('/api/money')).json.split.ok, false);
   cli(['link-split', 'Sherry'], { APP_URL: `http://127.0.0.1:${WX}`, APP_KEY: 'good-key' });
   const { json } = await call('/api/money');
-  assert.equal(json.split.big, '$40.00'); assert.deepEqual(json.split.more, { title: 'Lately', lines: ['Groceries $80.00, paid by you', 'Internet $70.00, paid by Maya'] }); assert.deepEqual(json.split.rows, ['Maya owes you $40.00']); assert.equal(json.budget, undefined);
+  assert.equal(json.split.big, '$40.00'); assert.ok(Date.now() - json.split.at < 60e3);   // when it was asked, for "Updated 3 min ago" assert.deepEqual(json.split.more, { title: 'Lately', lines: ['Groceries $80.00, paid by you', 'Internet $70.00, paid by Maya'] }); assert.deepEqual(json.split.rows, ['Maya owes you $40.00']); assert.equal(json.budget, undefined);
   assert.doesNotMatch(JSON.stringify((await call('/api/state')).json), /good-key/);   // the key never reaches a screen
   await call('/api/op', { op: 'company.set', args: { on: true } });
   assert.deepEqual((await call('/api/money')).json, { hidden: true });

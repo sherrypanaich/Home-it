@@ -425,7 +425,29 @@ input,select{user-select:text;-webkit-user-select:text}
 .lead{position:relative}
 .lead .reader{position:absolute;right:0;bottom:52px;height:150px;width:auto;pointer-events:none}
 .lead p{padding-right:0}
-.g-money .stat b{font-size:1.7rem}
+.g-money.solo{grid-template:"a" minmax(0,1fr) / minmax(0,720px);justify-content:center}
+.g-money .pc h3{font-size:.82rem;margin-top:8px}
+.g-money .stats{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g-money .stat{padding:8px 14px 9px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:0 12px}
+.g-money .stat small{font-size:.82rem;color:var(--ink);grid-column:1/-1}
+.g-money .stat b{font-size:1.9rem}
+.g-money .stat span{font-size:.84rem}
+.g-money .hd{min-height:44px}
+.g-money .hd .btn{min-height:44px;padding:6px 14px;font-size:.9rem;display:flex;align-items:center;flex:none}
+.g-money .hd small{flex:1;text-align:right;font-size:.82rem;line-height:1.25;font-weight:700;color:var(--muted)}
+.g-money .mr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;font-weight:700;border-top:1.5px solid var(--line);padding-top:8px;font-variant-numeric:tabular-nums}
+.g-money h3 + .mr{border-top:0;padding-top:0}
+.g-money .mr.c3{grid-template-columns:minmax(0,1fr) auto 84px}
+.g-money .mr.c4{grid-template-columns:52px minmax(0,1fr) 112px 84px}
+.g-money .mr > *{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-money .mr small{font-size:.86rem;font-weight:700;color:var(--muted)}
+.g-money .mr b{font-weight:800;text-align:right}
+.g-money .mr b.good{color:var(--good)}.g-money .mr b.bad{color:var(--bad)}
+.g-money .mnote{margin:auto;max-width:360px;text-align:center;display:flex;flex-direction:column;gap:6px;color:var(--muted);font-weight:700;font-size:.92rem}
+.g-money .mnote b{color:var(--ink);font-size:1.1rem;font-weight:800}
+.g-money .mshut{grid-area:1/1/-1/-1;align-self:center;justify-self:center;width:min(100%,520px);padding:34px 28px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border-style:dashed;box-shadow:none;color:var(--muted);font-weight:700}
+.g-money .mshut .ic{width:44px;height:44px}
+.g-money .mshut b{color:var(--ink);font-size:1.25rem;font-weight:800}
 .g-news{grid-template:"a b" minmax(0,1fr) / 1.1fr 1fr}
 .pc{display:flex;flex-direction:column;gap:8px;padding:12px 16px 14px;min-height:0}
 .pc > .dbody{flex:1;padding-right:4px}
@@ -613,15 +635,16 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .pg.full .h2{box-shadow:3px 3px 0 var(--pgc,var(--hl))}
 .pg.full .pghd .h2{box-shadow:4px 4px 0 var(--pgc,var(--hl))}
 .pgnav [data-go="today"]{--pgc:#2D5BFF}.pgnav [data-go="week"]{--pgc:#8B5CF6}.pgnav [data-go="weather"]{--pgc:#22B8E0}.pgnav [data-go="money"]{--pgc:#16A765}.pgnav [data-go="car"]{--pgc:#F0503C}.pgnav [data-go="news"]{--pgc:#FF9A2E}
-/* bars: budgets and day temperatures */
-.bud{border-top:1.5px solid var(--line);padding-top:8px}
+/* budget bars on the Money page */
+.bud{border-top:1.5px solid var(--line);padding-top:7px}
 .dbody h3 + .bud{border-top:0;padding-top:0}
-.bud .l{display:flex;justify-content:space-between;gap:10px;font-weight:700}
-.bud .l small{color:var(--muted);font-weight:700}
-.bud .l small.hot{color:var(--bad)}
-.meter{height:10px;border-radius:99px;background:var(--surface2);border:1.5px solid var(--line);margin-top:5px;overflow:hidden}
-.meter i{display:block;height:100%;border-radius:99px;background:var(--good)}
-.meter i.warn{background:var(--hl)}.meter i.hot{background:var(--bad)}
+.bud .l{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:700}
+.bud .l b{font-weight:800;white-space:nowrap}
+.bud .l b small{color:var(--muted);font-weight:700;font-size:.84rem;margin-left:6px}
+.bud .l b.hot{color:var(--bad)}
+.bud .meter{height:12px;border-radius:99px;background:var(--surface2);border:1.5px solid var(--edge);margin-top:4px;overflow:hidden}
+.bud .meter i{display:block;height:100%;border-radius:99px 0 0 99px;border-right:1.5px solid var(--edge);background:var(--good)}
+.bud .meter i.warn{background:var(--hl)}.bud .meter i.hot{background:var(--bad);border-right:0}
 .trange{position:relative;flex:none;width:80px;height:8px;border-radius:99px;background:var(--surface2)}
 .trange i{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#22B8E0,#FFD23F)}
 /* easier on the eyes: calmer dots, softer page edges */
@@ -1123,13 +1146,66 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   // When the weather service can't be reached we keep showing the last answer, and say from when.
   function wxStale(){ return WX && WX.stale ? '<div class="wxold">' + SKY.cloud + '<span><b>Can’t reach the weather right now.</b> This is from ' + (WX.at ? tm(H.hhmm(new Date(WX.at).getHours() * 60 + new Date(WX.at).getMinutes())) : 'earlier') + '. Home it keeps trying.</span></div>' : ''; }
-  // "Groceries: $212 of $400, ..." becomes a bar; anything else stays a plain line.
+  // ---- Money page. Split it and Budget it answer in sentences; these turn each sentence into a tidy row, and leave anything unexpected as a plain line. ----
+  function plainRow(r){ return '<div class="mr"><span style="white-space:normal">' + esc(r) + '</span></div>'; }
+  function dollars(n){ return '$' + (Math.round(n * 100) % 100 ? n.toFixed(2) : String(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  // "in 5 days" for a date written "Mon Nov 16" (or 2026-11-16); '' when it can't tell
+  function daysAway(d){
+    var m = /(\d{4})-(\d\d)-(\d\d)/.exec(d), y = +V.date.slice(0, 4), t0 = Date.UTC(y, +V.date.slice(5, 7) - 1, +V.date.slice(8)), t, n;
+    if (m) t = Date.UTC(+m[1], +m[2] - 1, +m[3]);
+    else { m = /([A-Z][a-z]{2}) (\d{1,2})$/.exec(d); var mo = m ? 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1]) / 3 : -1; if (mo < 0 || mo % 1) return '';
+      t = Date.UTC(y, mo, +m[2]); if (t < t0 - 180 * 864e5) t = Date.UTC(y + 1, mo, +m[2]); }
+    n = Math.round((t - t0) / 864e5);
+    return n < 0 ? 'was due' : n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'in ' + n + ' days';
+  }
+  // "Maya owes you $60.00" / "You owe Jordan $17.50": name on the left, amount on the right, green when it is coming to you
+  function oweRow(r){
+    var a = /^(.+) owes you (\$[\d,.]+)$/.exec(r), b = /^You owe (.+) (\$[\d,.]+)$/.exec(r);
+    if (!a && !b) return plainRow(r);
+    return '<div class="mr c3"><span>' + esc(a ? a[1] : b[1]) + '</span><small>' + (a ? 'owes you' : 'you owe') + '</small><b class="' + (a ? 'good' : 'bad') + '">' + esc(a ? a[2] : b[2]) + '</b></div>';
+  }
+  // "2026-11-09: Groceries $84.20, paid by you, your share $28.07 [House]" or "2026-11-05: Jordan paid you $25.00 [House]"
+  function latelyRow(r){
+    var t = String(r).replace(/\s*\[[^\]]*\]$/, ''), d = /^(\d{4}-\d\d-\d\d): |^([A-Z][a-z]{2} \d{1,2}) · /.exec(t), x, what, who, amt;
+    if (d) t = t.slice(d[0].length);
+    if ((x = /^(.+) (\$[\d,.]+), paid by ([^,]+)(?:, your share \$[\d,.]+)?$/.exec(t))){ what = x[1]; amt = x[2]; who = /^you$/i.test(x[3]) ? 'you paid' : x[3] + ' paid'; }
+    else if ((x = /^(.+ paid .+?) (\$[\d,.]+)( \(not confirmed yet\))?$/.exec(t))){ what = x[1].charAt(0).toUpperCase() + x[1].slice(1); amt = x[2]; who = x[3] ? 'not confirmed' : 'paid back'; }
+    else return plainRow(r);
+    return '<div class="mr c4"><small>' + esc(d ? (d[1] ? H.fmtDate(d[1]).replace(/^\S+ /, '') : d[2]) : '') + '</small><span>' + esc(what) + '</span><small>' + esc(who) + '</small><b>' + esc(amt) + '</b></div>';
+  }
+  // "Phone $55.00 · Mon Nov 16": what, when, how far off, how much
+  function billRow(r){
+    var x = /^(.+) (-?\$[\d,.]+)(?: · (.+))?$/.exec(r); if (!x) return plainRow(r);
+    var away = x[3] ? daysAway(x[3]) : '';
+    return '<div class="mr c3"><span>' + esc(x[1]) + '</span><small>' + esc(x[3] || '') + (away ? ' · ' + away : '') + '</small><b>' + esc(x[2]) + '</b></div>';
+  }
+  // "Groceries: $212 of $400, ..." becomes a bar with what is left; anything else stays a plain line.
   function budLine(r){
     var m = /^(.+?):\s*\$([\d,.]+) of \$([\d,.]+)(?:,\s*(.*))?$/.exec(r);
-    if (!m) return '<div class="dr"><span>' + esc(r) + '</span></div>';
-    var used = parseFloat(m[2].replace(/,/g, '')), cap = parseFloat(m[3].replace(/,/g, '')), pc = cap > 0 ? used / cap : 0, over = pc > 1;
-    return '<div class="bud"><div class="l"><span>' + esc(m[1]) + '</span><small class="' + (over ? 'hot' : '') + '">$' + esc(m[2]) + ' of $' + esc(m[3]) + (m[4] ? ' · ' + esc(m[4].replace(/^\$(\S+) OVER/, 'over by $$$1').replace(/ - /, ' · ')) : '') + '</small></div>'
-      + '<div class="meter"><i class="' + (over ? 'hot' : pc >= .8 ? 'warn' : '') + '" style="width:' + Math.min(100, Math.round(pc * 100)) + '%"></i></div></div>';
+    if (!m) return plainRow(r);
+    var used = parseFloat(m[2].replace(/,/g, '')), cap = parseFloat(m[3].replace(/,/g, '')), pc = cap > 0 ? used / cap : 0, over = used > cap, left = Math.abs(cap - used);
+    return '<div class="bud"><div class="l"><span>' + esc(m[1]) + '</span><b class="' + (over ? 'hot' : '') + '">' + dollars(left) + (over ? ' over' : ' left') + '<small>of $' + esc(m[3]) + '</small></b></div>'
+      + '<div class="meter" role="img" aria-label="' + Math.round(pc * 100) + ' percent used"><i class="' + (over ? 'hot' : pc >= .8 ? 'warn' : '') + '" style="width:' + Math.max(3, Math.min(100, Math.round(pc * 100))) + '%"></i></div></div>';
+  }
+  // Beside a panel's title: a small word when an older answer is showing, and the button that opens the app itself.
+  function openBtn(k){ var url = k === 'split' ? S.settings.splitUrl : S.settings.budgetUrl; var m = MONEY[k], old = m && m.ok && m.stale ? '<small>Can’t reach it right now.<br>Showing ' + (m.at ? 'what it said ' + ago(m.at) : 'its last answer') + '.</small>' : '';
+    return old + (url ? '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Open ' + low(TITLES[k]) + '</a>' : ''); }
+  // One panel of the Money page: the headline tiles, <!--cut:rest-->, then the rows.
+  function moneyBody(k){
+    var m = MONEY[k], split = k === 'split', name = low(TITLES[k]), h = '';
+    if (m && m.ok){
+
+      var amt = String(m.big || '').replace(/^-/, ''), parts2 = String(m.sub || '').split(' · '), day = /^(-?\$[\d,.]+) a day/.exec(parts2[1] || ''), until = (/until (.*)$/.exec(m.sub || '') || [])[1], away = until ? daysAway(until) : '';
+      if (!m.big) h += '<!--cut:rest--><div class="mnote"><b>' + esc(m.sub || 'Nothing to show yet') + '</b></div>';
+      else if (split) h += '<div class="stats">' + (/^\$/.test(amt) ? stat(m.owe ? 'You owe' : 'You are owed', esc(amt), m.owe ? 'to everyone, all together' : 'by everyone, all together', m.owe ? 'bad' : 'good') : stat('Overall', esc(amt), esc(m.sub), 'good')) + '</div>';
+      else h += '<div class="stats">' + (m.owe ? stat('Short by', esc(amt.replace(/\.00$/, '')), 'after bills and cards', 'bad') : stat('Safe to spend', esc(amt.replace(/\.00$/, '')), 'after bills and cards', 'good'))
+        + (day && !m.owe ? stat('A day until payday', esc(day[1].replace(/\.\d\d$/, '')), until ? esc(until) + (away ? ' · ' + away : '') : '')
+          : until ? stat('Payday', esc(away || until), away ? esc(until) : '') : '') + '</div>';
+      if (m.big) h += '<!--cut:rest-->';
+      if ((m.rows || []).length) h += '<h3>' + (split ? 'Who owes who' : 'Bills before payday') + '</h3>' + m.rows.map(split ? oweRow : billRow).join('');
+      if (m.more && m.more.lines.length) h += '<h3>' + esc(m.more.title) + '</h3>' + m.more.lines.slice(0, split && m.rows && m.rows.length > 2 ? 5 : 6).map(split ? latelyRow : budLine).join('');
+    } else h += '<!--cut:rest--><div class="mnote"><b>' + (m ? 'Can’t reach ' + name + ' right now' : name + ' isn’t linked yet') + '</b><span>' + (m ? 'Home it tries again every few minutes. Nothing is lost.' : 'Settings, under Apps, says how to link it.') + '</span></div>';
+    return h;
   }
   function dayWx(date){ var d = WX && WX.ok && (WX.days || []).filter(function(x){ return x.date === date; })[0]; return d && isFinite(d.hi) ? d : null; }
   // The title and body of one page. null means "leave it as it is" (someone is typing in it).
@@ -1226,17 +1302,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         h += '</div><!--cut:hours--><h3>Next 12 hours</h3>' + hourLine();
       } else h = '<div class="wxoff">' + SKY.cloud + '<b>' + (WX ? 'Can’t reach the weather right now' : 'Getting the weather…') + '</b>' + (WX ? '<span>Home it tries again on its own every 15 minutes. Everything else still works.</span>' : '') + '</div>';
     } else if (k === 'split' || k === 'budget'){
-      var m2 = MONEY[k], url = k === 'split' ? S.settings.splitUrl : S.settings.budgetUrl;
-      if (V.company || MONEY.hidden) h = '<div class="note">Hidden while you have company.</div>';
-      else {
-        if (m2 && m2.ok){
-          h += '<div class="stats">' + stat(k === 'split' ? 'Overall' : 'Safe to spend', esc(m2.big || '–'), (k === 'budget' && m2.big ? 'after bills and cards' : esc(m2.sub.split(' · ')[0])) + (m2.stale ? ' · from a while ago' : ''), m2.owe ? 'bad' : 'good')
-            + (m2.sub.indexOf(' · ') > 0 ? stat(k === 'split' ? 'Details' : 'Until payday', esc(m2.sub.split(' · ')[1].replace(/ until .*/, '')), esc((/until (.*)/.exec(m2.sub) || ['', ''])[1])) : '') + '</div><!--cut:rest-->'
-            + ((m2.rows || []).length ? '<h3>' + (k === 'split' ? 'Who owes who' : 'Bills before payday') + '</h3>' + m2.rows.map(function(r){ return '<div class="dr"><span>' + esc(r) + '</span></div>'; }).join('') : '')
-            + (m2.more && m2.more.lines.length ? '<h3>' + esc(m2.more.title) + '</h3>' + m2.more.lines.map(budLine).join('') : '');
-        } else if (m2) h += '<div class="note">Can’t reach ' + low(TITLES[k]) + ' right now. It will try again in a few minutes.</div>';
-        if (url) h += '<a class="btn primary" href="' + esc(url) + '" target="_blank" rel="noopener" style="margin-top:8px;text-align:center">Open ' + low(TITLES[k]) + '</a>';
-      }
+      h = moneyBody(k);
     }
     if (k === 'news'){
       if (!NEWS) h = '<div class="note">Getting the news…</div>';
@@ -1301,11 +1367,13 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
             + panel('c', p.hours) + panel('b', p.days) + '</div>';
         } else h = p.head;
       } else if (name === 'money'){
-        var hide = S.settings.hide, sp = hide.indexOf('split') < 0, bu = hide.indexOf('budget') < 0, one = function(k){ var m = parts(k); return '<div class="flat">' + m.head + '</div>' + (m.rest || ''); };
-        sub = V.company || MONEY.hidden ? 'Hidden while you have company' : 'Split it and Budget it';
+        var hide = S.settings.hide, sp = hide.indexOf('split') < 0, bu = hide.indexOf('budget') < 0, shut = V.company || MONEY.hidden, one = function(k){ var m = parts(k); return '<div class="flat">' + m.head + '</div>' + (m.rest || ''); };
+        var ats = ['split', 'budget'].map(function(k){ return MONEY[k] && MONEY[k].ok && hide.indexOf(k) < 0 && MONEY[k].at; }).filter(Boolean);
+        sub = shut || !ats.length ? '' : 'Updated ' + ago(Math.min.apply(null, ats));
         h = !sp && !bu ? '<div class="note">Split it and Budget it are switched off in Settings, under Cards.</div>'
           : !MONEY.split && !MONEY.budget && !(V.company || MONEY.hidden) ? '<div class="note">Link Split it and Budget it to see your money here. Settings, under Apps, says how.</div>'
-          : '<div class="pgrid g-money">' + (sp ? panel('a', one('split'), 'Split it') : '') + (bu ? panel(sp ? 'b' : 'a', one('budget'), 'Budget it') : '') + '</div>';
+          : shut ? '<div class="pgrid g-money"><section class="card mshut">' + LOCK + '<b>Hidden while you have company</b><span>Your money comes back tomorrow, or when you switch Company off on the Home page.</span></section></div>'
+          : '<div class="pgrid g-money' + (sp && bu ? '' : ' solo') + '">' + (sp ? panel('a', one('split'), 'Split it', openBtn('split')) : '') + (bu ? panel(sp ? 'b' : 'a', one('budget'), 'Budget it', openBtn('budget')) : '') + '</div>';
       } else if (name === 'car'){
         var ae = document.activeElement; if (ae && ae.closest && ae.closest('#carlink,#carcode')) return;   // don't redraw under someone typing
         title = 'CAR'; sub = CarUI.linked() ? 'Start it for the weather, check the locks' : 'Add your Hyundai once';
@@ -1693,8 +1761,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       it(1500, 'Library extends weekend hours for the winter', 'Saturday closing moves from 5 to 8 PM starting next month.') ] };
   }
   function demoMoney(){
-    return { split: { ok:true, big:'$42.50', sub:'owed to you in total', rows:['Maya owes you $60.00', 'You owe Jordan $17.50'], more:{ title:'Lately', lines:['Nov 9 · Groceries $84.20, paid by you', 'Nov 7 · Internet $70.00, paid by Maya', 'Nov 5 · Jordan paid you $25.00', 'Nov 2 · Hydro $96.40, paid by Jordan'] } },
-             budget: { ok:true, big:'$318', sub:'safe to spend · $35 a day until Fri Nov 20', rows:['Phone $55 · Mon Nov 16', 'Internet $70 · Wed Nov 18'], more:{ title:'Budgets this month', lines:['Groceries: $212 of $400, $188 left ($10/day)', 'Eating out: $96 of $120, $24 left - nearly used up', 'Transport: $60 of $150, $90 left', 'Fun: $135 of $120, $15 OVER'] } } };
+    var at = Date.now() - 3 * 60e3;
+    return { split: { ok:true, at:at, big:'$42.50', sub:'owed to you in total', rows:['Maya owes you $60.00', 'You owe Jordan $17.50'], more:{ title:'Lately', lines:['2026-11-09: Groceries $84.20, paid by you, your share $28.07 [House]', '2026-11-07: Internet $70.00, paid by Maya, your share $23.33 [House]', '2026-11-05: Jordan paid you $25.00 [House]', '2026-11-02: Hydro $96.40, paid by Jordan, your share $32.13 [House]', '2026-10-30: Pizza night $41.00, paid by you, your share $13.67 [House]'] } },
+             budget: { ok:true, at:at, big:'$318.00', sub:'safe to spend · $35.33 a day until Fri Nov 20', rows:['Phone $55.00 · Mon Nov 16', 'Internet $70.00 · Wed Nov 18'], more:{ title:'Budgets this month', lines:['Groceries: $212 of $400, $188 left ($10/day)', 'Eating out: $96 of $120, $24 left - nearly used up', 'Transport: $60 of $150, $90 left', 'Fun: $135 of $120, $15 OVER'] } } };
   }
   function demoWeather(){
     var n = now(), h0 = n.getHours(), hours = [];
