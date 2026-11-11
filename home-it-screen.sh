@@ -26,8 +26,15 @@ if [ ! -d "$PROFILE" ] && [ -n "${HOME_IT_USER:-}" ]; then
   [ -n "$LINK" ] && START="${LINK/localhost/127.0.0.1}"
 fi
 
-# Keep the screen from blanking or locking; Home it darkens itself at night
-command -v xset >/dev/null && { xset s off; xset -dpms; xset s noblank; } 2>/dev/null || true
+# Keep the screen from blanking or locking; Home it darkens itself at night.
+# xset covers older (X11) desktops, gsettings covers GNOME on Wayland, and the page itself also asks
+# the browser to keep the screen awake, which works on any desktop.
+if [ "${XDG_SESSION_TYPE:-}" != wayland ] && command -v xset >/dev/null; then { xset s off; xset -dpms; xset s noblank; } 2>/dev/null || true; fi
+if command -v gsettings >/dev/null; then
+  gsettings set org.gnome.desktop.session idle-delay 0 2>/dev/null || true
+  gsettings set org.gnome.desktop.screensaver lock-enabled false 2>/dev/null || true
+  gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type nothing 2>/dev/null || true
+fi
 
 exec "$BROWSER" --kiosk --app="$START" --user-data-dir="$PROFILE" --no-first-run --noerrdialogs \
   --disable-session-crashed-bubble --disable-infobars --disable-translate --disable-pinch \

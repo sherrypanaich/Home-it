@@ -307,6 +307,8 @@ input,select{user-select:text;-webkit-user-select:text}
 .days .s{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wk .btn.sm{min-height:40px}
 .wk .mid2{text-align:center;flex:1}
+.wk button.mid2{background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0;min-height:44px}
+.wk button.mid2 small::after{content:" ›"}
 .soonz{align-items:flex-start;justify-content:center;text-align:left}
 .soonz .big{font-size:1.15rem;font-family:var(--body);font-weight:800;white-space:normal;line-height:1.2}
 a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
@@ -429,7 +431,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         <div class="hd"><h2 class="h2" id="wktitle">THIS WEEK</h2><button class="btn sm" id="addshift">+ Shift</button></div>
         <ul class="days" id="days"></ul>
         <div class="wk"><button class="btn sm" id="wkprev" aria-label="Week before">‹</button>
-          <div class="mid2"><span id="wkh"></span><small id="wkp"></small></div>
+          <button class="mid2" id="wkmid" data-detail="pay" aria-label="Hours and pay by month"><span id="wkh"></span><small id="wkp"></small></button>
           <button class="btn sm" id="wknext" aria-label="Week after">›</button></div>
       </section>
     </div>
@@ -499,12 +501,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <label>Day<select id="sday"></select></label>
       <div id="shave"></div>
       <h3 id="sadd">Add a shift</h3>
+      <label id="smovel" hidden>Day<select id="smove"></select></label>
+      <div class="note" id="seditnote" hidden></div>
       <div class="row first">
         <label>Starts<select id="sstart"></select></label>
         <label>Ends<select id="send"></select></label>
       </div>
       <label>Where<input class="kb" id="splace" type="text" maxlength="40" placeholder="Work" autocomplete="off"></label>
-      <div class="row"><div><div class="name">Every week</div><div class="st" id="srepst">Repeats on this weekday</div></div><button class="sw" id="srep" aria-pressed="false" aria-label="Repeat every week"></button></div>
+      <div class="row" id="sreprow"><div><div class="name">Every week</div><div class="st" id="srepst">Repeats on this weekday</div></div><button class="sw" id="srep" aria-pressed="false" aria-label="Repeat every week"></button></div>
       <button class="btn primary" id="saveshift">Save shift</button>
       <button class="btn" id="copyweek">Copy the week before into this week</button>
     </aside>
@@ -757,7 +761,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
 
   // ---------- bottom cards ----------
-  var TITLES = { coming:'COMING UP', forecast:'NEXT DAYS', split:'SPLIT IT', budget:'BUDGET IT' };
+  var TITLES = { pay:'HOURS AND PAY', coming:'COMING UP', forecast:'NEXT DAYS', split:'SPLIT IT', budget:'BUDGET IT' };
   function low(t){ return t.charAt(0) + t.slice(1).toLowerCase(); }
   function comingText(r){ return r.kind === 'shift' ? '<span class="sh">Shift ' + span(r.start, r.end, true) + '</span>' : esc(r.t) + (r.time ? ' · ' + tm(r.time) : ''); }
   // Bottom cards say one thing each. Tapping one opens the rest (renderDetail).
@@ -827,7 +831,17 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         + [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn" data-mv="' + l[0] + '"' + (l[0] === ui.todo.list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('')
         + '</div><button class="btn" data-tdrm="1" style="margin-top:8px">Remove</button>';
     }
-    if (k === 'coming'){
+    if (k === 'pay'){
+      var ms = H.months(S, V.date, 12), cur = ms[0] && ms[0].ym === V.date.slice(0, 7) ? ms[0] : null, wk2 = H.week(S, V.date), yr = 0, yp = 0;
+      var mname = function(ym){ return ['January','February','March','April','May','June','July','August','September','October','November','December'][+ym.slice(5) - 1] + ' ' + ym.slice(0, 4); }, cash = function(m){ return S.settings.rate ? H.money(m / 60 * S.settings.rate) : ''; };
+      ms.forEach(function(m){ if (m.ym.slice(0, 4) === V.date.slice(0, 4)){ yr += m.mins; yp += m.pay || 0; } });
+      h = '<div class="stats">' + stat('This week', H.fmtHours(wk2.mins), wk2.pay != null ? 'about ' + H.money(wk2.pay) : 'Monday to Sunday')
+        + stat('This month', cur ? H.fmtHours(cur.mins) : '0 h', cur ? (cur.pay != null ? 'about ' + H.money(cur.pay) + ' · ' : '') + H.fmtHours(cur.doneMins) + ' worked so far' : 'no shifts yet')
+        + stat(V.date.slice(0, 4) + ' so far', H.fmtHours(yr), S.settings.rate ? 'about ' + H.money(yp) : 'all shifts this year') + '</div><h3>By month</h3>';
+      ms.forEach(function(m){ h += '<div class="dr"><span>' + mname(m.ym) + ' · ' + m.shifts + (m.shifts === 1 ? ' shift' : ' shifts') + '</span><b>' + H.fmtHours(m.mins) + (cash(m.mins) ? ' · about ' + cash(m.mins) : '') + '</b></div>'; });
+      if (!ms.length) h += '<div class="note">No shifts in the last 12 months yet.</div>';
+      h += '<div class="note" style="margin-top:8px">' + (S.settings.rate ? 'Pay is hours × your hourly rate, before tax. ' : 'Add your hourly rate in Settings to see pay. ') + 'Shifts are kept for two years.</div>';
+    } else if (k === 'coming'){
       var rows = H.coming(S, V.date, 60), last = '', sh = rows.filter(function(r){ return r.kind === 'shift'; }), mins = 0, off = '';
       sh.forEach(function(r){ mins += (H.mins(r.end) - H.mins(r.start) + 1440) % 1440 || 1440; });
       for (var i = 1; i <= 14 && !off; i++){ var d0 = H.addDays(V.date, i); if (!H.shiftsOn(S, d0).length) off = d0; }
@@ -924,6 +938,13 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (ui.sedit && !have.some(function(x){ return x.id === ui.sedit; })) ui.sedit = null;
     $('saveshift').textContent = ui.sedit ? 'Save changes' : 'Save shift'; $('sadd').textContent = ui.sedit ? 'Change this shift' : 'Add a shift';
     $('shave').innerHTML = h ? '<div style="display:flex;flex-direction:column;gap:6px">' + h + '</div>' : '<div class="note">No shift on this day yet.</div>';
+    var ex = have.filter(function(x){ return x.id === ui.sedit; })[0];
+    $('smovel').hidden = $('seditnote').hidden = !ex; $('sreprow').hidden = !!ex;
+    if (ex){
+      if (!ui.smove) ui.smove = d;
+      $('smove').innerHTML = opts(days(from, n), ui.smove);
+      $('seditnote').textContent = ex.rule ? 'Changes ' + H.fmtDate(d) + ' and every week after. Earlier weeks stay as they were.' : 'Pick another day to move this shift.';
+    }
     $('srep').setAttribute('aria-pressed', ui.srep);
     $('srepst').textContent = 'Repeats every ' + H.DAYS_LONG[H.dow(d)];
   }
@@ -1050,9 +1071,11 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('wkprev', 'click', function(){ ui.weekOff--; renderWeek(V); });
   on('wknext', 'click', function(){ ui.weekOff++; renderWeek(V); });
   on('sday', 'change', function(){ ui.sday = this.value; ui.sedit = null; renderShiftSheet(); });
+  on('smove', 'change', function(){ ui.smove = this.value; });
   on('srep', 'click', function(){ ui.srep = !ui.srep; this.setAttribute('aria-pressed', ui.srep); });
   on('saveshift', 'click', function(){
-    if (ui.sedit) return op('shift.edit', { id: ui.sedit, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(){ ui.sedit = null; renderShiftSheet(); });
+    if (ui.sedit){ var to = $('smove').value || ui.sday;
+      return op('shift.edit', { id: ui.sedit, date: ui.sday, day: to === ui.sday ? '' : to, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(){ if (!H.shiftsOn(S, ui.sday).some(function(x){ return x.id === ui.sedit; }) || to !== ui.sday) ui.sday = to; ui.sedit = null; renderShiftSheet(); }); }
     op('shift.add', { date: ui.sday, start: $('sstart').value, end: $('send').value, place: $('splace').value, repeat: ui.srep }).then(function(){ ui.srep = false; });
   });
   on('copyweek', 'click', function(){ op('shift.copyweek', { week: ui.sday }); });
@@ -1060,7 +1083,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var b = e.target.closest('[data-rm]'); if (b) return op('shift.del', { id: b.dataset.rm, date: ui.sday, all: !!b.dataset.all });
     var ed = e.target.closest('[data-eds]'); if (!ed) return;
     var x = H.shiftsOn(S, ui.sday).filter(function(y){ return y.id === ed.dataset.eds; })[0]; if (!x) return;
-    ui.sedit = ui.sedit === x.id ? null : x.id;
+    ui.sedit = ui.sedit === x.id ? null : x.id; ui.smove = null;
     if (ui.sedit){ $('sstart').value = x.start; $('send').value = endOf(x); $('splace').value = x.place === 'Work' ? '' : x.place; }
     renderShiftSheet();
   });
@@ -1100,7 +1123,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     show(null);
     op('todo.del', { list: t.list, id: t.id }, true).then(function(){ if (x) toast('Removed “' + x.t + '”', function(){ op('todo.add', { list: t.list, t: x.t, due: x.due, rep: x.rep }, true); }); });
   });
-  on('low', 'click', openDetail); on('low', 'keydown', openDetail);
+  on('low', 'click', openDetail); on('low', 'keydown', openDetail); on('wkmid', 'click', openDetail);
   on('toast', 'click', function(e){ if (e.target.id === 'undo' && undoFn){ var f = undoFn; undoFn = null; $('toast').hidden = true; f(); } });
   on('gear', 'click', function(){ show(ui.sheet === 'sheet' ? null : 'sheet'); });
   stage.addEventListener('click', function(e){
@@ -1181,6 +1204,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       first();
       try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); loadMoney(); }); es.onopen = function(){ online(true); if (S) loadState().catch(function(){}); }; es.onerror = function(){ online(false); }; } catch(e){}
       document.addEventListener('visibilitychange', function(){ if (!document.hidden) loadState().catch(function(){}); });
+      // Ask the browser to keep the screen on (it lets go whenever the page is hidden, so ask again each time)
+      var keepOn = function(){ if (navigator.wakeLock && !document.hidden) navigator.wakeLock.request('screen').catch(function(){}); };
+      keepOn(); document.addEventListener('visibilitychange', keepOn);
       setInterval(loadWeather, 15 * 60e3); setInterval(loadMoney, 5 * 60e3);
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
     }

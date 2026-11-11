@@ -17,6 +17,10 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 - **Undo.** Removing a to-do by mistake can be taken back for a few seconds.
 - **A warning when the screen is out of date.** If Home it or the weather can't be reached, the top bar says so instead of quietly showing old information.
 - **Phone: add a to-do straight from Today,** with plans and to-dos in their own lists.
+- **Hours and pay by month.** Tap the hours under the week to see this week, this month, the year so far and each of the last 12 months. Also on the phone, under Shifts. Good for checking a pay stub.
+- **Move a shift to another day** when you edit it, instead of removing it and adding it again.
+- **A second place for backups.** Set `BACKUP_COPY_DIR` to a USB stick or a synced folder and each day's copy goes there too.
+- **More for AI assistants.** They can now rename or move a to-do, change a shift or an event, tick an event off, and read hours by month.
 
 ### Improved
 - Cards with nothing to show are left out instead of showing an empty box. The TV and PS5 card is gone until it can do something.
@@ -28,8 +32,16 @@ The bottom of the big screen is useful now, and the phone screen does more from 
 - The leaving-soon checklist fits on one line.
 - Settings are in tabs (Screen, Look, Work, Cards, Apps) instead of one long list.
 - The same shift can't be added twice by tapping Save again.
+- **Past shifts are kept for two years** (they used to go after 60 days, and events after a week), so old hours can be looked up.
+- Money cards use plain numbers from Split it and Budget it when those apps send them, so a reworded sentence can't break a card.
+- The big screen asks the browser to stay awake, and the screen script now also works on newer Linux desktops (Wayland).
 - AI assistants can add repeating events too.
 - Tests now run automatically on GitHub for every change.
+
+### Fixed
+- **Changing a repeating shift no longer rewrites the past.** The change starts on the day you picked; earlier weeks keep their hours and pay. A skipped day in the past also stays skipped.
+- **Updates only take released versions.** Home it used to follow every change on the main branch within 10 minutes. It now waits for a release.
+- **A bad update undoes itself.** After restarting, the updater checks that the app answers. If it doesn't, the old version comes back.
 
 ### Security
 - The keys that link Split it and Budget it stay on the computer and are never sent to a screen.

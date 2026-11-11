@@ -212,6 +212,12 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
     return loose[0];
   };
   const todoLine = x => `${x.d ? '[done]' : '[ ]'} ${x.t}${x.due ? ' (by ' + tm(x.due) + ')' : ''}${x.rep ? ' (' + x.rep + ')' : ''}`;
+  const NAMES = { today: 'Today', later: 'Later', shop: 'Shopping' };
+  // One of the person's own events (not a linked-calendar row), found by name and, if given, day.
+  const ownEvent = (uid, a) => {
+    const s = h.stateOf(uid), date = a.date ? dayArg(a.date) : null;
+    return findOne((date ? H.eventsOn(s, date) : H.eventList(s, h.today())).filter(e => !e.cal), a.what, 'event');
+  };
   const tools = [
     { name: 'get_today', title: 'Today at a glance', annotations: { readOnlyHint: true },
       description: 'The person’s day in Home it: today’s shift and when to leave for it, today’s events, the Today to-do list, tomorrow, the next shift and the weather.',
@@ -256,6 +262,19 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
         if (!!x.d !== want) h.applyOp(uid, 'todo.toggle', { list, id: x.id });
         return `“${x.t}” is ${want ? 'done' : 'not done'}.`;
       } },
+    { name: 'change_todo', title: 'Rename or move a to-do', annotations: { destructiveHint: false },
+      description: 'Renames a to-do, moves it to another list, or both. Give its text or part of it.',
+      inputSchema: { type: 'object', properties: { text: { type: 'string', description: 'The to-do as it is now' }, list: { type: 'string', description: 'The list it is in. ' + LIST_HELP }, new_text: { type: 'string', description: 'Its new wording' }, move_to: { type: 'string', description: 'The list to move it to. ' + LIST_HELP } }, required: ['text'] },
+      run(uid, a) {
+        const list = listArg(a.list); if (!list) throw new Error('The lists are ' + LIST_HELP);
+        const to = a.move_to ? listArg(a.move_to) : null; if (a.move_to && !to) throw new Error('The lists are ' + LIST_HELP);
+        if (!a.new_text && (!to || to === list)) throw new Error('Say the new wording, the list to move it to, or both.');
+        const x = findOne(h.stateOf(uid).lists[list], a.text, 'to-do'), was = x.t;
+        if (a.new_text) h.applyOp(uid, 'todo.edit', { list, id: x.id, t: a.new_text });
+        if (to && to !== list) h.applyOp(uid, 'todo.move', { list, id: x.id, to });
+        const names = NAMES, now = h.stateOf(uid).lists[to || list].find(y => y.id === x.id);
+        return `“${was}” is now “${now.t}” in ${names[to || list]}.`;
+      } },
     { name: 'remove_todo', title: 'Remove a to-do', annotations: { destructiveHint: true },
       description: 'Deletes a to-do from a list. Confirm with the user first.',
       inputSchema: { type: 'object', properties: { text: { type: 'string' }, list: { type: 'string', description: LIST_HELP } }, required: ['text'] },
@@ -281,6 +300,28 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
         if (H.shiftsOn(h.stateOf(uid), date).some(x => x.start === start)) throw new Error(`There is already a shift starting at ${tm(start)} on ${date}.`);
         const msg = h.applyOp(uid, 'shift.add', { date, start, end, place: a.place, repeat: !!a.every_week });
         return `${msg}: ${H.fmtDate(date, true)}, ${tm(start)} to ${tm(end)}.`;
+      } },
+    { name: 'change_shift', title: 'Change a work shift', annotations: { destructiveHint: false },
+      description: 'Changes the times, place or day of the shift on a day. Leave out what stays the same. For a weekly shift the change applies from that day on; the weeks before keep their hours. Confirm with the user first.',
+      inputSchema: { type: 'object', properties: { date: { type: 'string', description: 'The day the shift is on now: YYYY-MM-DD, or "today" / "tomorrow"' }, start: { type: 'string', description: 'Its start now. Only needed when the day has more than one shift' },
+        new_date: { type: 'string', description: 'Move it to this day' }, new_start: { type: 'string', description: 'Like 14:00' }, new_end: { type: 'string', description: 'Like 22:00' }, place: { type: 'string' } }, required: ['date'] },
+      run(uid, a) {
+        const date = dayArg(a.date, null); if (!date) throw new Error('Say which day.');
+        let on = H.shiftsOn(h.stateOf(uid), date); if (a.start) on = on.filter(x => x.start === timeArg(a.start, 'start'));
+        if (!on.length) throw new Error('No shift on ' + date + (a.start ? ' at that time.' : '.'));
+        if (on.length > 1) throw new Error('That day has shifts at ' + on.map(x => x.start).join(' and ') + '. Say which start time.');
+        const x = on[0], day = a.new_date ? dayArg(a.new_date, null) : ''; if (a.new_date && !day) throw new Error('Say which day to move it to.');
+        if (!day && !a.new_start && !a.new_end && a.place == null) throw new Error('Say what to change: the day, the times or the place.');
+        const start = a.new_start ? timeArg(a.new_start, 'start') : x.start, end = a.new_end ? timeArg(a.new_end, 'end') : x.end;
+        const msg = h.applyOp(uid, 'shift.edit', { id: x.id, date, day: day && day !== date ? day : '', start, end, place: a.place != null ? a.place : x.place });
+        return `${msg}: ${H.fmtDate(day || date, true)}, ${tm(start)} to ${tm(end)}.`;
+      } },
+    { name: 'hours_by_month', title: 'Hours and pay by month', annotations: { readOnlyHint: true },
+      description: 'Hours worked and estimated pay for each month with a shift, newest first (default the last 12 months). Good for checking a pay stub.',
+      inputSchema: { type: 'object', properties: { months: { type: 'integer', minimum: 1, maximum: 24, default: 12 } } },
+      run(uid, a) {
+        const l = H.months(h.stateOf(uid), h.today(), Math.min(24, Math.max(1, a.months | 0 || 12)));
+        return l.map(m => `${m.ym}: ${H.fmtHours(m.mins)} over ${m.shifts} shift${m.shifts === 1 ? '' : 's'}${m.pay != null ? ', about ' + H.money(m.pay) + ' before tax' : ''}${m.doneMins != null ? ` (${H.fmtHours(m.doneMins)} worked so far)` : ''}`).join('\n') || 'No shifts in that time.';
       } },
     { name: 'remove_shift', title: 'Remove a work shift', annotations: { destructiveHint: true },
       description: 'Removes the shift on a day. For a weekly shift this skips just that day, unless stop_repeating=true, which ends it from that day on. Confirm with the user first.',
@@ -308,6 +349,27 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
         const time = a.time ? timeArg(a.time, 'time') : undefined;
         h.applyOp(uid, 'event.add', { t: a.what, date, time, rep: a.repeat || undefined });
         return `Added “${H.text(a.what)}” on ${H.fmtDate(date, true)}${time ? ' at ' + tm(time) : ''}${a.repeat ? ', repeating ' + a.repeat : ''}.`;
+      } },
+    { name: 'change_event', title: 'Change an event', annotations: { destructiveHint: false },
+      description: 'Renames an upcoming event or changes its day, time or repeat. Leave out what stays the same. Events from a linked calendar can’t be changed here.',
+      inputSchema: { type: 'object', properties: { what: { type: 'string', description: 'Its name now, or part of it' }, date: { type: 'string', description: 'Its day now, only needed when two events share a name' }, new_name: { type: 'string' }, new_date: { type: 'string', description: 'YYYY-MM-DD, or "today" / "tomorrow"' },
+        new_time: { type: 'string', description: 'Like 15:30, or "none" for no set time' }, repeat: { type: 'string', enum: ['none', 'weekly', 'monthly', 'yearly'] } }, required: ['what'] },
+      run(uid, a) {
+        const x = ownEvent(uid, a), s = h.stateOf(uid), e = s.events.find(y => y.id === x.id);
+        if (!a.new_name && !a.new_date && !a.new_time && !a.repeat) throw new Error('Say what to change: the name, the day, the time or the repeat.');
+        const date = a.new_date ? dayArg(a.new_date, null) : e.date; if (!date) throw new Error('Say which day.');
+        const time = a.new_time ? (/^none$/i.test(a.new_time) ? '' : timeArg(a.new_time, 'time')) : e.time || '';
+        const rep = a.repeat ? (a.repeat === 'none' ? '' : a.repeat) : e.rep || '';
+        h.applyOp(uid, 'event.edit', { id: e.id, t: a.new_name || e.t, date, time, rep });
+        return `“${e.t}” is on ${H.fmtDate(date, true)}${time ? ' at ' + tm(time) : ''}${rep ? ', repeating ' + rep : ''}.`;
+      } },
+    { name: 'complete_event', title: 'Tick off an event', annotations: { destructiveHint: false, idempotentHint: true },
+      description: 'Marks an event as done (or not done again with done=false). For a repeating event this ticks just that day.',
+      inputSchema: { type: 'object', properties: { what: { type: 'string' }, date: { type: 'string', description: 'YYYY-MM-DD, only needed when two events share a name' }, done: { type: 'boolean', default: true } }, required: ['what'] },
+      run(uid, a) {
+        const x = ownEvent(uid, a), want = a.done !== false, is = x.rep ? x.done === x.date : !!x.d;
+        if (is !== want) h.applyOp(uid, 'event.toggle', { id: x.id, date: x.date });
+        return `“${x.t}” (${H.fmtDate(x.date, true)}) is ${want ? 'done' : 'not done'}.`;
       } },
     { name: 'remove_event', title: 'Remove an event', annotations: { destructiveHint: true },
       description: 'Deletes an upcoming event. Give its name or part of it. Confirm with the user first.',

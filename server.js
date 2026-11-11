@@ -37,6 +37,8 @@ const PUBLIC = path.join(__dirname, 'public');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const COPY_DIR = (process.env.BACKUP_COPY_DIR || '').trim();
+let lastBackup = null;
 const KEEP_BACKUPS = 30, SESSION_DAYS = 90, KIOSK_DAYS = 3650;
 // Weather comes from Open-Meteo (free, no key, no account). Tests point these somewhere else.
 const WEATHER_URL = process.env.WEATHER_URL || 'https://api.open-meteo.com/v1/forecast';
@@ -89,7 +91,20 @@ function backup() {
     if (fs.existsSync(DB_FILE) && !fs.existsSync(f)) fs.copyFileSync(DB_FILE, f);
     if (fs.existsSync(USERS_FILE)) { JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); fs.copyFileSync(USERS_FILE, USERS_FILE + '.bak'); }
     for (const old of backups().slice(KEEP_BACKUPS)) fs.rmSync(old, { force: true });
+    lastBackup = { day: H.ymd(new Date()), copy: COPY_DIR ? copyBackups() : '' };
   } catch (e) { console.error('Backup:', e.message); }
+}
+// A second home for the daily data copies (a USB stick, a synced folder), so a dead disk doesn't take both.
+// The sign-in file stays on this computer: it holds keys. Returns 'ok' or 'fail'.
+function copyBackups() {
+  try {
+    fs.mkdirSync(COPY_DIR, { recursive: true, mode: 0o700 });
+    const mine = backups();
+    for (const f of mine) { const to = path.join(COPY_DIR, path.basename(f)); if (!fs.existsSync(to)) fs.copyFileSync(f, to); }
+    const keep = new Set(mine.map(f => path.basename(f)));
+    for (const f of fs.readdirSync(COPY_DIR)) if (/^db-\d{4}-\d\d-\d\d\.json$/.test(f) && !keep.has(f)) fs.rmSync(path.join(COPY_DIR, f), { force: true });
+    return 'ok';
+  } catch (e) { console.error('Backup copy to ' + COPY_DIR + ':', e.message); return 'fail'; }
 }
 
 // ---------- each person's home ----------
@@ -223,7 +238,7 @@ async function askApp(link, tool, args = {}) {
   if (!r.ok) throw new Error('answered ' + r.status);
   const j = await r.json(), out = j.result;
   if (!out || out.isError) throw new Error(out?.content?.[0]?.text || j.error?.message || 'no answer');
-  return String(out.content?.[0]?.text || '');
+  return { text: String(out.content?.[0]?.text || ''), data: out.structuredContent && typeof out.structuredContent === 'object' ? out.structuredContent : null };
 }
 async function moneyFor(uid) {
   const links = users.users[uid]?.apps || {}, res = {};
@@ -233,8 +248,9 @@ async function moneyFor(uid) {
     const key = uid + ':' + kind, hit = moneyCache.get(key);
     if (hit && Date.now() - hit.at < 5 * 60e3) return void (res[kind] = hit.card);
     try {
-      const card = { ok: true, ...H.moneyCard(kind, await askApp(link, APPS[kind].tool)) }, [tool, args, title] = APPS[kind].more;
-      try { card.more = { title, lines: (await askApp(link, tool, args)).split('\n').map(l => l.replace(/^[-•]\s*/, '').trim()).filter(Boolean).slice(0, 8).map(l => l.slice(0, 140)) }; } catch {}
+      const ans = await askApp(link, APPS[kind].tool);
+      const card = { ok: true, ...H.moneyCard(kind, ans.text, ans.data) }, [tool, args, title] = APPS[kind].more;
+      try { card.more = { title, lines: (await askApp(link, tool, args)).text.split('\n').map(l => l.replace(/^[-•]\s*/, '').trim()).filter(Boolean).slice(0, 8).map(l => l.slice(0, 140)) }; } catch {}
       moneyCache.set(key, { at: Date.now(), card }); res[kind] = card;
     } catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }
   }));
@@ -325,6 +341,8 @@ async function handle(req, res) {
   if (await mcp.handle(req, res)) return;   // AI assistants (mcp.js)
   const url = new URL(req.url, 'http://x'), p = url.pathname, m = req.method;
   const ses = sessionOf(req), uid = ses ? ses.uid : null;
+  // Tells the updater (and anyone checking on the laptop) that the app is up and can read its data.
+  if (p === '/api/health' && m === 'GET') return send(res, 200, { ok: true, version: VERSION, backup: lastBackup });
   if (PUBLIC_FILES.has(p)) return file(res, p.slice(1), null, p === '/sw.js' ? 'no-cache' : 'public, max-age=86400');
   if (/^\/art\/[a-z0-9-]+\.(webp|png)$/.test(p)) return file(res, p.slice(1), null, 'public, max-age=604800');
   if (p === '/home.js') return file(res, 'home.js', null, 'no-cache', __dirname);

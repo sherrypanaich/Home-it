@@ -49,7 +49,7 @@ Open http://localhost:8100 and sign in. The first person added runs it.
 
 ### Updates
 
-Installed from git like this, Home it checks GitHub every 10 minutes. When there is a newer version on `main` it switches to it, runs its self-check and restarts; the screen reloads by itself. If the new version fails the check, the old one keeps running. Your `data` folder and `home-it.env` are never touched. To update right now: `bash update.sh`.
+Installed from git like this, Home it checks GitHub every 10 minutes. When a newer version has been released (a tag like `v1.1.0`) it switches to it, runs its self-check and restarts; the screen reloads by itself. If the self-check fails, or the app doesn't answer after the restart, the old version comes back and the bad one isn't tried again. Work in progress on `main` is never picked up. Your `data/` folder and `home-it.env` are never touched.
 
 ### Run it as a full-screen app on the laptop
 
@@ -104,7 +104,7 @@ node server.js mcp-revoke NAME     sign every assistant out
 
 ## Your data
 
-Everything is in the `data` folder: `db.json` (shifts, lists, events, settings) and `users.json` (accounts) and `oauth.json` (connected assistants). A copy of `db.json` is kept for each of the last 30 days in `data/backups`.
+Everything is in the `data` folder: `db.json` (shifts, lists, events, settings) and `users.json` (accounts) and `oauth.json` (connected assistants). A copy of `db.json` is kept for each of the last 30 days in `data/backups`. Those copies sit on the same disk as the data, so set `BACKUP_COPY_DIR` in `home-it.env` to a USB stick or a folder that syncs somewhere else and each day's copy goes there too. Past shifts and events are kept for two years.
 
 ## Tests
 

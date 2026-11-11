@@ -7,6 +7,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   const LISTS = ['today', 'later', 'shop'];
+  const KEEP_DAYS = 730;   // how long past shifts and plans stay
   const CARDS = ['today', 'todo', 'week', 'coming', 'forecast', 'split', 'budget', 'room'];
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const DAYS_LONG = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -60,6 +61,23 @@
     for (let i = 0; i < 7; i++) { const d = addDays(from, i), sh = shiftsOn(s, d); for (const x of sh) total += x.mins; days.push({ date: d, shifts: sh }); }
     return { from, days, mins: total, pay: s.settings.rate ? total / 60 * s.settings.rate : null };
   }
+  // Hours and pay for each month that has a shift, newest first, up to `n` months back from `date`.
+  // The month that holds `date` also says how much of it is already worked (`doneMins`).
+  function months(s, date, n = 12) {
+    const out = [];
+    let y = +date.slice(0, 4), m = +date.slice(5, 7);
+    for (let i = 0; i < n; i++) {
+      const ym = y + '-' + String(m).padStart(2, '0'), last = new Date(y, m, 0).getDate();
+      let total = 0, done = 0, count = 0;
+      for (let d = 1; d <= last; d++) {
+        const day = ym + '-' + String(d).padStart(2, '0');
+        for (const x of shiftsOn(s, day)) { total += x.mins; count++; if (day < date) done += x.mins; }
+      }
+      if (count) out.push({ ym, mins: total, shifts: count, pay: s.settings.rate ? total / 60 * s.settings.rate : null, ...(i === 0 ? { doneMins: done } : {}) });
+      if (--m === 0) { m = 12; y--; }
+    }
+    return out;
+  }
   // The next shift that starts after `date` + `nowM`, looking up to five weeks ahead.
   function nextShift(s, date, nowM) {
     for (let i = 0; i < 35; i++) {
@@ -71,7 +89,7 @@
 
   // ---------- keeping the lists tidy as days pass ----------
   // Repeating to-dos come back (daily ones each day, weekly ones each Monday); other finished
-  // Today items are cleared the next day; old events are dropped after a week. True when something changed.
+  // Today items are cleared the next day; shifts and plans older than two years are dropped. True when something changed.
   function normalize(s, today) {
     if (s.day === today) return false;
     const monday = weekStart(today);
@@ -82,9 +100,11 @@
         if (x.d && x.rep === 'weekly' && x.on < monday) { x.d = false; delete x.on; }
       }
     }
-    const old = addDays(today, -7);
+    // Past shifts and plans are kept for two years, so hours and pay can be looked up later.
+    const old = addDays(today, -KEEP_DAYS);
     s.events = s.events.filter(e => e.rep || e.date >= old);
-    s.shifts = s.shifts.filter(x => x.date >= addDays(today, -60));
+    s.shifts = s.shifts.filter(x => x.date >= old);
+    s.rules = s.rules.filter(r => !r.until || r.until >= old);
     s.day = today;
     return true;
   }
@@ -199,9 +219,23 @@
 
   // ---------- money cards: Split it and Budget it answer in sentences; pull out the headline ----------
   // Returns { big, sub, rows }. If the wording ever changes, the first line is shown as it is.
-  function moneyCard(kind, textIn) {
+  // `data` is the plain-number copy of the answer, when the app sends one; it wins over reading the sentence:
+  //   Split it:  { net: 27.5 (minus = you owe), people: [{ name, amount }] }
+  //   Budget it: { safe: 412.3, perDay: 34.36, until: 'YYYY-MM-DD', bills: [{ name, amount, date }] }
+  function moneyCard(kind, textIn, data) {
     const t = String(textIn || '').trim(), lines = t.split('\n').map(l => l.trim()).filter(Boolean);
     const plain = { big: '', sub: (lines[0] || '').slice(0, 120), rows: [] };
+    const num = v => typeof v === 'number' && isFinite(v), list = v => Array.isArray(v) ? v.filter(x => x && typeof x === 'object').slice(0, 3) : [];
+    const cash = v => (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (data && kind === 'split' && num(data.net)) {
+      const rows = list(data.people).filter(p => num(p.amount) && Math.abs(p.amount) >= 0.005).map(p => p.amount < 0 ? 'You owe ' + text(p.name, 30) + ' ' + cash(-p.amount) : text(p.name, 30) + ' owes you ' + cash(p.amount));
+      if (Math.abs(data.net) < 0.005 && !rows.length) return { big: 'All square', sub: 'Nobody owes anything', rows: [] };
+      return { big: cash(Math.abs(data.net)), sub: data.net < 0 ? 'you owe in total' : 'owed to you in total', owe: data.net < 0, rows };
+    }
+    if (data && kind === 'budget' && num(data.safe)) {
+      return { big: cash(data.safe), sub: 'safe to spend' + (num(data.perDay) ? ' · ' + cash(data.perDay) + ' a day' : '') + (okDate(data.until) ? ' until ' + fmtDate(data.until) : ''), owe: data.safe < 0,
+        rows: list(data.bills).filter(b => num(b.amount)).map(b => text(b.name, 30) + ' ' + cash(b.amount) + (okDate(b.date) ? ' · ' + fmtDate(b.date) : '')) };
+    }
     if (kind === 'split') {
       if (/all square/i.test(t) && !/^- /m.test(t)) return { big: 'All square', sub: 'Nobody owes anything', rows: [] };
       const o = /Overall: (you’re owed|you owe) (\$[\d,]+(?:\.\d+)?)/.exec(t);
@@ -271,9 +305,27 @@
       need(s.shifts.length < 2000, 'Too many shifts.');
       s.shifts.push({ id: this.rid('s'), date: a.date, ...f }); return 'Shift added';
     },
+    // a.day moves the shift to another day. A repeating shift changes from a.date (the day you picked,
+    // or today) onward, so the weeks already worked keep their hours and pay.
     'shift.edit'(s, a) {
-      const f = shiftArgs(a), x = s.shifts.find(y => y.id === a.id) || s.rules.find(y => y.id === a.id) || bad('That shift is gone.');
-      Object.assign(x, f); return 'Shift changed';
+      const f = shiftArgs(a), one = s.shifts.find(y => y.id === a.id);
+      if (a.day != null && a.day !== '') need(okDate(a.day), 'Pick a day.');
+      const clash = (date, id) => shiftsOn(s, date).some(x => x.id !== id && x.start === f.start);
+      if (one) {
+        const date = a.day || one.date;
+        need(!clash(date, one.id), 'There’s already a shift at that time on that day.');
+        Object.assign(one, f, { date }); return 'Shift changed';
+      }
+      const r = s.rules.find(y => y.id === a.id) || bad('That shift is gone.');
+      const at = okDate(a.date) ? a.date : this.today, from = a.day || at;
+      need(!clash(from, r.id), 'There’s already a shift at that time on that day.');
+      if (at <= r.from && dow(from) === r.dow) { Object.assign(r, f); return 'Shift changed'; }
+      if (at <= r.from) { Object.assign(r, f, { dow: dow(from), from, skip: [] }); return 'Shift changed, now every ' + DAYS_LONG[dow(from)]; }
+      need(s.rules.length < 60, 'Too many repeating shifts.');
+      const next = { id: this.rid('r'), dow: dow(from), ...f, from, skip: (r.skip || []).filter(d => d >= from) };
+      if (r.until && r.until >= from) next.until = r.until;
+      r.until = addDays(at, -1); s.rules.push(next);
+      return dow(from) === r.dow ? 'Shift changed from ' + fmtDate(at) + ' on' : 'Shift changed, now every ' + DAYS_LONG[dow(from)];
     },
     // A repeating shift: just this day (needs date), or this day and every one after (all).
     'shift.del'(s, a) {
@@ -282,7 +334,7 @@
       const r = s.rules.find(y => y.id === a.id) || bad('That shift is gone.');
       need(okDate(a.date), 'Pick a day.');
       if (a.all) { if (a.date <= r.from) s.rules = s.rules.filter(y => y !== r); else r.until = addDays(a.date, -1); return 'Repeating shift stopped'; }
-      r.skip = [...(r.skip || []).filter(d => d >= this.today), a.date]; return 'Shift removed for that day';
+      r.skip = [...(r.skip || []).filter(d => d >= addDays(this.today, -KEEP_DAYS) && d !== a.date), a.date]; return 'Shift removed for that day';
     },
     'shift.copyweek'(s, a) {
       need(okDate(a.week), 'Pick a week.');
@@ -358,5 +410,5 @@
   }
 
   return { LISTS, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
-    shiftMins, shiftsOn, week, nextShift, normalize, dayView, guide, coming, moneyCard, eventsOn, eventList, REPS, OPS, apply, text, Bad };
+    shiftMins, shiftsOn, week, months, nextShift, KEEP_DAYS, normalize, dayView, guide, coming, moneyCard, eventsOn, eventList, REPS, OPS, apply, text, Bad };
 });

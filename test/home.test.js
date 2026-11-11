@@ -105,13 +105,14 @@ test('a new day: repeating to-dos come back, finished ones go, old events drop',
   const s = H.blank(), c = ctx('2026-11-10'); s.day = '2026-11-10';
   for (const [t, rep] of [['Lunch', 'daily'], ['Bins', 'weekly'], ['Laundry', undefined]]) H.apply(s, 'todo.add', { t, rep }, c);
   for (const x of s.lists.today) H.apply(s, 'todo.toggle', { list: 'today', id: x.id }, c);
-  H.apply(s, 'event.add', { t: 'Old', date: '2026-11-01' }, c); H.apply(s, 'event.add', { t: 'New', date: '2026-11-12', time: '15:00' }, c);
+  H.apply(s, 'event.add', { t: 'Old', date: '2024-11-01' }, c); H.apply(s, 'event.add', { t: 'Last month', date: '2026-10-20' }, c); H.apply(s, 'event.add', { t: 'New', date: '2026-11-12', time: '15:00' }, c);
   assert.equal(H.normalize(s, '2026-11-10'), false);
   assert.equal(H.normalize(s, '2026-11-11'), true);
   assert.deepEqual(s.lists.today.map(x => [x.t, x.d]), [['Lunch', false], ['Bins', true]]);
   H.normalize(s, '2026-11-16');                                        // the next Monday
   assert.equal(s.lists.today[1].d, false);
-  assert.deepEqual(s.events.map(e => e.t), ['New']);
+  assert.deepEqual(s.events.map(e => e.t), ['Last month', 'New']);            // kept for two years, then dropped
+  assert.deepEqual(H.eventList(s, '2026-11-16').map(e => e.t), []);
 });
 
 test('copy last week, events, cards, company and settings', () => {
@@ -189,6 +190,36 @@ test('to-dos can be renamed, and the same shift can’t be added twice', () => {
   assert.equal(H.shiftsOn(s, '2026-11-12')[0].start, '15:00');
 });
 
+test('changing a repeating shift leaves the weeks already worked alone, and a shift can move day', () => {
+  const s = H.blank(), c = { today: '2026-11-11', rid: p => p + Math.random() }; s.settings.rate = 20;
+  H.apply(s, 'shift.add', { date: '2026-10-05', start: '09:00', end: '17:00', repeat: true }, c);      // Mondays, 8 h
+  H.apply(s, 'shift.del', { id: s.rules[0].id, date: '2026-10-12' }, c);                               // one Monday off
+  const id = s.rules[0].id, oct = () => H.months(s, '2026-11-11').find(m => m.ym === '2026-10');
+  assert.equal(oct().mins, 3 * 480);
+  H.apply(s, 'shift.edit', { id, date: '2026-11-16', start: '10:00', end: '14:00' }, c);
+  assert.equal(oct().mins, 3 * 480);                                    // October didn't change
+  assert.equal(H.shiftsOn(s, '2026-11-09')[0].mins, 480);
+  assert.equal(H.shiftsOn(s, '2026-11-16')[0].mins, 240);
+  assert.equal(H.shiftsOn(s, '2026-11-23')[0].start, '10:00');
+  // move it to Tuesdays from the 24th: the Monday before stays, later Mondays go
+  H.apply(s, 'shift.edit', { id: H.shiftsOn(s, '2026-11-23')[0].id, date: '2026-11-23', day: '2026-11-24', start: '10:00', end: '14:00' }, c);
+  assert.equal(H.shiftsOn(s, '2026-11-16').length, 1);
+  assert.equal(H.shiftsOn(s, '2026-11-23').length, 0);
+  assert.equal(H.shiftsOn(s, '2026-11-24').length, 1);
+  assert.equal(H.shiftsOn(s, '2026-12-01').length, 1);
+  // a one-off shift moves day, but not onto another shift at the same time
+  H.apply(s, 'shift.add', { date: '2026-11-13', start: '10:00', end: '12:00' }, c);
+  assert.throws(() => H.apply(s, 'shift.edit', { id: s.shifts[0].id, day: '2026-11-24', start: '10:00', end: '12:00' }, c), /already a shift/);
+  H.apply(s, 'shift.edit', { id: s.shifts[0].id, day: '2026-11-14', start: '10:00', end: '12:00' }, c);
+  assert.equal(H.shiftsOn(s, '2026-11-14').length, 1);
+  // months: this month knows what is already worked, and pay follows the rate
+  const nov = H.months(s, '2026-11-11')[0];
+  assert.equal(nov.ym, '2026-11'); assert.equal(nov.doneMins, 2 * 480); assert.equal(nov.pay, nov.mins / 60 * 20);
+  // old shifts stay after many new days
+  H.normalize(s, '2027-06-01');
+  assert.equal(H.months(s, '2027-06-01', 12).some(m => m.ym === '2026-10'), true);
+});
+
 test('a shared calendar file is read into days: time zones, repeats, skipped and moved days', () => {
   const read = require('../ics').read;
   const ics = ['BEGIN:VCALENDAR',
@@ -205,4 +236,13 @@ test('a shared calendar file is read into days: time zones, repeats, skipped and
     '2026-11-14 all-day Trip', '2026-11-15 all-day Trip', '2026-11-16 10:00 Yoga', '2026-12-31 all-day Rent']);
   const s = H.blank(); s.cal = [{ date: '2026-11-12', time: '17:00', t: 'Dentist' }];
   assert.equal(H.eventsOn(s, '2026-11-12')[0].cal, true); assert.equal(H.coming(s, '2026-11-11')[0].t, 'Dentist');
+});
+
+test('money cards use the plain numbers when an app sends them, and the sentence when it doesn’t', () => {
+  const sp = H.moneyCard('split', 'Reworded sentence nobody can read', { net: -27.5, people: [{ name: 'Sam', amount: -40 }, { name: 'Jo', amount: 12.5 }] });
+  assert.deepEqual(sp, { big: '$27.50', sub: 'you owe in total', owe: true, rows: ['You owe Sam $40.00', 'Jo owes you $12.50'] });
+  assert.equal(H.moneyCard('split', '', { net: 0, people: [] }).big, 'All square');
+  const bu = H.moneyCard('budget', 'Something new', { safe: 412.3, perDay: 34.36, until: '2026-11-20', bills: [{ name: 'Phone', amount: 60, date: '2026-11-15' }] });
+  assert.equal(bu.big, '$412.30'); assert.match(bu.sub, /\$34\.36 a day until Fri Nov 20/); assert.deepEqual(bu.rows, ['Phone $60.00 · Sun Nov 15']);
+  assert.equal(H.moneyCard('split', 'Overall: you owe $27.50.', { nonsense: true }).big, '$27.50');   // falls back to the sentence
 });

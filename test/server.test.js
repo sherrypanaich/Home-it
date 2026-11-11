@@ -164,7 +164,7 @@ test('an assistant needs a key, and gets the tools with one', async () => {
   const init = await mcpCall('initialize', { protocolVersion: '2025-06-18' });
   assert.equal(init.json.result.serverInfo.name, 'home-it');
   const names = (await mcpCall('tools/list')).json.result.tools.map(t => t.name);
-  assert.deepEqual(names, ['get_today', 'list_todos', 'add_todo', 'complete_todo', 'remove_todo', 'list_shifts', 'add_shift', 'remove_shift', 'list_events', 'add_event', 'remove_event']);
+  assert.deepEqual(names, ['get_today', 'list_todos', 'add_todo', 'complete_todo', 'change_todo', 'remove_todo', 'list_shifts', 'add_shift', 'change_shift', 'hours_by_month', 'remove_shift', 'list_events', 'add_event', 'change_event', 'complete_event', 'remove_event']);
   assert.equal((await call('/api/assistant')).json.connected, 1);
 });
 
@@ -187,10 +187,24 @@ test('an assistant can read the day and add, tick and remove things', async () =
   r = await tool('add_event', { what: 'Dentist', date: 'tomorrow', time: '15:30' });
   assert.match(r.content[0].text, /at 3:30 PM/);
   assert.match((await tool('list_events')).content[0].text, /Dentist/);
-  assert.match((await tool('remove_event', { what: 'dent' })).content[0].text, /Removed “Dentist”/);
+  r = await tool('change_todo', { text: 'oat', list: 'shopping', new_text: 'Oat milk x2', move_to: 'later' });
+  assert.match(r.content[0].text, /“Oat milk” is now “Oat milk x2” in Later/);
+  r = await tool('change_todo', { text: 'x2', list: 'later', move_to: 'shopping' });
+  assert.match(r.content[0].text, /in Shopping/);
+  r = await tool('add_shift', { date: 'tomorrow', start: '12:00', end: '16:00' });
+  r = await tool('change_shift', { date: 'tomorrow', new_end: '18:00', place: 'Cafe' });
+  assert.match(r.content[0].text, /Shift changed: .*12:00 PM to 6:00 PM/);
+  assert.match((await tool('hours_by_month')).content[0].text, /\d{4}-\d\d: \d/);
+  assert.match((await tool('remove_shift', { date: 'tomorrow' })).content[0].text, /Shift removed/);
+  r = await tool('change_event', { what: 'dent', new_name: 'Dentist downtown', new_time: '16:00' });
+  assert.match(r.content[0].text, /“Dentist downtown” is on .* at 4:00 PM/);
+  assert.match((await tool('complete_event', { what: 'dent' })).content[0].text, /is done/);
+  assert.match((await tool('list_events')).content[0].text, /Dentist downtown \(done\)/);
+  assert.equal((await tool('change_event', { what: 'dent' })).isError, true);
+  assert.match((await tool('remove_event', { what: 'dent' })).content[0].text, /Removed “Dentist downtown”/);
   assert.equal((await tool('add_shift', { date: 'someday', start: '9:00', end: '17:00' })).isError, true);
   const s = (await call('/api/state')).json.state;
-  assert.equal(s.lists.shop.at(-1).t, 'Oat milk'); assert.equal(s.lists.today[0].d, true); assert.equal(s.rules.length, 1); assert.equal(s.events.length, 0);
+  assert.equal(s.lists.shop.at(-1).t, 'Oat milk x2'); assert.equal(s.lists.today[0].d, true); assert.equal(s.rules.length, 1); assert.equal(s.events.length, 0);
 });
 
 test('an assistant can sign in the way a person does (OAuth)', async () => {

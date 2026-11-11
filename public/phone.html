@@ -161,11 +161,17 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     <div class="card" style="margin-top:14px">
       <h2 class="h2" id="sdaytitle"></h2>
       <div id="shave" style="display:flex;flex-direction:column;gap:6px"></div>
+      <label id="smovel" hidden>Day<input id="smove" type="date"></label>
+      <div class="note" id="seditnote" hidden></div>
       <div class="rowf"><label>Starts<select id="sstart"></select></label><label>Ends<select id="send"></select></label></div>
       <label>Where<input id="splace" type="text" maxlength="40" placeholder="Work" autocomplete="off"></label>
-      <div class="line"><div>Every week<small id="srepst"></small></div><button class="sw" id="srep" aria-pressed="false" aria-label="Repeat every week"></button></div>
+      <div class="line" id="sreprow"><div>Every week<small id="srepst"></small></div><button class="sw" id="srep" aria-pressed="false" aria-label="Repeat every week"></button></div>
       <button class="btn primary" id="saveshift">Add shift</button>
       <button class="btn" id="copyweek">Copy the week before into this week</button>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2 class="h2">HOURS AND PAY BY MONTH</h2>
+      <div id="months"></div>
     </div>
   </section>
 
@@ -312,9 +318,17 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
     });
     if (ui.sedit && !H.shiftsOn(S, ui.sday).some(function(x){ return x.id === ui.sedit; })) ui.sedit = null;
     $('saveshift').textContent = ui.sedit ? 'Save changes' : 'Add shift';
+    var ex = H.shiftsOn(S, ui.sday).filter(function(x){ return x.id === ui.sedit; })[0];
+    $('smovel').hidden = $('seditnote').hidden = !ex; $('sreprow').hidden = !!ex;
+    if (ex){ if (!$('smove').value) $('smove').value = ui.sday;
+      $('seditnote').textContent = ex.rule ? 'Changes ' + H.fmtDate(ui.sday) + ' and every week after. Earlier weeks stay as they were.' : 'Pick another day to move this shift.'; }
+    var ms = H.months(S, t, 12), mh = '';
+    ms.forEach(function(m){ mh += '<div class="line"><div>' + MON[+m.ym.slice(5) - 1] + ' ' + m.ym.slice(0, 4) + '<small>' + m.shifts + (m.shifts === 1 ? ' shift' : ' shifts') + (m.doneMins != null ? ' · ' + H.fmtHours(m.doneMins) + ' worked so far' : '') + '</small></div><b>' + H.fmtHours(m.mins) + (m.pay != null ? ' · ' + H.money(m.pay) : '') + '</b></div>'; });
+    $('months').innerHTML = mh || '<div class="note">No shifts in the last 12 months yet.</div>';
     $('shave').innerHTML = hv || '<div class="note">No shift on this day yet.</div>';
     $('srep').setAttribute('aria-pressed', ui.srep); $('srepst').textContent = 'Repeats every ' + H.DAYS_LONG[H.dow(ui.sday)];
   }
+  var MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var REPW = { weekly:'every week', monthly:'every month', yearly:'every year' };
   function dayOpts(sel){ var t = today(), from = sel && sel < t ? sel : t, a = []; for (var i = 0; i < 90; i++){ var d = H.addDays(from, i); a.push([d, H.fmtDate(d) + (d === t ? ' (today)' : '')]); } if (sel && sel > a[a.length - 1][0]) a.push([sel, H.fmtDate(sel)]); return opts(a, sel || t); }
   function eventForm(e){
@@ -400,14 +414,15 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   on('days', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.sday = b.dataset.date; ui.sedit = null; renderShifts(); } });
   on('srep', 'click', function(){ ui.srep = !ui.srep; this.setAttribute('aria-pressed', ui.srep); });
   on('saveshift', 'click', function(){
-    if (ui.sedit) return op('shift.edit', { id: ui.sedit, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(){ ui.sedit = null; renderShifts(); });
+    if (ui.sedit){ var to = $('smove').value || ui.sday;
+      return op('shift.edit', { id: ui.sedit, date: ui.sday, day: to === ui.sday ? '' : to, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(){ ui.sedit = null; renderShifts(); }); }
     op('shift.add', { date: ui.sday, start: $('sstart').value, end: $('send').value, place: $('splace').value, repeat: ui.srep }).then(function(){ ui.srep = false; renderShifts(); }); });
   on('copyweek', 'click', function(){ op('shift.copyweek', { week: ui.sday }); });
   on('shave', 'click', function(e){
     var b = e.target.closest('[data-rm]'); if (b) return op('shift.del', { id: b.dataset.rm, date: ui.sday, all: !!b.dataset.all });
     var ed = e.target.closest('[data-eds]'); if (!ed) return;
     var x = H.shiftsOn(S, ui.sday).filter(function(y){ return y.id === ed.dataset.eds; })[0]; if (!x) return;
-    ui.sedit = ui.sedit === x.id ? null : x.id;
+    ui.sedit = ui.sedit === x.id ? null : x.id; $('smove').value = '';
     if (ui.sedit){ $('sstart').value = x.start; $('send').value = endOf(x); $('splace').value = x.place === 'Work' ? '' : x.place; }
     renderShifts();
   });
