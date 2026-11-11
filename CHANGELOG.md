@@ -1,6 +1,6 @@
 # What's new in Home it
 
-## v1.1.0 (not released yet)
+## v1.1.0
 
 The bottom of the big screen is useful now, and the phone screen does more from its first page.
 
