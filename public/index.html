@@ -444,8 +444,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <section class="card" data-card="room" aria-label="Room">
         <div class="row"><h2 class="h2">ROOM</h2>
           <label class="co">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
-        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px;margin-top:auto">
+        <div style="display:flex;gap:8px;margin-top:auto">
+        <button class="btn" id="carbtn" aria-label="Car" style="flex:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:1rem;min-height:50px;padding:4px 12px">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M5 16h14M6.5 16l1.6-5.2A2 2 0 0 1 10 9.4h4a2 2 0 0 1 1.9 1.4L17.5 16M4 16v3h3v-3M17 16v3h3v-3"/></svg><span id="carlbl">Car</span></button>
+        <button class="btn primary" id="gn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px">
           <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
+        </div>
       </section>
     </div>
 
@@ -536,6 +540,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 </div>
 
 <script src="home.js"></script>
+<script src="carplan.js"></script>
+<script src="car-ui.js"></script>
 <script>
 (function(){
   'use strict';
@@ -608,9 +614,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function loadState(){ if (DEMO) return; return api('api/state').then(take); }
   function loadWeather(){
-    if (DEMO){ WX = demoWeather(); renderTick(true); return; }
+    if (DEMO){ WX = demoWeather(); renderTick(true); CarUI.load(); return; }
     api('api/weather').then(function(w){ WX = w; renderTick(true); }).catch(function(){});
-    loadMoney();
+    loadMoney(); CarUI.load();
   }
   function loadMoney(){
     if (DEMO){ MONEY = demoMoney(); return; }
@@ -761,7 +767,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
 
   // ---------- bottom cards ----------
-  var TITLES = { pay:'HOURS AND PAY', coming:'COMING UP', forecast:'NEXT DAYS', split:'SPLIT IT', budget:'BUDGET IT' };
+  var TITLES = { car:'CAR', pay:'HOURS AND PAY', coming:'COMING UP', forecast:'NEXT DAYS', split:'SPLIT IT', budget:'BUDGET IT' };
   function low(t){ return t.charAt(0) + t.slice(1).toLowerCase(); }
   function comingText(r){ return r.kind === 'shift' ? '<span class="sh">Shift ' + span(r.start, r.end, true) + '</span>' : esc(r.t) + (r.time ? ' · ' + tm(r.time) : ''); }
   // Bottom cards say one thing each. Tapping one opens the rest (renderDetail).
@@ -869,6 +875,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           var m = H.mins(q.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise);
           return '<div>' + hourLabel(q.t) + SKY[sky(q.code, !dk)[0]] + '<b>' + q.temp + '°</b>' + (q.rain >= 40 ? '<small class="wet">' + q.rain + '%</small>' : '') + '</div>'; }).join('') + '</div>';
       } else h = '<div class="note">Weather isn’t reachable right now.</div>';
+    } else if (k === 'car'){
+      var ae = document.activeElement; if (ae && ae.closest && ae.closest('#carlink,#carcode')) return;   // don't redraw under someone typing
+      h = CarUI.html();
     } else if (k === 'split' || k === 'budget'){
       var m2 = MONEY[k], url = k === 'split' ? S.settings.splitUrl : S.settings.budgetUrl;
       if (V.company || MONEY.hidden) h = '<div class="note">Hidden while you have company.</div>';
@@ -1106,12 +1115,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   on('dbody', 'submit', function(e){
     e.preventDefault();
+    if (CarUI.submit(e)) return;
     if (e.target.id === 'tdaddform'){ var a = $('tdadd').value.trim(); if (!a) return; $('tdadd').value = ''; $('tdadd').blur(); return op('todo.add', { list:'today', t: a }, true); }
     if (e.target.id !== 'tdform') return;
     var v = $('tdname').value.trim(); if (!v) return toast('Type something first.');
     $('tdname').blur(); op('todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(){ show(null); });
   });
   on('dbody', 'click', function(e){
+    if (CarUI.click(e)) return;
     var tk = e.target.closest('.tk');
     if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);
     if (tk && tk.dataset.ev) return op('event.toggle', { id: tk.dataset.ev, date: V.date }, true);
@@ -1147,6 +1158,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('kiosksw', 'click', function(){ if (DEMO) return toast('This works once it’s on the laptop'); post('api/kiosk', { on: !ME.kiosk }); });
   on('kbsw', 'click', function(){ store.set('kb', kbOn() ? '0' : '1'); hideKb(); renderSettings(); });
   on('company', 'click', function(){ op('company.set', { on: !V.company }); });
+  on('carbtn', 'click', function(){ ui.detail = 'car'; show('detailsheet'); CarUI.load(); });
   on('gn', 'click', function(){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); });
   on('nwake', 'click', function(e){ e.stopPropagation(); ui.good = false; ui.awake = Date.now() + 5 * 60e3; ui.touch = Date.now(); renderTick(); });
   ['pointerdown', 'keydown'].forEach(function(n){ document.addEventListener(n, function(e){
@@ -1189,12 +1201,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (kind === 'night') m = 130;
     if (m != null){ var d = new Date(); d.setHours(Math.floor(m / 60), m % 60, 0, 0); ui.fake = d.getTime(); }
     document.querySelectorAll('#demotimes button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.t === kind); });
-    WX = demoWeather(); MONEY = demoMoney(); ui.minute = -1; renderAll();
+    WX = demoWeather(); MONEY = demoMoney(); ui.minute = -1; renderAll(); CarUI.load();
   }
 
   // ---------- start ----------
   function start(){
     scale();
+    CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'big screen', demoWeather: function(){ return WX; },
+      onChange: function(){ $('carlbl').textContent = CarUI.short(true); if (ui.sheet === 'detailsheet' && ui.detail === 'car') renderDetail(); } });
+    CarUI.bind($('dbody'));
     if (DEMO){
       S = H.sample(H.ymd(new Date())); S.cal = [{ date: H.addDays(H.ymd(new Date()), 1), time:'18:30', t:'Mum’s birthday dinner' }]; ME = { name:'You', kiosk:false }; $('demo').hidden = false; $('wait').hidden = true;
       on('demotimes', 'click', function(e){ var b = e.target.closest('button'); if (b) demoTime(b.dataset.t); });
@@ -1202,7 +1217,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     } else {
       var first = function(){ loadState().then(loadWeather, function(){ $('wait').textContent = 'Can’t reach Home it. Trying again…'; setTimeout(first, 5000); }); };
       first();
-      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); loadMoney(); }); es.onopen = function(){ online(true); if (S) loadState().catch(function(){}); }; es.onerror = function(){ online(false); }; } catch(e){}
+      try { var es = new EventSource('api/events'); es.addEventListener('changed', function(){ loadState().catch(function(){}); loadMoney(); CarUI.load(); }); es.onopen = function(){ online(true); if (S) loadState().catch(function(){}); }; es.onerror = function(){ online(false); }; } catch(e){}
       document.addEventListener('visibilitychange', function(){ if (!document.hidden) loadState().catch(function(){}); });
       // Ask the browser to keep the screen on (it lets go whenever the page is hidden, so ask again each time)
       var keepOn = function(){ if (navigator.wakeLock && !document.hidden) navigator.wakeLock.request('screen').catch(function(){}); };

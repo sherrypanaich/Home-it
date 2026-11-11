@@ -1,0 +1,177 @@
+// The car page, shared by the big screen (index.html) and the phone (phone.html). Needs carplan.js.
+// CarUI.init({ api, toast, esc, demo, onChange }), then CarUI.load(), CarUI.html(), CarUI.click(e), CarUI.submit(e).
+(function(){
+  'use strict';
+  var P = window.CarPlan, o = null, C = null, d = null, confirmAt = 0, poll = null, busy = false, open = false;
+  var SEATS_HEAT = [['off','Off'],['low','Low'],['medium','Med'],['high','High']];
+  var SEATS_COOL = [['low cool','Cool low'],['medium cool','Cool med'],['high cool','Cool high']];
+
+  var css = '.car-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}'
+    + '.car-stat{border:2.5px solid var(--edge);border-radius:12px;box-shadow:3px 3px 0 var(--pop);padding:8px 12px;display:flex;flex-direction:column;gap:1px;background:var(--surface);min-width:0}'
+    + '.car-stat small{font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.car-stat b{font-size:1.35rem;line-height:1.15}.car-stat span{font-size:.85rem;color:var(--muted);font-weight:600}'
+    + '.car-why{font-weight:700;margin:10px 0 2px}.car-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1.5px solid var(--line);padding:8px 0}'
+    + '.car-row .nm{font-weight:700}.car-row .nm small{display:block;font-weight:600;color:var(--muted);font-size:.82rem}'
+    + '.car-step{display:flex;align-items:center;gap:6px}.car-step b{min-width:64px;text-align:center;font-size:1.2rem}.car-step .btn{min-width:48px;min-height:44px;font-size:1.2rem}'
+    + '.car-go{width:100%;min-height:60px;font-size:1.15rem;margin-top:10px}.car-hold{position:relative;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}.car-hold i{position:absolute;inset:0;width:0;background:rgba(0,0,0,.18)}.car-hold.holding i{width:100%;transition:width 1s linear}.car-hold span{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}.car-hold small{font-size:.85rem;font-weight:700;white-space:normal}.car-hold{-webkit-touch-callout:none}'
+    + '.car-run{border:2.5px solid var(--edge);border-radius:12px;padding:10px 12px;margin-top:10px;font-weight:700;background:var(--surface)}'
+    + '.car-run.on{background:var(--hl);color:var(--hl-ink)}.car-run.failed{border-color:var(--bad);color:var(--bad)}'
+    + '.car-form{display:flex;flex-direction:column;gap:8px;align-items:stretch}.car-form input{width:100%}.car-two{display:flex;gap:8px;flex-wrap:wrap}.car-two .btn{flex:1}'
+    + '.car-note{color:var(--muted);font-size:.88rem;font-weight:600;margin-top:6px}.car-h{margin:14px 0 4px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}';
+  var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+
+  function esc(s){ return o.esc(s); }
+  function stat(label, big, sub){ return '<div class="car-stat"><small>' + label + '</small><b>' + big + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</div>'; }
+  function clock(ms){ return new Date(ms).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }); }
+  function sw(key, on, label){ return '<button class="sw" data-car="tog" data-k="' + key + '" aria-pressed="' + !!on + '" aria-label="' + label + '"></button>'; }
+  function seg(list, cur, key){ return '<div class="seg" role="group">' + list.map(function(x){ return '<button data-car="seg" data-k="' + key + '" data-v="' + x[0] + '" aria-pressed="' + (x[0] === cur) + '">' + x[1] + '</button>'; }).join('') + '</div>'; }
+  function moving(){ return C && C.run && (C.run.state === 'sending' || C.run.state === 'waiting'); }
+  function running(){ return C && C.run && C.run.state === 'on' && C.run.until > Date.now(); }
+
+  function take(j){
+    var old = C && JSON.stringify(C.plan); C = j;
+    if (!d || old !== JSON.stringify(j.plan)) d = j.plan ? P.tidy({}, j.plan) : null;   // the weather changed: start from its plan again
+    clearTimeout(poll); if (moving()) poll = setTimeout(load, 4000);
+    o.onChange();
+  }
+  function load(){ return o.demo ? Promise.resolve(take(demoView())) : o.api('api/car').then(take).catch(function(){}); }
+  function send(path, body){
+    if (busy) return; busy = true; o.onChange();
+    var p = o.demo ? demoSend(path, body) : o.api(path, body || {});
+    return p.then(function(j){ busy = false; take(j); if (j.msg) o.toast(j.msg); })
+      .catch(function(e){ busy = false; o.toast(e.message); load(); });
+  }
+
+  function html(){
+    if (!C) return '<div class="car-note">Loading…</div>';
+    if (C.adding) return adding();
+    if (!C.linked) return linkForm();
+    var c = C.car, w = C.weather, r = C.run, h = '';
+    h += '<div class="car-stats">' + stat('Car', esc(c.name), esc([c.year, c.model].filter(Boolean).join(' ')) + (c.fuel === 'ev' ? ' · electric' : ''))
+      + stat('Outside', w ? w.temp + '°' : '–', w ? (isFinite(w.feels) ? 'feels ' + w.feels + '°' : '')  + (w.stale ? ' · from earlier' : '') : 'no weather')
+      + stat('Run for', d.minutes + ' min', d.temp + '° inside') + '</div>';
+    h += '<div class="car-why">' + esc(C.plan.why) + '</div>';
+    if (r && r.state !== 'off') {
+      var line = esc(r.msg || '');
+      if (running()) line = 'Running until ' + clock(r.until) + ' · ' + esc(P.words(r.plan));
+      h += '<div class="car-run ' + (running() ? 'on' : r.state) + '" role="status">' + line + '</div>';
+    }
+    if (running() || moving()) h += '<button class="btn car-go" data-car="stop"' + (busy ? ' disabled' : '') + '>Turn the car off</button>';
+    else if (confirmAt > Date.now()) h += '<div class="car-two" style="margin-top:10px"><button class="btn primary car-go" data-car="go"' + (busy ? ' disabled' : '') + '>Yes, start it for ' + d.minutes + ' min</button><button class="btn car-go" data-car="no">Cancel</button></div>';
+    else h += '<button class="btn primary car-go car-hold" data-car="hold"' + (busy ? ' disabled' : '') + '><i></i><span>Hold to start<small>' + esc(P.words(d)) + '</small></span></button>';
+    if (o.compact && !open) return h + '<button class="btn" data-car="more" style="width:100%;margin-top:8px">Change this start and car settings</button>';
+    h += '<div class="car-h">This start</div>'
+      + row('Minutes', '', step('minutes', d.minutes + ' min'))
+      + row('Inside temperature', '', step('temp', d.temp + '°'))
+      + row('Defrost', 'Front window', sw('defrost', d.defrost, 'Defrost'))
+      + row('Rear window heat', '', sw('rear', d.rear, 'Rear window heat'))
+      + (C.prefs.wheel ? row('Heated wheel', '', sw('wheel', d.wheel, 'Heated wheel')) : '')
+      + (C.prefs.seats ? row('Driver seat', '', seg(SEATS_HEAT.concat(C.prefs.vented ? SEATS_COOL : []), d.seats, 'seats')) : '')
+      + '<button class="btn" data-car="reset" style="margin-top:6px">Back to the weather’s plan</button>';
+    if (C.log && C.log.length) h += '<div class="car-h">Last starts</div>' + C.log.slice(0, 5).map(function(x){ return row(new Date(x.at).toLocaleString([], { weekday:'short', hour:'numeric', minute:'2-digit' }), '', '<span>' + x.minutes + ' min · ' + x.temp + '° · ' + esc(x.from) + '</span>'); }).join('');
+    h += '<div class="car-h">Your car</div>'
+      + row('Heated seats', '', sw('p-seats', C.prefs.seats, 'The car has heated seats'))
+      + row('Heated wheel', '', sw('p-wheel', C.prefs.wheel, 'The car has a heated wheel'))
+      + row('Cooled seats', '', sw('p-vented', C.prefs.vented, 'The car has cooled seats'))
+      + row('I like it', 'Changes the temperature the weather picks', seg([['-2','Cooler'],['0','Normal'],['2','Warmer']], String(C.prefs.warmer), 'p-warmer'))
+      + row('Run time', 'Changes the minutes the weather picks', seg([['-1','Shorter'],['0','Normal'],['1','Longer']], String(C.prefs.extra), 'p-extra'))
+      + '<div class="car-note">Signed in to Bluelink as ' + esc(C.email) + '. The sign-in stays on this laptop.</div>'
+      + '<button class="btn" data-car="forget" style="margin-top:8px">Remove the car from Home it</button>';
+    return h;
+  }
+  function row(name, sub, ctl){ return '<div class="car-row"><div class="nm">' + name + (sub ? '<small>' + sub + '</small>' : '') + '</div>' + ctl + '</div>'; }
+  function step(k, val){ return '<div class="car-step"><button class="btn" data-car="dn" data-k="' + k + '" aria-label="Less">–</button><b>' + val + '</b><button class="btn" data-car="up" data-k="' + k + '" aria-label="More">+</button></div>'; }
+
+  function linkForm(){
+    return '<div class="car-why">Start your Hyundai from here, with the heat and run time picked from the weather.</div>'
+      + (C.needPin ? '<div class="car-run failed">The PIN was wrong, so Home it stopped before Bluelink locked it. Add the car again.</div>' : '')
+      + '<form class="car-form" id="carlink" autocomplete="off" style="margin-top:8px">'
+      + '<label>Bluelink email<input class="kb" id="car-email" type="email" maxlength="120" autocomplete="off"></label>'
+      + '<label>Bluelink password<input class="kb" id="car-pw" type="password" maxlength="200" autocomplete="off"></label>'
+      + '<label>Bluelink PIN (4 numbers)<input class="kb" id="car-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>'
+      + '<button class="btn primary"' + (busy ? ' disabled' : '') + '>Add my car</button></form>'
+      + '<div class="car-note">Use the same email, password and PIN as the MyHyundai app (Canada). They are saved only on this laptop and only sent to Hyundai. The car needs an active Bluelink plan.</div>';
+  }
+  function adding(){
+    var a = C.adding;
+    if (a.step === 'how') return '<div class="car-why">Hyundai wants to check it’s you the first time this screen signs in.</div><div class="car-two" style="margin-top:8px">'
+      + '<button class="btn primary" data-car="send" data-v="E">Email the code to ' + esc(a.email) + '</button>'
+      + (a.phone ? '<button class="btn" data-car="send" data-v="S">Text it to ' + esc(a.phone) + '</button>' : '') + '</div>' + cancel();
+    if (a.step === 'code') return '<form class="car-form" id="carcode"><label>The code Hyundai sent<input class="kb" id="car-code" type="text" inputmode="numeric" maxlength="8" autocomplete="one-time-code"></label>'
+      + '<button class="btn primary"' + (busy ? ' disabled' : '') + '>Confirm</button></form>' + cancel();
+    return '<div class="car-why">Which car?</div>' + a.cars.map(function(c){ return '<button class="btn" data-car="pick" data-v="' + esc(c.id) + '" style="width:100%;margin-top:6px">' + esc(c.name) + ' · ' + esc([c.year, c.model].filter(Boolean).join(' ')) + '</button>'; }).join('') + cancel();
+  }
+  function cancel(){ return '<button class="btn" data-car="cancel" style="margin-top:8px">Cancel</button>'; }
+
+  function click(e){
+    var b = e.target.closest('[data-car]'); if (!b) return false;
+    var a = b.dataset.car, k = b.dataset.k;
+    if (a === 'more'){ open = true; o.onChange(); }
+    else if (a === 'hold'){ if (e.detail === 0){ confirmAt = Date.now() + 10000; setTimeout(o.onChange, 10100); o.onChange(); } else if (!held) o.toast('Hold the button for a second to start the car'); held = false; }
+    else if (a === 'ask'){ confirmAt = Date.now() + 10000; setTimeout(o.onChange, 10100); o.onChange(); }
+    else if (a === 'no'){ confirmAt = 0; o.onChange(); }
+    else if (a === 'go'){ confirmAt = 0; go(); }
+    else if (a === 'stop') send('api/car/stop');
+    else if (a === 'reset'){ d = P.tidy({}, C.plan); o.onChange(); }
+    else if (a === 'up' || a === 'dn'){ var n = a === 'up' ? 1 : -1; var x = {}; x[k] = d[k] + (k === 'temp' ? n * 0.5 : n); d = P.tidy(Object.assign({}, d, x), d); o.onChange(); }
+    else if (a === 'tog' && k.indexOf('p-') === 0){ var q = {}; q[k.slice(2)] = !C.prefs[k.slice(2)]; send('api/car/prefs', q); }
+    else if (a === 'tog'){ d[k] = !d[k]; o.onChange(); }
+    else if (a === 'seg' && k.indexOf('p-') === 0){ var s = {}; s[k.slice(2)] = +b.dataset.v; send('api/car/prefs', s); }
+    else if (a === 'seg'){ d[k] = b.dataset.v; o.onChange(); }
+    else if (a === 'send') send('api/car/code-send', { via: b.dataset.v });
+    else if (a === 'pick') send('api/car/pick', { id: b.dataset.v });
+    else if (a === 'cancel') send('api/car/cancel');
+    else if (a === 'forget'){ if (b.dataset.sure) send('api/car/forget'); else { b.dataset.sure = '1'; b.textContent = 'Tap again to remove the car'; } }
+    return true;
+  }
+  function go(){ send('api/car/start', Object.assign({ from: o.from || 'big screen' }, d)); }
+  // press and hold for a second: a touch screen beside a bed gets bumped
+  var held = false, holdT = null;
+  function bind(el){
+    function stopHold(){ clearTimeout(holdT); holdT = null; var b = el.querySelector('.car-hold'); if (b) b.classList.remove('holding'); }
+    el.addEventListener('pointerdown', function(e){
+      var b = e.target.closest('[data-car="hold"]'); if (!b || b.disabled) return;
+      held = false; b.classList.add('holding');
+      holdT = setTimeout(function(){ holdT = null; held = true; b.classList.remove('holding'); if (navigator.vibrate) navigator.vibrate(30); go(); }, 1000);
+    });
+    ['pointerup','pointerleave','pointercancel'].forEach(function(n){ el.addEventListener(n, stopHold); });
+  }
+  function submit(e){
+    var f = e.target;
+    if (f.id === 'carlink'){ e.preventDefault(); var g = function(id){ return document.getElementById(id).value; };
+      send('api/car/link', { email: g('car-email').trim(), password: g('car-pw'), pin: g('car-pin').trim() }); return true; }
+    if (f.id === 'carcode'){ e.preventDefault(); send('api/car/code', { code: document.getElementById('car-code').value }); return true; }
+    return false;
+  }
+  // a short line for a button on the home screen
+  function short(tiny){
+    if (tiny) return running() ? 'On' : moving() ? '…' : 'Car';
+    if (!C) return 'Start car';
+    if (!C.linked) return 'Add car';
+    if (running()) return 'Car on · ' + clock(C.run.until);
+    if (moving()) return 'Starting…';
+    return 'Start car · ' + d.minutes + 'm';
+  }
+
+  // ---------- the preview: a made-up car that answers like the real one ----------
+  var demo = { linked: true, run: null, prefs: P.prefsOf({}) };
+  function demoView(){
+    var wx = o.demoWeather ? o.demoWeather() : { ok:true, temp:-4, feels:-11, code:71 };
+    if (demo.run && demo.run.state === 'on' && demo.run.until < Date.now()) demo.run = null;
+    return { linked: demo.linked, car: { name:'My Kona', model:'KONA', year:2022, fuel:'gas' }, email:'s•••@gmail.com', prefs: demo.prefs,
+      plan: P.plan(wx, demo.prefs), weather: wx && wx.ok ? { temp: wx.temp, feels: wx.feels, code: wx.code } : null, run: demo.run, adding: null };
+  }
+  function demoSend(path, body){
+    if (path === 'api/car/start'){
+      var plan = P.tidy(body, demoView().plan);
+      demo.run = { state:'waiting', at: Date.now(), plan: plan, msg:'Hyundai has it. Waiting for the car to answer…' };
+      setTimeout(function(){ if (demo.run && demo.run.state === 'waiting'){ demo.run.state = 'on'; demo.run.until = Date.now() + plan.minutes * 60e3; load(); } }, 2500);
+      return Promise.resolve(Object.assign(demoView(), { msg:'Starting the car: ' + P.words(plan) + ' (preview)' }));
+    }
+    if (path === 'api/car/stop'){ demo.run = { state:'stopped', at: Date.now(), msg:'Asked the car to turn off.' }; return Promise.resolve(Object.assign(demoView(), { msg:'Turning the car off (preview)' })); }
+    if (path === 'api/car/prefs'){ demo.prefs = P.prefsOf(Object.assign({}, demo.prefs, body)); return Promise.resolve(demoView()); }
+    return Promise.resolve(Object.assign(demoView(), { msg:'This works once it’s on the laptop' }));
+  }
+
+  window.CarUI = { init: function(opts){ o = opts; }, bind: bind, load: load, html: html, click: click, submit: submit, short: short,
+    busy: function(){ return moving(); }, linked: function(){ return !!(C && C.linked); } };
+})();
