@@ -150,33 +150,43 @@
   const LINES = {
     luffy: {
       off: ['Day off! Let’s do something fun!', 'No shift today. The whole day is yours!', 'Free day! Eat well and take it easy.'],
-      before: ['Shift at {start}. Leave by {leave} and you’re set!', 'Plenty of time. Out the door by {leave}!'],
-      soon: ['{left}! Keys, lunch, jacket. Go go go!', 'Almost time! Leave by {leave}!'],
-      working: ['You’re at work until {end}. You’ve got this!', 'Shift’s on until {end}. Keep going!'],
+      before: ['Nothing to do before work. Eat something good!', 'All clear until work. Take it easy!'],
+      beforePlan: ['First up: {thing} at {at}. Then work!', 'Don’t forget {thing} at {at}!'],
+      beforeTodo: ['{n} before work. Start with {thing}!', '{n} left. Knock out {thing} first!'],
+      soon: ['Tick off your things, then go go go!', 'Almost time! Grab your stuff and run!'],
+      working: ['You’ve got this! Nothing waiting at home.', 'Keep going! Tonight is all yours.'],
+      workingTodo: ['You’ve got this! {n} can wait until after.', 'Keep going! {n} left for later, no rush.'],
       done: ['Shift done! Rest up, you earned it.', 'Work’s over. Time to eat!'],
       cleared: ['List cleared! That calls for a feast!', 'Everything’s done! Amazing!'],
       night: ['Sleep well. I’ll keep watch.']
     },
     hancock: {
       off: ['No shift today. Spend it as you please.', 'A day off. You deserve nothing less.'],
-      before: ['Your shift is at {start}. Leave by {leave}, gracefully.', 'You have time. Be out the door by {leave}.'],
-      soon: ['{left}. Even I would not keep them waiting.', 'It is nearly time. Leave by {leave}.'],
-      working: ['You are at work until {end}. Carry yourself well.', 'Until {end}. They are lucky to have you.'],
+      before: ['Nothing to do before work. Enjoy the quiet.', 'Your morning is free. Use it well.'],
+      beforePlan: ['First, {thing} at {at}. Then work.', 'Do not forget {thing} at {at}.'],
+      beforeTodo: ['{n} before work. Begin with {thing}.', '{n} left. See to {thing} first.'],
+      soon: ['Check your things, then go. Do not keep them waiting.', 'It is nearly time. Gather your things.'],
+      working: ['Carry yourself well. Nothing waits at home.', 'They are lucky to have you. Tonight is yours.'],
+      workingTodo: ['Carry yourself well. {n} can wait until after.', 'They are lucky to have you. {n} left for later.'],
       done: ['Your shift is done. You have earned your rest.', 'Work is finished. Now, relax.'],
       cleared: ['Every task finished. As expected of you.', 'Nothing left to do. Splendid.'],
       night: ['Rest now. Tomorrow will wait.']
     }
   };
   const MOOD = { off: 'calm', before: 'happy', soon: 'worried', working: 'happy', done: 'calm', cleared: 'celebrate', night: 'calm' };
+  // What the guide says is something the card does not already show: the next plan, or how many to-dos are left.
+  const brief = t => { t = String(t); return t.length > 24 ? t.slice(0, 23).trim() + '…' : t; };
   function guide(s, v) {
-    const list = s.lists.today, cleared = list.length > 0 && list.every(x => x.d);
+    const list = s.lists.today, open = list.filter(x => !x.d), cleared = list.length > 0 && !open.length;
     const key = v.night ? 'night' : v.phase === 'soon' ? 'soon' : cleared ? 'cleared' : v.phase;
-    const who = LINES[s.settings.guide] ? s.settings.guide : 'luffy', set = LINES[who][key];
+    const who = LINES[s.settings.guide] ? s.settings.guide : 'luffy';
+    const plan = key === 'before' ? (v.events || []).filter(e => !e.d && e.time && mins(e.time) >= v.nowM && mins(e.time) < v.leaveM).sort((x, y) => mins(x.time) - mins(y.time))[0] : null;
+    const sub = plan ? 'beforePlan' : open.length && key === 'before' ? 'beforeTodo' : open.length && key === 'working' ? 'workingTodo' : key;
+    const set = LINES[who][sub], first = open.filter(x => !x.due)[0] || open[0];
     const line = set[(+v.date.slice(8) + v.date.charCodeAt(6)) % set.length]
-      .replace('{start}', v.startM == null ? '' : fmtTime(hhmm(v.startM), true))
-      .replace('{leave}', v.leaveM == null ? '' : fmtTime(hhmm(v.leaveM)))
-      .replace('{end}', v.endM == null ? '' : fmtTime(hhmm(v.endM), true))
-      .replace('{left}', v.toLeave == null ? '' : v.toLeave > 0 ? fmtDur(v.toLeave) : 'Time to go');
+      .replace('{n}', open.length + (open.length === 1 ? ' to-do' : ' to-dos'))
+      .replace('{thing}', plan ? brief(plan.t) : first ? '“' + brief(first.t) + '”' : '')
+      .replace('{at}', plan ? fmtTime(plan.time) : '');
     return { who, mood: MOOD[key], line };
   }
 
