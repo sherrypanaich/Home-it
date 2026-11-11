@@ -181,7 +181,7 @@ function changed(uid) { for (const [res, id] of listeners) if (id === uid) res.w
 // ---------- sending things ----------
 const SECURITY = {
   'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin', 'X-Frame-Options': 'SAMEORIGIN',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://accounts.google.com"
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://accounts.google.com"
 };
 function out(res, code, headers, body) {
   const req = res.req, h = { ...SECURITY, ...headers };
@@ -259,6 +259,8 @@ async function moneyFor(uid) {
 }
 
 // ---------- news: headlines from one feed (RSS or Atom), asked at most every 15 minutes, the last answer kept ----------
+// The answer says when it was read (`at`); if the feed can't be reached the last answer is sent again marked `stale`.
+// Story pictures are only addresses: the screen loads them straight from the news site (the img-src rule above allows https pictures).
 const RSS = require('./rss');
 const newsCache = new Map();   // url -> { at, data }
 async function newsFor(set) {
@@ -269,7 +271,7 @@ async function newsFor(set) {
     if (!r.ok) throw new Error('answered ' + r.status);
     const feed = RSS.read((await r.text()).slice(0, 2e6), 30);
     if (!feed.items.length) throw new Error('no headlines');
-    const data = { ok: true, title: feed.title, items: feed.items };
+    const data = { ok: true, title: feed.title, items: feed.items, at: Date.now() };
     if (newsCache.size > 50) newsCache.clear();
     newsCache.set(url, { at: Date.now(), data }); return data;
   } catch (e) { return hit ? { ...hit.data, stale: true } : { ok: false }; }

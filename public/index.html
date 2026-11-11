@@ -539,6 +539,9 @@ button.wkit:active{transform:translate(1px,1px)}
 .g-money .mshut .ic{width:44px;height:44px}
 .g-money .mshut b{color:var(--ink);font-size:1.25rem;font-weight:800}
 .g-news{grid-template:"a b" minmax(0,1fr) / 1.1fr 1fr}
+.g-news.one{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
+.g-news.one .hd{display:none}
+.g-news .pc > .dbody{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-padding:6px 0 34px;scrollbar-width:thin;scrollbar-color:var(--line) transparent;padding-right:0}
 .pc{display:flex;flex-direction:column;gap:8px;padding:12px 16px 14px;min-height:0}
 .pc > .dbody{flex:1;padding-right:4px}
 .pc h3{margin:8px 0 0;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
@@ -562,17 +565,43 @@ button.wkit:active{transform:translate(1px,1px)}
 .pgnav .arr svg{width:18px;height:18px;stroke-width:3}
 .pgnav .arr:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--pop)}
 .pgnav .arr:disabled{opacity:.3;cursor:default;transform:none}
-.lead{display:flex;flex-direction:column;gap:10px;height:100%}
-.lead small{color:var(--muted);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
-.lead b{font-family:var(--display);font-weight:400;font-size:1.7rem;line-height:1.15}
-.lead p{margin:0;font-size:1.08rem;line-height:1.5;font-weight:600;flex:1}
-.news{display:flex;flex-direction:column}
-.news button{font:inherit;color:inherit;background:none;border:0;border-top:1.5px solid var(--line);text-align:left;padding:9px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px;border-radius:0}
+.lead{display:flex;flex-direction:column;gap:8px;height:100%;min-height:0;overflow:hidden}
+.lead .pic{flex:1 1 0;min-height:80px;margin:0 0 2px;border:2.5px solid var(--edge);border-radius:12px;overflow:hidden;background:var(--surface2)}
+.lead .pic img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.lead small{flex:none;color:var(--muted);font-weight:800;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
+.lead b{flex:none;font-family:var(--display);font-weight:400;font-size:1.5rem;line-height:1.16;padding-bottom:3px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.lead p{flex:none;margin:0;font-size:1.04rem;line-height:1.42;font-weight:600;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.lead.nopic{gap:12px}
+.lead.nopic b{font-size:2.35rem;line-height:1.12;-webkit-line-clamp:5}
+.lead.nopic.t2 b{font-size:2rem}
+.lead.nopic.t3 b{font-size:1.65rem}
+.lead.nopic p{font-size:1.3rem;line-height:1.45;-webkit-line-clamp:5}
+.lead.nopic.t3 p{font-size:1.15rem}
+/* the guide tells you how fresh the news is */
+.lead .by{flex:none;margin-top:auto;display:flex;align-items:flex-end;gap:16px;min-width:0}
+.lead .by .reader{flex:none;height:76px;width:auto;pointer-events:none;filter:drop-shadow(3px 3px 0 rgba(20,17,42,.45))}
+.lead.nopic .by .reader{height:132px}
+.lead .say{position:relative;align-self:center;min-width:0;border:2.5px solid #14112A;border-radius:14px;padding:7px 12px;background:#fff;color:#14112A;font-weight:800;font-size:.92rem;line-height:1.25;box-shadow:3px 3px 0 #14112A}
+.lead .say::before{content:"";position:absolute;left:-8.5px;top:50%;width:12px;height:12px;margin-top:-6px;background:#fff;border-left:2.5px solid #14112A;border-bottom:2.5px solid #14112A;transform:rotate(45deg)}
+.lead .say.warn{background:var(--hl)}
+.lead .say.warn::before{background:var(--hl)}
+.newsoff{height:100%;display:flex;align-items:center;justify-content:center;gap:28px;text-align:left}
+.newsoff img{height:230px;width:auto;filter:drop-shadow(4px 4px 0 rgba(20,17,42,.45))}
+.newsoff div{display:flex;flex-direction:column;gap:10px;align-items:flex-start;max-width:640px}
+.newsoff b{font-family:var(--display);font-weight:400;font-size:1.9rem;line-height:1.15}
+.newsoff p{margin:0;font-size:1.1rem;font-weight:600;color:var(--muted);line-height:1.4}
+.newsoff .btn{margin-top:6px;min-height:48px;padding:6px 22px}
+.news{display:flex;flex-direction:column;padding:0 6px 30px 0}
+.news button{font:inherit;color:inherit;background:none;border:0;border-top:1.5px solid var(--line);text-align:left;padding:9px 10px 9px 12px;min-height:56px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:3px;border-radius:0}
 .news button:first-child{border-top:0}
-.news button.on{background:var(--soft);border-radius:10px;border-top-color:transparent}
+.news button.on{background:var(--surface2);box-shadow:inset 4px 0 0 var(--pgc,#FF9A2E);border-radius:10px;border-top-color:transparent}
 .news button.on + button{border-top-color:transparent}
-.news b{font-weight:800;font-size:.98rem;line-height:1.25}
-.news small{color:var(--muted);font-weight:700;font-size:.76rem}
+.news b{font-weight:800;font-size:1rem;line-height:1.25}
+.news small{color:var(--muted);font-weight:700;font-size:.82rem}
+/* a soft fade at the bottom edge says there are more headlines below */
+.news::after{content:"";position:sticky;bottom:0;flex:none;height:26px;margin:-26px 0 -30px;background:linear-gradient(to bottom,transparent,var(--surface));pointer-events:none}
+#set-newsPick{max-width:230px}
+#newscustom.gone,#newsnote.gone{display:none}
 .wx .off{font-weight:600;color:var(--muted);font-size:.86rem}
 .tadd{position:absolute;right:14px;top:10px;display:flex;gap:10px}
 .evbtn{background:#fff;color:#14112A;border-color:#14112A;box-shadow:3px 3px 0 #14112A;font-size:.95rem;padding:4px 12px;white-space:nowrap}
@@ -903,8 +932,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           <h3>Links to your other apps</h3>
           <div class="row"><form id="calform"><label>Calendar share link<input class="kb" id="set-calUrl" type="text" inputmode="url" maxlength="400" placeholder="Paste the link here" autocomplete="off"></label><button class="btn">Save</button></form></div>
           <div class="note" id="calnote"></div>
-      <div class="row"><form id="newsform"><label>News feed link (RSS)<input class="kb" id="set-newsUrl" type="text" inputmode="url" maxlength="400" placeholder="Leave empty for CBC top stories" autocomplete="off"></label><button class="btn">Save</button></form></div>
-      <div class="note">The News page shows headlines from this feed. Most news sites have one; search for the site’s name and “RSS”.</div>
+      <div class="row"><span class="name">News from</span><select id="set-newsPick" aria-label="News from"></select></div>
+      <div class="row gone" id="newscustom"><form id="newsform"><label>The news site’s feed address<input class="kb" id="set-newsUrl" type="text" inputmode="url" maxlength="400" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
+      <div class="note gone" id="newsnote">Most news sites have a feed address. Search for the site’s name and “RSS”, then paste the address here.</div>
           <div class="row"><form id="splitform"><label>Split it web address<input class="kb" id="set-splitUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
           <div class="row"><form id="budgetform"><label>Budget it web address<input class="kb" id="set-budgetUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
         </div>
@@ -1050,12 +1080,26 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     api('api/weather').then(function(w){ WX = w; renderTick(true); }).catch(function(){});
     loadMoney(); CarUI.load();
   }
-  var NEWS = null, newsAt = 0;
-  function loadNews(){
+  var NEWS = null, newsAt = 0, newsSrc = null;
+  // The news sources offered in Settings; '' is the one Home it starts with. Anything else is "another news site".
+  var NEWS_SRC = [['', 'CBC Top stories'], ['https://www.cbc.ca/webfeed/rss/rss-canada', 'CBC Canada'], ['https://www.cbc.ca/webfeed/rss/rss-canada-ottawa', 'CBC Ottawa'], ['https://www.cbc.ca/webfeed/rss/rss-canada-toronto', 'CBC Toronto'],
+    ['https://www.cbc.ca/webfeed/rss/rss-world', 'CBC World'], ['https://feeds.bbci.co.uk/news/world/rss.xml', 'BBC World'], ['https://globalnews.ca/feed/', 'Global News']];
+  function newsPreset(){ var u = S.settings.newsUrl || ''; if (u === 'https://www.cbc.ca/webfeed/rss/rss-topstories') u = ''; for (var i = 0; i < NEWS_SRC.length; i++) if (NEWS_SRC[i][0] === u) return NEWS_SRC[i]; return null; }
+  function newsName(){ var p = newsPreset(); return (p ? p[1] : NEWS && NEWS.title || 'News') + (DEMO ? ' (sample)' : ''); }
+  function loadNews(force){
+    if (!S) return;
+    var src = S.settings.newsUrl || '';
+    if (src !== newsSrc){ newsSrc = src; newsAt = 0; NEWS = null; ui.news = 0; renderPages(); }   // a different source: start fresh
     if (DEMO){ if (!NEWS){ NEWS = demoNews(); renderPages(); } return; }
-    if (Date.now() - newsAt < 5 * 60e3) return; newsAt = Date.now();
-    api('api/news').then(function(n){ NEWS = n; renderPages(); }).catch(function(){ if (!NEWS){ NEWS = { ok:false }; renderPages(); } });
+    if (!force && Date.now() - newsAt < 5 * 60e3) return; newsAt = Date.now();
+    api('api/news').then(function(n){
+      if (src !== newsSrc) return;
+      var was = NEWS && NEWS.ok && NEWS.items[ui.news], at = 0;   // stay on the story being read, if it is still there
+      if (was && n.ok) n.items.forEach(function(x, i){ if (x.t === was.t) at = i; });
+      NEWS = n; ui.news = at; renderPages();
+    }).catch(function(){ if (src !== newsSrc) return; if (NEWS && NEWS.ok) NEWS.stale = true; else NEWS = { ok:false }; renderPages(); });
   }
+  setInterval(function(){ if (ui.page === 'news' && S){ loadNews(); renderPages(); } }, 60e3);   // keeps "5 min ago" honest while the page is open
   function loadMoney(){
     if (DEMO){ MONEY = demoMoney(); return; }
     api('api/money').then(function(m){ MONEY = m; if (S) renderCards(); }).catch(function(){});
@@ -1492,13 +1536,18 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       h = moneyBody(k);
     }
     if (k === 'news'){
-      if (!NEWS) h = '<div class="note">Getting the news…</div>';
-      else if (!NEWS.ok) h = '<div class="note">Can’t reach the news right now. It will try again in a few minutes.</div>';
+      var g0 = S.settings.guide === 'hancock' ? 'hancock' : 'luffy';
+      if (!NEWS) h = '<div class="newsoff"><img src="art/' + g0 + '-calm.webp" alt=""><div><b>Getting the news…</b></div></div>';
+      else if (!NEWS.ok) h = '<div class="newsoff"><img src="art/' + g0 + '-worried.webp" alt=""><div><b>Can’t reach the news right now</b><p>It will try again by itself in a few minutes.'
+        + (newsPreset() ? '' : ' If it stays like this, pick another news source in Settings.') + '</p><button class="btn primary" data-newsretry>Try again now</button></div></div>';
       else {
-        var cur = NEWS.items[ui.news] || NEWS.items[0], ci = NEWS.items.indexOf(cur);
-        var g0 = S.settings.guide === 'hancock' ? 'hancock' : 'luffy';
-        h = '<div class="lead"><img class="reader" src="art/' + g0 + '-calm.webp" alt=""><small>' + esc(NEWS.title || 'Headlines') + (cur.at ? ' · ' + ago(cur.at) : '') + (NEWS.stale ? ' · from earlier' : '') + '</small><b>' + esc(cur.t) + '</b><p>' + esc(cur.sum || 'No summary for this one.') + '</p>'
-          + '<div class="row first"><button class="btn" data-news="' + Math.max(0, ci - 1) + '"' + (ci <= 0 ? ' disabled' : '') + '>‹ Newer</button><button class="btn" data-news="' + Math.min(NEWS.items.length - 1, ci + 1) + '"' + (ci >= NEWS.items.length - 1 ? ' disabled' : '') + '>Older ›</button></div></div><!--cut:list--><div class="news">';
+        var cur = NEWS.items[ui.news] || NEWS.items[0], ci = NEWS.items.indexOf(cur), tl = cur.t.length + (cur.sum ? 0 : -40);
+        h = '<div class="lead ' + (cur.img ? 'pic1' : 'nopic ' + (tl > 110 ? 't3' : tl > 60 ? 't2' : 't1')) + '">'
+          + (cur.img ? '<figure class="pic"><img src="' + esc(cur.img) + '" alt="" decoding="async" referrerpolicy="no-referrer"></figure>' : '')
+          + (cur.at ? '<small>' + ago(cur.at) + '</small>' : '') + '<b>' + esc(cur.t) + '</b>' + (cur.sum ? '<p>' + esc(cur.sum) + '</p>' : '')
+          + '<div class="by"><img class="reader" src="art/' + g0 + (NEWS.stale ? '-worried' : '-calm') + '.webp" alt="">'
+          + (NEWS.stale ? '<span class="say warn">Can’t reach the news right now.' + (NEWS.at ? ' These are from ' + ago(NEWS.at) + '.' : ' These are from earlier.') + '</span>'
+            : '<span class="say">' + (NEWS.at ? 'Updated ' + ago(NEWS.at) : 'Here’s the latest') + '</span>') + '</div></div><!--cut:list--><div class="news">';
         NEWS.items.forEach(function(n, i){ h += '<button data-news="' + i + '"' + (i === ci ? ' class="on"' : '') + '><b>' + esc(n.t) + '</b>' + (n.at ? '<small>' + ago(n.at) + '</small>' : '') + '</button>'; });
         h += '</div>';
       }
@@ -1568,8 +1617,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         var ch = CarUI.html(true).split('<!--cut:more-->'), hd = CarUI.heads();
         h = ch[1] ? '<div class="pgrid g-money">' + panel('a', ch[0], hd.a) + panel('b', ch[1], hd.b, hd.back ? '<button class="btn sm carback" data-car="view" data-v="main">‹ Back</button>' : '') + '</div>' : '<div class="pgrid g-car">' + panel('a', ch[0], hd.a) + '</div>';
       } else {
-        p = parts('news'); sub = NEWS && NEWS.ok ? 'Tap a headline to read it' : '';
-        h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : p.head;
+        p = parts('news'); sub = NEWS && NEWS.ok ? newsName() + ' · tap a headline to read it' : '';
+        h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, ui.news > 0 && NEWS.items[ui.news] ? 'Story' : 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : '<div class="pgrid g-news one">' + panel('a', p.head, 'News') + '</div>';
       }
       t.textContent = title; if (a.textContent !== sub) a.textContent = sub;
       if (b.dataset.h !== h){
@@ -1674,7 +1723,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     $('set-travel').innerHTML = opts([0,5,10,15,20,25,30,35,40,45,50,60,75,90,120].map(function(n){ return [n, n + ' min']; }), s.travel);
     $('set-nightFrom').innerHTML = opts(times(30), s.nightFrom); $('set-nightTo').innerHTML = opts(times(30), s.nightTo);
     $('set-idle').innerHTML = opts([[0,'Never'],[5,'After 5 min'],[10,'After 10 min'],[20,'After 20 min'],[30,'After 30 min'],[60,'After an hour']], s.idle);
-    [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl], ['set-calUrl', s.calUrl], ['set-newsUrl', s.newsUrl || '']].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
+    [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl], ['set-calUrl', s.calUrl], ['set-newsUrl', newsPreset() ? '' : s.newsUrl]].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
+    var np = newsPreset(), other = !np || ui.newsOther;
+    $('set-newsPick').innerHTML = opts(NEWS_SRC.map(function(o){ return [o[0] || 'cbc', o[1]]; }).concat([['other', 'Another news site…']]), other ? 'other' : np[0] || 'cbc');
+    $('newscustom').classList.toggle('gone', !other); $('newsnote').classList.toggle('gone', !other);
     $('calnote').textContent = !s.calUrl ? 'Works with Apple, Google and Outlook calendars. Its events show on Today and Coming up. Home it only reads it.' : CAL === 'ok' ? 'Calendar connected. Checked every 15 minutes.' : CAL === 'fail' ? 'That link can’t be read. Check it is the calendar’s public link.' : 'Reading the calendar…';
     $('kiosksw').setAttribute('aria-pressed', !!ME.kiosk); $('kbsw').setAttribute('aria-pressed', kbOn());
     $('who').textContent = DEMO ? 'Preview' : 'Signed in as ' + ME.name; $('ver').textContent = 'Home it ' + (VERSION || 'preview');
@@ -1961,6 +2013,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function bodyClick(e){
     if (CarUI.click(e) || weekClick(e)) return;
+    if (e.target.closest('[data-newsretry]')){ NEWS = null; renderPages(); return loadNews(true); }
     var nw = e.target.closest('[data-news]'); if (nw){ ui.news = +nw.dataset.news; renderPages(); var on = pager.querySelector('.news .on'); if (on && on.scrollIntoView) on.scrollIntoView({ block:'nearest' }); return; }
     var tk = e.target.closest('.tk');
     if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);
@@ -2002,7 +2055,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     sop($('set-rate'), 'settings.set', { key:'rate', value: v || 0 });
   });
   on('splitform', 'submit', function(e){ e.preventDefault(); if (webAddr($('set-splitUrl'), 'a web address')) sop($('set-splitUrl'), 'settings.set', { key:'splitUrl', value: $('set-splitUrl').value.trim() }); });
-  on('newsform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'newsUrl', value: $('set-newsUrl').value.trim() }).then(function(){ newsAt = 0; NEWS = null; if (ui.page === 'news') loadNews(); }); });
+  function setNews(v){ return op('settings.set', { key:'newsUrl', value: v }).then(function(){ if ((S.settings.newsUrl || '') === v) ui.newsOther = false; renderSettings(); if (ui.page === 'news') loadNews(); }); }
+  on('set-newsPick', 'change', function(){ if (this.value === 'other'){ ui.newsOther = true; renderSettings(); $('set-newsUrl').focus(); } else setNews(this.value === 'cbc' ? '' : this.value); });
+  on('newsform', 'submit', function(e){ e.preventDefault(); var v = $('set-newsUrl').value.trim(); if (!v) return toast('Paste the news site’s feed address first.'); setNews(v); });
+  // a story picture that won't load (or is only a dot) just steps aside
+  ['error', 'load'].forEach(function(n){ pager.addEventListener(n, function(e){
+    var t = e.target; if (!t || t.tagName !== 'IMG' || !t.closest('.lead .pic') || !NEWS || !NEWS.items) return;
+    if (n === 'load' && t.naturalWidth >= 120) return;
+    var src = t.getAttribute('src'); NEWS.items.forEach(function(x){ if (x.img === src) x.img = ''; }); renderPages();
+  }, true); });
   on('calform', 'submit', function(e){ e.preventDefault(); if (webAddr($('set-calUrl'), 'a calendar link')) sop($('set-calUrl'), 'settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
   on('budgetform', 'submit', function(e){ e.preventDefault(); if (webAddr($('set-budgetUrl'), 'a web address')) sop($('set-budgetUrl'), 'settings.set', { key:'budgetUrl', value: $('set-budgetUrl').value.trim() }); });
   on('cityform', 'submit', function(e){
@@ -2039,13 +2100,22 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
   // ---------- preview: sample data and a pretend clock ----------
   function demoNews(){
-    var t = Date.now(), it = function(m, a, b){ return { t: a, sum: b, at: t - m * 60e3, url: '' }; };
-    return { ok:true, title:'Top stories (sample)', items:[
-      it(12, 'Snow squall watch for the Bay of Quinte tonight', 'Up to 10 cm is possible by morning, with poor visibility on the 401 between Belleville and Kingston.'),
+    var t = Date.now(), it = function(m, a, b, img){ return { t: a, sum: b, at: t - m * 60e3, url: '', img: img || '' }; };
+    var snow = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid slice"><rect width="640" height="300" fill="#2B3A67"/><circle cx="520" cy="70" r="34" fill="#FFE9A8"/>'
+      + '<path d="M0 220 L120 120 L210 190 L330 90 L470 200 L560 150 L640 210 V300 H0Z" fill="#5C6FA8"/><path d="M0 250 Q160 200 320 245 T640 235 V300 H0Z" fill="#F4F6FF"/>'
+      + '<g fill="#fff">' + [[60,40],[140,90],[230,30],[300,140],[390,60],[450,130],[600,110],[90,170],[560,30],[200,150],[350,20],[30,110]].map(function(c){ return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="5"/>'; }).join('') + '</g></svg>');
+    return { ok:true, title:'Top stories', at: t - 4 * 60e3, items:[
+      it(12, 'Snow squall watch for the Bay of Quinte tonight', 'Up to 10 cm is possible by morning, with poor visibility on the 401 between Belleville and Kingston.', snow),
       it(47, 'City council votes on new transit routes', 'Two routes would run later in the evening on weekdays if the plan passes next week.'),
       it(95, 'Gas prices expected to drop three cents by Friday', 'Analysts say stations across eastern Ontario should follow by the weekend.'),
-      it(180, 'Local bakery wins provincial butter tart contest', 'The winning recipe uses maple syrup from a farm ten minutes away.'),
+      it(180, 'Local bakery wins provincial butter tart contest', 'The winning recipe uses maple syrup from a farm ten minutes away.', 'https://preview.invalid/no-such-picture.jpg'),
       it(320, 'Hockey: Senators come back to win in overtime', 'A late power-play goal tied it before the winner 90 seconds into extra time.'),
+      it(410, 'Quinte West opens a new outdoor skating trail', 'The 400-metre loop through the park is free and lit until 10 PM.'),
+      it(560, 'Hospital asks for volunteers to knit hats for newborns', 'The maternity ward gives one to every baby born in December.'),
+      it(700, 'Province to add more GO trains east of Oshawa, in a plan that could one day reach Belleville and Kingston if the money is approved', ''),
+      it(900, 'Farmers’ market moves indoors for the season', 'Saturday mornings at the arena, starting this week.'),
+      it(1100, 'Students build a robot that sorts recycling', 'The high school team heads to the provincial finals in March.'),
+      it(1300, 'Free parking downtown on weekends through December', 'The city hopes it brings more shoppers to local stores.'),
       it(1500, 'Library extends weekend hours for the winter', 'Saturday closing moves from 5 to 8 PM starting next month.') ] };
   }
   function demoMoney(){

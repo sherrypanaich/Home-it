@@ -13,8 +13,10 @@ module.exports = (port, cb) => http.createServer((req, res) => {
   // and a news feed: two headlines, the newer one second in the file
   if (u.pathname === '/news.xml') {
     res.setHeader('Content-Type', 'application/rss+xml');
-    return res.end(`<?xml version="1.0"?><rss version="2.0"><channel><title>Test &amp; News</title>
-      <item><title><![CDATA[Older story]]></title><link>https://news.example/a</link><pubDate>Tue, 10 Nov 2026 10:00:00 GMT</pubDate><description>&lt;p&gt;First <b>line</b>.&lt;/p&gt;</description></item>
+    if (u.searchParams.get('down')) { res.statusCode = 503; return res.end('down'); }
+    return res.end(`<?xml version="1.0"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Test &amp; News</title>
+      <item><title><![CDATA[Older story]]></title><link>https://news.example/a</link><pubDate>Tue, 10 Nov 2026 10:00:00 GMT</pubDate><description>&lt;p&gt;First <b>line</b>.&lt;/p&gt;</description>
+        <media:thumbnail width="240" url="https://img.example/small.jpg"/><media:content medium="image" width="976" url="https://img.example/big.jpg?a=1&amp;b=2"/></item>
       <item><title>Snow on the way &#8211; 10 cm</title><link>javascript:alert(1)</link><pubDate>Wed, 11 Nov 2026 09:00:00 GMT</pubDate><description><![CDATA[<img src="x.jpg"> Bundle up.]]></description></item>
       </channel></rss>`);
   }

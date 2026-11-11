@@ -263,3 +263,16 @@ test('news headlines come from the feed: newest first, tags and unsafe links dro
   const bad = await call('/api/op', { op: 'settings.set', args: { key: 'newsUrl', value: 'not a link' } });
   assert.equal(bad.status, 400);
 });
+
+test('news says when it was read, gives https pictures only, and says plainly when a feed cannot be reached', async () => {
+  const before = Date.now(), r = await call('/api/news'), n = r.json;
+  assert.ok(n.at > before - 60e3 && n.at <= Date.now());
+  assert.equal(n.items[1].img, 'https://img.example/big.jpg?a=1&b=2');   // the widest picture the feed offers
+  assert.equal(n.items[0].img, '');                                      // "x.jpg" is not an https address
+  assert.match(r.headers.get('content-security-policy'), /img-src 'self' data: blob: https:;/);
+  const set = v => call('/api/op', { op: 'settings.set', args: { key: 'newsUrl', value: v } });
+  assert.equal((await set(`http://127.0.0.1:${WX}/news.xml?down=1`)).status, 200);
+  assert.deepEqual((await call('/api/news')).json, { ok: false });
+  assert.equal((await set('')).status, 200);
+  assert.equal((await call('/api/news')).json.ok, true);
+});
