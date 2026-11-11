@@ -1158,7 +1158,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('kiosksw', 'click', function(){ if (DEMO) return toast('This works once it’s on the laptop'); post('api/kiosk', { on: !ME.kiosk }); });
   on('kbsw', 'click', function(){ store.set('kb', kbOn() ? '0' : '1'); hideKb(); renderSettings(); });
   on('company', 'click', function(){ op('company.set', { on: !V.company }); });
-  on('carbtn', 'click', function(){ ui.detail = 'car'; show('detailsheet'); CarUI.load(); });
+  on('carbtn', 'click', function(){ ui.detail = 'car'; CarUI.reset(); show('detailsheet'); CarUI.load(); });
   on('gn', 'click', function(){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); });
   on('nwake', 'click', function(e){ e.stopPropagation(); ui.good = false; ui.awake = Date.now() + 5 * 60e3; ui.touch = Date.now(); renderTick(); });
   ['pointerdown', 'keydown'].forEach(function(n){ document.addEventListener(n, function(e){
@@ -1207,7 +1207,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   // ---------- start ----------
   function start(){
     scale();
-    CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'big screen', demoWeather: function(){ return WX; },
+    CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'big screen', top: function(){ $('detailsheet').scrollTop = 0; }, demoWeather: function(){ return WX; },
       onChange: function(){ $('carlbl').textContent = CarUI.short(true); if (ui.sheet === 'detailsheet' && ui.detail === 'car') renderDetail(); } });
     CarUI.bind($('dbody'));
     if (DEMO){
