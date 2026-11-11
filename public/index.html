@@ -282,9 +282,10 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .sheet .row{min-height:44px;border-top:1.5px solid var(--line)}
 .sheet .row.first{border-top:0;min-height:0}
 .sheet > .row.first:first-child{flex-direction:row-reverse;justify-content:flex-end;gap:14px}
-.sheet > .row.first:first-child .h2{font-size:1rem}
+.sheet > .row.first:first-child .h2{font-size:1.1rem}
+.sheet > .row.first:first-child .btn{min-height:52px;padding:6px 22px;font-size:1.05rem}
 .sheet .seg{box-shadow:none}
-.sheet .seg button{min-height:38px;padding:4px 12px}
+.sheet .seg button{min-height:44px;padding:4px 14px}
 .sheet label{font-weight:800;font-size:.86rem;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
 .sheet select,.sheet input{border:2.5px solid var(--edge);border-radius:10px;min-height:44px;padding:4px 8px;background:var(--surface);width:100%}
 .note{font-size:.84rem;color:var(--muted)}
@@ -600,11 +601,36 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .sheet form{display:flex;gap:8px;align-items:flex-end;flex:1;min-width:0}
 .sheet .row{gap:8px}
 .sheet .row > select{width:auto;max-width:190px}
-.sheet h3{margin:8px 0 0;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sheet h3{margin:8px 0 0;font-size:.84rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .sheet .have.on{background:var(--soft);border-style:dashed}
 .sheet .have{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;border:2px solid var(--edge);border-radius:10px;padding:4px 6px 4px 10px;background:var(--surface2)}
-.sheet .have .btn{min-height:40px;padding:2px 10px;box-shadow:none;font-size:.84rem}
+.sheet .have .btn{min-height:44px;padding:2px 12px;box-shadow:none;font-size:.86rem}
 .sheet .have div{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+/* sheets: section tabs, quick-pick buttons, messages next to the field */
+.sheet .settabs button{flex:1;min-height:48px;font-size:1rem}
+.setg{display:flex;flex-direction:column;gap:8px;flex:none}
+.setg > .row:first-child,.setmore h3 + .row{border-top:0}
+.setmore{flex-direction:row;gap:28px;align-items:flex-start}
+.setmore .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.setmore h3:first-child{margin-top:0}
+.sheet .chips{display:flex;gap:8px;flex:none}
+.sheet .chips .btn{flex:1;padding:6px 8px;box-shadow:2px 2px 0 var(--pop)}
+.sheet .chips .btn[aria-pressed="true"]{background:var(--hl);color:var(--hl-ink)}
+.sheet .chips .btn[disabled]{opacity:.45}
+.sheet .chips select{flex:1.5;width:auto;min-width:0;font-weight:800}
+.sheet .ferr{color:var(--bad);font-size:.88rem;font-weight:800}
+.sheet .fbad{border-color:var(--bad)}
+.sheet .btn.primary{min-height:50px;font-size:1.05rem}
+.sheet .row.first.btns{gap:10px}
+.sheet .row.first.btns .btn.primary{flex:1}
+#eventsheet,#shiftsheet{padding-left:40px;padding-right:40px}
+.cols{display:flex;gap:32px;flex:1;min-height:0;align-items:stretch}
+.cols > .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cols > .col.list{overflow:auto;padding:0 6px 6px 0}
+.cols > .col > *{flex:none}
+.cols > .col h3:first-child{margin-top:0}
+.stack .cols,.stack .setmore{flex-direction:column}
+.stack .cols > .col{flex:none}
 .toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--bg);font-weight:800;border-radius:12px;padding:10px 18px;box-shadow:3px 3px 0 var(--hl);max-width:80%;text-align:center}
 .wait{position:absolute;inset:0;z-index:8;display:grid;place-items:center;text-align:center;font-weight:800;font-size:1.2rem;background:var(--bg)}
 .seg{display:flex;flex-wrap:wrap;border:2.5px solid var(--edge);border-radius:12px;background:var(--surface2);padding:3px;gap:2px}
@@ -620,8 +646,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .osk .echo{background:var(--surface);border:2.5px solid var(--edge);border-radius:10px;min-height:40px;padding:6px 12px;font-weight:800;white-space:nowrap;overflow:hidden}
 .osk .echo:empty::before{content:attr(data-ph);color:var(--muted);font-weight:600}
 .osk .r{display:flex;gap:6px;justify-content:center}
-.osk button{flex:1;max-width:104px;min-height:46px;border:2.5px solid var(--edge);border-radius:10px;background:var(--surface);font-weight:800;font-size:1.1rem;box-shadow:2px 2px 0 var(--pop);padding:0}
-.osk button.w{max-width:170px;flex:1.7;font-size:.9rem}
+.osk button{flex:1;max-width:104px;min-height:50px;border:2.5px solid var(--edge);border-radius:10px;background:var(--surface);font-weight:800;font-size:1.1rem;box-shadow:2px 2px 0 var(--pop);padding:0}
+.osk button.w{max-width:170px;flex:1.7;font-size:.95rem}
+.osk.infield .echo{display:none}
+.osk button:active{transform:translate(2px,2px);box-shadow:none}
 .osk button.sp{max-width:none;flex:6}
 .osk button.go{background:var(--hl);color:var(--hl-ink)}
 .osk button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
@@ -815,32 +843,39 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     <div class="backdrop" id="backdrop" hidden data-close aria-label="Back to the home screen"></div>
     <aside class="sheet" id="sheet" hidden aria-label="Settings">
       <div class="row first"><h2 class="h2">SETTINGS</h2><button class="btn" data-close>‹ Back</button></div>
-      <div class="seg settabs" id="settabs" role="group" aria-label="Settings sections"><button data-v="screen">Screen</button><button data-v="look">Look</button><button data-v="work">Work</button><button data-v="cards">Cards</button><button data-v="apps">Apps</button></div>
-      <h3>Cards</h3>
-      <div id="toggles"></div>
-      <h3>Look</h3>
-      <div class="row"><span class="name">Guide</span>
-        <div class="seg" id="guidepick" role="group" aria-label="Guide"><button data-v="luffy">Luffy</button><button data-v="hancock">Hancock</button></div></div>
-      <div class="row"><span class="name">Colours</span>
-        <div class="seg" id="lookpick" role="group" aria-label="Colours"><button data-v="auto">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
-      <h3>Work</h3>
-      <div class="row"><span class="name">Travel time to work</span><select id="set-travel" aria-label="Travel time to work"></select></div>
-      <div class="row"><form id="rateform"><label>Hourly pay ($), for the pay estimate<input class="kb" id="set-rate" type="text" inputmode="decimal" maxlength="7" autocomplete="off"></label><button class="btn">Save</button></form></div>
-      <h3>This screen</h3>
-      <div class="row"><div><div class="name">Bedroom screen</div><div class="st">Stays signed in, goes dark at night</div></div><button class="sw" id="kiosksw" aria-pressed="false" aria-label="This is the bedroom screen"></button></div>
-      <div class="row"><span class="name">On-screen keyboard</span><button class="sw" id="kbsw" aria-pressed="false" aria-label="On-screen keyboard"></button></div>
-      <div class="row"><span class="name">Dark at night from</span><select id="set-nightFrom" aria-label="Night starts"></select></div>
-      <div class="row"><span class="name">Until</span><select id="set-nightTo" aria-label="Night ends"></select></div>
-      <div class="row"><span class="name">Big clock when left alone</span><select id="set-idle" aria-label="Idle time"></select></div>
-      <h3>Weather</h3>
-      <div class="row"><form id="cityform"><label>Town or city<input class="kb" id="set-city" type="text" maxlength="60" autocomplete="off"></label><button class="btn">Set</button></form></div>
-      <h3>Your other apps</h3>
-      <div class="row"><form id="calform"><label>Calendar link (Apple, Google or Outlook)<input class="kb" id="set-calUrl" type="text" inputmode="url" maxlength="400" placeholder="webcal://" autocomplete="off"></label><button class="btn">Save</button></form></div>
-      <div class="note" id="calnote"></div>
+      <div class="seg settabs" id="settabs" role="group" aria-label="Settings sections"><button data-v="main">Everyday</button><button data-v="cards">Home page</button><button data-v="more">More</button></div>
+      <div class="setg" data-g="main">
+        <div class="row"><span class="name">Colours</span>
+          <div class="seg" id="lookpick" role="group" aria-label="Colours"><button data-v="auto">Follows the time of day</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
+        <div class="row"><span class="name">Your guide</span>
+          <div class="seg" id="guidepick" role="group" aria-label="Guide"><button data-v="luffy">Luffy</button><button data-v="hancock">Hancock</button></div></div>
+        <div class="row"><div><div class="name">Keyboard on the screen</div><div class="st">Shows keys to tap when you touch a typing box</div></div><button class="sw" id="kbsw" aria-pressed="false" aria-label="Keyboard on the screen"></button></div>
+        <div class="row"><div><div class="name">Getting to work takes</div><div class="st">Used to tell you when to leave</div></div><select id="set-travel" aria-label="How long it takes to get to work"></select></div>
+        <div class="row"><form id="rateform"><label>What you earn an hour ($), to estimate your pay<input class="kb" id="set-rate" type="text" inputmode="decimal" maxlength="7" placeholder="17.50" autocomplete="off"></label><button class="btn">Save</button></form></div>
+      </div>
+      <div class="setg" data-g="cards">
+        <div class="note">Switch off anything you don’t want to see on the Home page.</div>
+        <div id="toggles"></div>
+      </div>
+      <div class="setg setmore" data-g="more">
+        <div class="col">
+          <h3>This screen</h3>
+          <div class="row"><div><div class="name">This is the bedroom laptop</div><div class="st">It stays signed in and goes dark at night</div></div><button class="sw" id="kiosksw" aria-pressed="false" aria-label="This is the bedroom laptop"></button></div>
+          <div class="row"><label>Goes dark at<select id="set-nightFrom" aria-label="Goes dark at"></select></label><label>Wakes up at<select id="set-nightTo" aria-label="Wakes up at"></select></label></div>
+          <div class="row"><div><div class="name">Big clock</div><div class="st">Shows when the screen is left alone</div></div><select id="set-idle" aria-label="Show the big clock"></select></div>
+          <h3>Weather</h3>
+          <div class="row"><form id="cityform"><label>Your town or city<input class="kb" id="set-city" type="text" maxlength="60" placeholder="Belleville, Ontario" autocomplete="off"></label><button class="btn">Save</button></form></div>
+        </div>
+        <div class="col">
+          <h3>Links to your other apps</h3>
+          <div class="row"><form id="calform"><label>Calendar share link<input class="kb" id="set-calUrl" type="text" inputmode="url" maxlength="400" placeholder="Paste the link here" autocomplete="off"></label><button class="btn">Save</button></form></div>
+          <div class="note" id="calnote"></div>
       <div class="row"><form id="newsform"><label>News feed link (RSS)<input class="kb" id="set-newsUrl" type="text" inputmode="url" maxlength="400" placeholder="Leave empty for CBC top stories" autocomplete="off"></label><button class="btn">Save</button></form></div>
       <div class="note">The News page shows headlines from this feed. Most news sites have one; search for the site’s name and “RSS”.</div>
-      <div class="row"><form id="splitform"><label>Split it address<input class="kb" id="set-splitUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
-      <div class="row"><form id="budgetform"><label>Budget it address<input class="kb" id="set-budgetUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
+          <div class="row"><form id="splitform"><label>Split it web address<input class="kb" id="set-splitUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
+          <div class="row"><form id="budgetform"><label>Budget it web address<input class="kb" id="set-budgetUrl" type="text" inputmode="url" maxlength="200" placeholder="https://" autocomplete="off"></label><button class="btn">Save</button></form></div>
+        </div>
+      </div>
       <div class="row" id="acct"><div><div class="name" id="who"></div><div class="st" id="ver"></div></div><a class="btn" href="api/logout">Sign out</a></div>
     </aside>
 
@@ -851,35 +886,50 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
     <aside class="sheet" id="shiftsheet" hidden aria-label="Shifts">
       <div class="row first"><h2 class="h2">SHIFTS</h2><button class="btn" data-close>‹ Back</button></div>
-      <label>Day<select id="sday"></select></label>
-      <div id="shave"></div>
-      <h3 id="sadd">Add a shift</h3>
-      <label id="smovel" hidden>Day<select id="smove"></select></label>
-      <div class="note" id="seditnote" hidden></div>
-      <div class="row first">
-        <label>Starts<select id="sstart"></select></label>
-        <label>Ends<select id="send"></select></label>
+      <div class="cols">
+        <div class="col">
+          <h3>Which day?</h3>
+          <div class="chips" id="sdays"></div>
+          <select id="sday" aria-label="Pick any day"></select>
+          <div id="shave"></div>
+          <button class="btn" id="copyweek" style="margin-top:8px">Copy the week before into this week</button>
+        </div>
+        <div class="col">
+          <div id="susual"></div>
+          <h3 id="sadd">Add a shift</h3>
+          <label id="smovel" hidden>Move it to<select id="smove"></select></label>
+          <div class="note" id="seditnote" hidden></div>
+          <div class="row first">
+            <label>Starts<select id="sstart"></select></label>
+            <label>Ends<select id="send"></select></label>
+          </div>
+          <label>Where (leave empty for Work)<input class="kb" id="splace" type="text" maxlength="40" placeholder="Work" autocomplete="off"></label>
+          <div class="row" id="sreprow"><div><div class="name">Every week</div><div class="st" id="srepst">Repeats on this weekday</div></div><button class="sw" id="srep" aria-pressed="false" aria-label="Repeat every week"></button></div>
+          <div class="row first btns"><button class="btn primary" id="saveshift">Save shift</button><button class="btn" id="scancel" hidden>Cancel</button></div>
+        </div>
       </div>
-      <label>Where<input class="kb" id="splace" type="text" maxlength="40" placeholder="Work" autocomplete="off"></label>
-      <div class="row" id="sreprow"><div><div class="name">Every week</div><div class="st" id="srepst">Repeats on this weekday</div></div><button class="sw" id="srep" aria-pressed="false" aria-label="Repeat every week"></button></div>
-      <button class="btn primary" id="saveshift">Save shift</button>
-      <button class="btn" id="copyweek">Copy the week before into this week</button>
     </aside>
 
     <aside class="sheet" id="eventsheet" hidden aria-label="Events">
       <div class="row first"><h2 class="h2">EVENTS</h2><button class="btn" data-close>‹ Back</button></div>
-      <form id="eventform" style="flex-direction:column;align-items:stretch;flex:none">
-        <label>What<input class="kb" id="ename" type="text" maxlength="80" placeholder="Dentist, gym, date night" autocomplete="off"></label>
-        <div class="row first">
-          <label>Day<select id="eday"></select></label>
-          <label>Time<select id="etime"></select></label>
+      <div class="cols">
+        <form id="eventform" class="col" style="align-items:stretch">
+          <label>What is it?<input class="kb" id="ename" type="text" maxlength="80" placeholder="Dentist, gym, date night" autocomplete="off"></label>
+          <h3>Which day?</h3>
+          <div class="chips" id="edays"></div>
+          <select id="eday" aria-label="Pick any day"></select>
+          <h3>What time?</h3>
+          <div class="chips"><span id="etimes" style="display:contents"></span><select id="etime" aria-label="Pick any time"></select></div>
+          <h3>Does it repeat?</h3>
+          <div class="chips" id="ereps"></div>
+          <select id="erep" hidden><option value="">Just once</option><option value="weekly">Every week</option><option value="monthly">Every month</option><option value="yearly">Every year</option></select>
+          <div class="row first btns" style="margin-top:6px"><button class="btn primary" id="esave">Add event</button><button class="btn" type="button" id="ecancel" hidden>Cancel</button></div>
+        </form>
+        <div class="col list">
+          <h3>Coming up</h3>
+          <div id="ehave" style="display:flex;flex-direction:column;gap:6px"></div>
         </div>
-        <label>Repeats<select id="erep"><option value="">Just once</option><option value="weekly">Every week</option><option value="monthly">Every month</option><option value="yearly">Every year</option></select></label>
-        <button class="btn primary" id="esave">Add event</button>
-        <button class="btn" type="button" id="ecancel" hidden>Cancel</button>
-      </form>
-      <h3>Coming up</h3>
-      <div id="ehave" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
     </aside>
 
     <div class="osk" id="osk" hidden></div>
@@ -1319,9 +1369,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       if (!td){ show(null); return null; }
       title = 'TO-DO';
       if ($('tdname') && document.activeElement === $('tdname')) return;      // don't redraw under someone typing
-      h = '<form id="tdform" style="flex-direction:column;align-items:stretch"><label>What<input class="kb" id="tdname" type="text" maxlength="80" autocomplete="off" value="' + esc(td.t) + '"></label><button class="btn primary">Save</button></form><h3>Move to</h3><div class="row first">'
+      h = '<form id="tdform" style="flex-direction:column;align-items:stretch"><label>What needs doing?<input class="kb" id="tdname" type="text" maxlength="80" autocomplete="off" value="' + esc(td.t) + '"></label><button class="btn primary">Save</button></form><h3>Move it to another list</h3><div class="row first">'
         + [['today','Today'],['later','Later'],['shop','Shopping']].map(function(l){ return '<button class="btn" data-mv="' + l[0] + '"' + (l[0] === ui.todo.list ? ' disabled' : '') + '>' + l[1] + '</button>'; }).join('')
-        + '</div><button class="btn" data-tdrm="1" style="margin-top:8px">Remove</button>';
+        + '</div><button class="btn" data-tdrm="1" style="margin-top:8px;align-self:flex-start">Remove this to-do</button>';
     }
     if (k === 'pay'){
       var ms = H.months(S, V.date, 12), wk2 = H.week(S, V.date), rate = S.settings.rate, yr = 0, yn = 0, nsh = 0, wks = [], wmax = 0, mmax = 0;
@@ -1527,15 +1577,53 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 
   // ---------- sheets ----------
   function pick(group, val){ group.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', x.dataset.v === String(val)); }); }
-  var SETG = { 'Cards':'cards', 'Look':'look', 'Work':'work', 'This screen':'screen', 'Weather':'screen', 'Your other apps':'apps' };
   function settingsTab(){
-    var g = '', cur = ui.setg || 'screen';
-    Array.prototype.forEach.call($('sheet').children, function(el, i){
-      if (i < 2) return;
-      if (el.tagName === 'H3'){ g = SETG[el.textContent] || g; el.hidden = g !== cur || el.textContent === 'Cards' || el.textContent === 'Look' || el.textContent === 'Work'; return; }
-      el.hidden = g !== cur && el.id !== 'acct';
-    });
+    var cur = ui.setg || 'main';
+    $('sheet').querySelectorAll('.setg').forEach(function(el){ el.hidden = el.dataset.g !== cur; });
+    $('acct').hidden = cur !== 'more';
     pick($('settabs'), cur);
+  }
+  // A plain message right under the box it is about (instead of a pop-up at the bottom). It goes away when the box changes.
+  function ferr(el, msg){
+    if (!el) return toast(msg);
+    var m = el._ferr, row = el.form && el.form.parentNode;
+    if (!m){
+      m = el._ferr = document.createElement('div'); m.className = 'ferr'; m.setAttribute('role', 'alert');
+      if (row && row.classList.contains('row')) row.parentNode.insertBefore(m, row.nextSibling); else (el.closest('label') || el.parentNode).appendChild(m);
+    }
+    m.textContent = msg; el.classList.add('fbad'); if (kbT === el) kbFit();
+  }
+  function ferrClear(el){
+    (el ? [el] : Array.prototype.slice.call(stage.querySelectorAll('.sheet .fbad'))).forEach(function(x){
+      x.classList.remove('fbad'); if (x._ferr){ x._ferr.remove(); x._ferr = null; } });
+  }
+  ['input', 'change'].forEach(function(n){ document.addEventListener(n, function(e){ if (e.target.classList && e.target.classList.contains('fbad')) ferrClear(e.target); }); });
+  // Like op(), but a problem shows next to the box (el). Gives back true when it worked.
+  function sop(el, name, args, quiet){
+    ferrClear(el);
+    if (DEMO){
+      try { var msg = H.apply(S, name, args, { today: H.ymd(now()), rid: function(p){ return p + Math.random().toString(36).slice(2, 10); } }); renderAll(); if (!quiet) toast(msg); return Promise.resolve(true); }
+      catch(e){ ferr(el, e.message); return Promise.resolve(false); }
+    }
+    return api('api/op', { op:name, args:args }).then(function(j){ take(j); if (!quiet) toast(j.msg); return true; }, function(e){ ferr(el, e.message); return false; });
+  }
+  function webAddr(el, what){
+    var v = el.value.trim(); if (!v || /^(https?|webcal|feed):\/\/\S+$/i.test(v)) return true;
+    ferr(el, 'That doesn’t look like ' + what + '. It should start with https://'); return false;
+  }
+  // Quick day buttons: today, tomorrow and the three days after. The list beside them has every other day.
+  function dayChips(cur){
+    var t = H.ymd(now()), h = '';
+    for (var i = 0; i < 5; i++){ var d = H.addDays(t, i); h += '<button type="button" class="btn" data-day="' + d + '" aria-pressed="' + (d === cur) + '">' + (i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : H.DAYS[H.dow(d)] + ' ' + +d.slice(8)) + '</button>'; }
+    return h;
+  }
+  // The shifts she works most, from the repeating ones and the last 40 added.
+  function usualShifts(){
+    var m = {}, a = [];
+    S.rules.concat(S.shifts.slice(-40)).forEach(function(x, i){
+      var k = x.start + '|' + x.end + '|' + x.place; if (!m[k]) a.push(m[k] = { start: x.start, end: x.end, place: x.place, n: 0, i: 0 });
+      m[k].n++; m[k].i = i; });
+    return a.sort(function(p, q){ return q.n - p.n || q.i - p.i; }).slice(0, 3);
   }
   function renderSettings(){
     var s = S.settings, h = '';
@@ -1547,7 +1635,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     $('set-nightFrom').innerHTML = opts(times(30), s.nightFrom); $('set-nightTo').innerHTML = opts(times(30), s.nightTo);
     $('set-idle').innerHTML = opts([[0,'Never'],[5,'After 5 min'],[10,'After 10 min'],[20,'After 20 min'],[30,'After 30 min'],[60,'After an hour']], s.idle);
     [['set-rate', s.rate || ''], ['set-city', s.city], ['set-splitUrl', s.splitUrl], ['set-budgetUrl', s.budgetUrl], ['set-calUrl', s.calUrl], ['set-newsUrl', s.newsUrl || '']].forEach(function(p){ if (document.activeElement !== $(p[0])) $(p[0]).value = p[1]; });
-    $('calnote').textContent = !s.calUrl ? 'Paste the link of a shared calendar and its events show on Today and Coming up. Home it only reads it.' : CAL === 'ok' ? 'Calendar connected. Checked every 15 minutes.' : CAL === 'fail' ? 'That link can’t be read. Check it is the calendar’s public link.' : 'Reading the calendar…';
+    $('calnote').textContent = !s.calUrl ? 'Works with Apple, Google and Outlook calendars. Its events show on Today and Coming up. Home it only reads it.' : CAL === 'ok' ? 'Calendar connected. Checked every 15 minutes.' : CAL === 'fail' ? 'That link can’t be read. Check it is the calendar’s public link.' : 'Reading the calendar…';
     $('kiosksw').setAttribute('aria-pressed', !!ME.kiosk); $('kbsw').setAttribute('aria-pressed', kbOn());
     $('who').textContent = DEMO ? 'Preview' : 'Signed in as ' + ME.name; $('ver').textContent = 'Home it ' + (VERSION || 'preview');
     $('acct').querySelector('a').hidden = DEMO;
@@ -1556,7 +1644,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var t = H.ymd(now()), d = ui.sday || t, from = H.addDays(t, -7);
     if (d < from) from = H.weekStart(d);
     var n = Math.max(43, Math.round((Date.parse(d) - Date.parse(from)) / 864e5) + 8);
-    $('sday').innerHTML = opts(days(from, n), d);
+    $('sday').innerHTML = opts(days(from, n), d); $('sdays').innerHTML = dayChips(d);
     var have = H.shiftsOn(S, d), h = '';
     have.forEach(function(x){
       h += '<div class="have' + (x.id === ui.sedit ? ' on' : '') + '"><span>' + span(x.start, endOf(x), true) + ' · ' + esc(x.place) + (x.rule ? ' · weekly' : '') + '</span><div>'
@@ -1564,8 +1652,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         + (x.rule ? '<button class="btn" data-rm="' + esc(x.id) + '">Skip this day</button><button class="btn" data-rm="' + esc(x.id) + '" data-all="1">Stop repeating</button>' : '<button class="btn" data-rm="' + esc(x.id) + '">Remove</button>') + '</div></div>';
     });
     if (ui.sedit && !have.some(function(x){ return x.id === ui.sedit; })) ui.sedit = null;
-    $('saveshift').textContent = ui.sedit ? 'Save changes' : 'Save shift'; $('sadd').textContent = ui.sedit ? 'Change this shift' : 'Add a shift';
-    $('shave').innerHTML = h ? '<div style="display:flex;flex-direction:column;gap:6px">' + h + '</div>' : '<div class="note">No shift on this day yet.</div>';
+    var u = '';
+    if (!ui.sedit) usualShifts().forEach(function(x, i){ u += '<button class="btn" data-usual="' + i + '"' + (have.some(function(y){ return y.start === x.start; }) ? ' disabled' : '') + '>+ ' + span(x.start, x.end, true) + (x.place !== 'Work' ? ' · ' + esc(x.place) : '') + '</button>'; });
+    $('susual').innerHTML = u ? '<h3>Tap to add your usual shift ' + (d === t ? 'today' : 'on ' + H.fmtDate(d)) + '</h3><div class="chips">' + u + '</div>' : ''; $('susual').hidden = !u;
+    $('saveshift').textContent = ui.sedit ? 'Save changes' : 'Save shift'; $('sadd').textContent = ui.sedit ? 'Change this shift' : u ? 'Or pick the times yourself' : 'Add a shift';
+    $('scancel').hidden = !ui.sedit; $('copyweek').hidden = !!ui.sedit;
+    $('shave').innerHTML = h ? '<div style="display:flex;flex-direction:column;gap:6px">' + h + '</div>' : '<div class="note">No shift on ' + (d === t ? 'today' : H.fmtDate(d)) + ' yet.</div>';
     var ex = have.filter(function(x){ return x.id === ui.sedit; })[0];
     $('smovel').hidden = $('seditnote').hidden = !ex; $('sreprow').hidden = !!ex;
     if (ex){
@@ -1578,7 +1670,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function openShift(date){
     var last = S.shifts[S.shifts.length - 1] || S.rules[S.rules.length - 1] || { start:'14:00', end:'22:00', place:'' };
-    ui.sday = date || H.ymd(now()); ui.srep = false; ui.sedit = null;
+    ui.sday = (date && typeof date === 'string') ? date : H.ymd(now()); ui.srep = false; ui.sedit = null;
     $('sstart').innerHTML = opts(times(15), last.start); $('send').innerHTML = opts(times(15), last.end);
     $('splace').value = last.place === 'Work' ? '' : last.place || '';
     show('shiftsheet');
@@ -1589,6 +1681,13 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     ui.eedit = e ? e.id : null;
     $('eday').innerHTML = opts(days(d < t ? d : t, 90).concat(d > H.addDays(t, 89) ? [[d, H.fmtDate(d)]] : []), d);
     $('etime').innerHTML = opts([['', 'No time']].concat(times(15)), e && e.time || ''); $('erep').value = e && e.rep || ''; $('ename').value = e ? e.t : '';
+    ferrClear(); eventChips();
+  }
+  function eventChips(){
+    var tv = $('etime').value, rv = $('erep').value;
+    $('edays').innerHTML = dayChips($('eday').value);
+    $('etimes').innerHTML = [['', 'No time'], ['09:00', '9 AM'], ['12:00', 'Noon'], ['18:00', '6 PM']].map(function(o){ return '<button type="button" class="btn" data-time="' + o[0] + '" aria-pressed="' + (o[0] === tv) + '">' + o[1] + '</button>'; }).join('');
+    $('ereps').innerHTML = [['', 'Just once'], ['weekly', 'Every week'], ['monthly', 'Every month'], ['yearly', 'Every year']].map(function(o){ return '<button type="button" class="btn" data-rep="' + o[0] + '" aria-pressed="' + (o[0] === rv) + '">' + o[1] + '</button>'; }).join('');
   }
   function renderEventSheet(){
     var t = H.ymd(now()), h = '';
@@ -1599,7 +1698,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     $('esave').textContent = ui.eedit ? 'Save changes' : 'Add event'; $('ecancel').hidden = !ui.eedit;
   }
   function show(name){
-    hideKb();
+    hideKb(); ferrClear();
     ['sheet','shiftsheet','eventsheet','detailsheet'].forEach(function(id){ $(id).hidden = id !== name; });
     if (name === 'detailsheet') renderDetail();
     ui.sheet = name; $('gear').setAttribute('aria-expanded', name === 'sheet'); $('backdrop').hidden = !name;
@@ -1643,9 +1742,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function renderAll(){ renderTick(true); }
 
   // ---------- on-screen keyboard ----------
-  var kbT = null, kbShift = false;
+  var kbT = null, kbShift = false, kbPad = null;
   function kbOn(){ var k = store.get('kb'); return k == null ? !!ME.kiosk : k === '1'; }
-  function hideKb(){ $('osk').hidden = true; if (kbT){ kbT.removeAttribute('inputmode'); kbT = null; } }
+  function hideKb(){ $('osk').hidden = true; if (kbPad){ kbPad.style.paddingBottom = ''; kbPad = null; } if (kbT){ kbT.removeAttribute('inputmode'); kbT = null; } }
   function drawKb(){
     var rows = ['1234567890', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm,.'], h = '<div class="echo" id="echo" data-ph="' + esc(kbT.placeholder || kbT.getAttribute('aria-label') || '') + '">' + esc(kbT.value) + '</div>';
     rows.forEach(function(r, i){
@@ -1653,13 +1752,29 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       r.split('').forEach(function(ch){ var c = kbShift ? ch.toUpperCase() : ch; h += '<button data-c="' + c + '">' + c + '</button>'; });
       h += (i === 3 ? '<button class="w" data-k="back">⌫</button>' : '') + '</div>';
     });
-    h += '<div class="r"><button class="w" data-c=":">:</button><button class="w" data-c="/">/</button><button class="sp" data-c=" ">space</button><button class="w" data-c="$">$</button><button class="w" data-k="hide">Hide</button><button class="w go" data-k="go">Done</button></div>';
+    h += '<div class="r"><button class="w" data-c=":">:</button><button class="w" data-c="/">/</button><button class="sp" data-c=" ">space</button><button class="w" data-c="-">-</button><button class="w" data-c="$">$</button>' + (kbGo() ? '<button class="w" data-k="hide">Hide keys</button>' : '') + '<button class="w go" data-k="go">' + (kbGo() || 'Done') + '</button></div>';
     $('osk').innerHTML = h;
+  }
+  // A box that is alone in its form gets a yellow key that does the job ("Save", "Add"). In a longer form the key just puts the keyboard away.
+  function kbGo(){
+    var f = kbT && kbT.form; if (!f || f.querySelectorAll('input,select').length > 1) return '';
+    var b = f.querySelector('button:not([type="button"])'), w = b ? b.textContent.trim() : '';
+    return w && w.length < 9 ? w : 'Save';
+  }
+  // Keep the box being typed in above the keyboard: make room under the sheet and scroll it up.
+  function kbFit(){
+    var sh = kbT && kbT.closest('.sheet'), o = $('osk'); o.classList.toggle('infield', !!sh);
+    if (!sh) return;
+    var k = stage.getBoundingClientRect().width / stage.offsetWidth || 1;
+    sh.style.paddingBottom = (o.offsetHeight + 16) + 'px'; kbPad = sh;
+    var box = kbT.closest('label') || kbT, over = (box.getBoundingClientRect().bottom - o.getBoundingClientRect().top) / k + 12;
+    if (over > 0) sh.scrollTop += over;
   }
   document.addEventListener('focusin', function(e){
     var t = e.target;
     if (!t.classList || !t.classList.contains('kb') || !kbOn()) return;
-    kbT = t; t.setAttribute('inputmode', 'none'); kbShift = !t.value && t.id !== 'set-splitUrl' && t.id !== 'set-budgetUrl' && t.id !== 'set-calUrl' && t.id !== 'set-rate'; drawKb(); $('osk').hidden = false;
+    kbT = t; t.setAttribute('inputmode', 'none'); kbShift = !t.value && t.id !== 'set-splitUrl' && t.id !== 'set-budgetUrl' && t.id !== 'set-calUrl' && t.id !== 'set-rate'; if (kbPad && kbPad !== t.closest('.sheet')){ kbPad.style.paddingBottom = ''; kbPad = null; }
+    drawKb(); $('osk').hidden = false; kbFit();
   });
   $('osk').addEventListener('pointerdown', function(e){
     e.preventDefault();
@@ -1667,7 +1782,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var k = b.dataset.k, max = +kbT.getAttribute('maxlength') || 200;
     if (k === 'shift') kbShift = !kbShift;
     else if (k === 'hide'){ var t0 = kbT; hideKb(); t0.blur(); return; }
-    else if (k === 'go'){ var t = kbT, f = t.form; hideKb(); t.blur(); if (f) f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event('submit', { cancelable:true })); return; }
+    else if (k === 'go'){ var t = kbT, f = kbGo() ? t.form : null; hideKb(); t.blur(); if (f) f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event('submit', { cancelable:true })); return; }
     else { kbT.value = k === 'back' ? kbT.value.slice(0, -1) : (kbT.value + b.dataset.c).slice(0, max); kbShift = false; kbT.dispatchEvent(new Event('input', { bubbles:true })); }
     drawKb();
   });
@@ -1731,13 +1846,20 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('addshift', 'click', function(){ openShift(ui.weekOff ? H.weekStart(H.addDays(H.ymd(now()), 7 * ui.weekOff)) : null); });
   on('wkprev', 'click', function(){ ui.weekOff--; renderWeek(V); });
   on('wknext', 'click', function(){ ui.weekOff++; renderWeek(V); });
-  on('sday', 'change', function(){ ui.sday = this.value; ui.sedit = null; renderShiftSheet(); });
+  on('sday', 'change', function(){ ui.sday = this.value; ui.sedit = null; ferrClear(); renderShiftSheet(); });
   on('smove', 'change', function(){ ui.smove = this.value; });
   on('srep', 'click', function(){ ui.srep = !ui.srep; this.setAttribute('aria-pressed', ui.srep); });
+  on('sdays', 'click', function(e){ var b = e.target.closest('[data-day]'); if (b){ ui.sday = b.dataset.day; ui.sedit = null; ferrClear(); renderShiftSheet(); } });
+  on('susual', 'click', function(e){
+    var b = e.target.closest('[data-usual]'), x = b && usualShifts()[+b.dataset.usual]; if (!x) return;
+    sop(null, 'shift.add', { date: ui.sday, start: x.start, end: x.end, place: x.place });
+  });
+  on('scancel', 'click', function(){ ui.sedit = null; ferrClear(); renderShiftSheet(); });
   on('saveshift', 'click', function(){
+    if ($('sstart').value === $('send').value) return ferr($('send'), 'Pick a different end time.');
     if (ui.sedit){ var to = $('smove').value || ui.sday;
-      return op('shift.edit', { id: ui.sedit, date: ui.sday, day: to === ui.sday ? '' : to, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(){ if (!H.shiftsOn(S, ui.sday).some(function(x){ return x.id === ui.sedit; }) || to !== ui.sday) ui.sday = to; ui.sedit = null; renderShiftSheet(); }); }
-    op('shift.add', { date: ui.sday, start: $('sstart').value, end: $('send').value, place: $('splace').value, repeat: ui.srep }).then(function(){ ui.srep = false; });
+      return sop($('sstart'), 'shift.edit', { id: ui.sedit, date: ui.sday, day: to === ui.sday ? '' : to, start: $('sstart').value, end: $('send').value, place: $('splace').value }).then(function(ok){ if (!ok) return; if (!H.shiftsOn(S, ui.sday).some(function(x){ return x.id === ui.sedit; }) || to !== ui.sday) ui.sday = to; ui.sedit = null; renderShiftSheet(); }); }
+    sop($('sstart'), 'shift.add', { date: ui.sday, start: $('sstart').value, end: $('send').value, place: $('splace').value, repeat: ui.srep }).then(function(ok){ if (ok) ui.srep = false; });
   });
   on('copyweek', 'click', function(){ op('shift.copyweek', { week: ui.sday }); });
   on('shave', 'click', function(e){
@@ -1748,12 +1870,18 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (ui.sedit){ $('sstart').value = x.start; $('send').value = endOf(x); $('splace').value = x.place === 'Work' ? '' : x.place; }
     renderShiftSheet();
   });
+  on('eventform', 'click', function(e){
+    var b = e.target.closest('[data-day],[data-time],[data-rep]'); if (!b) return;
+    if (b.dataset.day) $('eday').value = b.dataset.day; else if (b.dataset.time != null) $('etime').value = b.dataset.time; else $('erep').value = b.dataset.rep;
+    eventChips();
+  });
+  on('eday', 'change', eventChips); on('etime', 'change', eventChips);
   on('eventform', 'submit', function(e){
     e.preventDefault();
-    var t = $('ename').value.trim(); if (!t) return toast('Give it a name.');
+    var t = $('ename').value.trim(); if (!t) return ferr($('ename'), 'Type what it is first, like “Dentist”.');
     var a = { t: t, date: $('eday').value, time: $('etime').value || undefined, rep: $('erep').value || undefined };
-    if (ui.eedit){ a.id = ui.eedit; op('event.edit', a).then(function(){ eventForm(null); renderEventSheet(); }); }
-    else op('event.add', a).then(function(){ $('ename').value = ''; });
+    if (ui.eedit){ a.id = ui.eedit; sop($('ename'), 'event.edit', a).then(function(ok){ if (ok){ eventForm(null); renderEventSheet(); } }); }
+    else sop($('ename'), 'event.add', a).then(function(ok){ if (ok) $('ename').value = ''; });
   });
   on('ecancel', 'click', function(){ eventForm(null); renderEventSheet(); });
   on('ehave', 'click', function(e){
@@ -1771,8 +1899,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (CarUI.submit(e)) return;
     if (e.target.id === 'tdaddform'){ var a = $('tdadd').value.trim(); if (!a) return; $('tdadd').value = ''; $('tdadd').blur(); return op('todo.add', { list:'today', t: a }, true); }
     if (e.target.id !== 'tdform') return;
-    var v = $('tdname').value.trim(); if (!v) return toast('Type something first.');
-    $('tdname').blur(); op('todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(){ show(null); });
+    var v = $('tdname').value.trim(); if (!v) return ferr($('tdname'), 'Type what the to-do is first.');
+    $('tdname').blur(); sop($('tdname'), 'todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(ok){ if (ok) show(null); });
   }
   // Week page: tap a shift or plan to open it ready to change.
   function weekClick(e){
@@ -1820,22 +1948,28 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('gear', 'click', function(){ show(ui.sheet === 'sheet' ? null : 'sheet'); });
   stage.addEventListener('click', function(e){
     if (e.target.closest('[data-close]')) show(null);
-    var o = e.target.closest('[data-open]'); if (o) show(o.dataset.open);
+    var o = e.target.closest('[data-open]'); if (o){ if (o.dataset.open === 'shiftsheet') openShift(); else show(o.dataset.open); }
   });
   on('settabs', 'click', function(e){ var b = e.target.closest('button'); if (b){ ui.setg = b.dataset.v; hideKb(); settingsTab(); $('sheet').scrollTop = 0; } });
   on('toggles', 'click', function(e){ var b = e.target.closest('button'); if (b) op('card.toggle', { card: b.dataset.toggle }, true); });
   on('guidepick', 'click', function(e){ var b = e.target.closest('button'); if (b) op('settings.set', { key:'guide', value: b.dataset.v }, true); });
   on('lookpick', 'click', function(e){ var b = e.target.closest('button'); if (b) op('settings.set', { key:'look', value: b.dataset.v }, true); });
   ['travel','nightFrom','nightTo','idle'].forEach(function(k){ on('set-' + k, 'change', function(){ op('settings.set', { key: k, value: this.value }); }); });
-  on('rateform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'rate', value: $('set-rate').value.replace(/[$,\s]/g, '') || 0 }); });
-  on('splitform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'splitUrl', value: $('set-splitUrl').value }); });
+  on('rateform', 'submit', function(e){
+    e.preventDefault(); var v = $('set-rate').value.replace(/[$,\s]/g, '');
+    if (v && !/^\d+(\.\d+)?$/.test(v)) return ferr($('set-rate'), 'Type just the number, like 17.50');
+    sop($('set-rate'), 'settings.set', { key:'rate', value: v || 0 });
+  });
+  on('splitform', 'submit', function(e){ e.preventDefault(); if (webAddr($('set-splitUrl'), 'a web address')) sop($('set-splitUrl'), 'settings.set', { key:'splitUrl', value: $('set-splitUrl').value.trim() }); });
   on('newsform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'newsUrl', value: $('set-newsUrl').value.trim() }).then(function(){ newsAt = 0; NEWS = null; if (ui.page === 'news') loadNews(); }); });
-  on('calform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
-  on('budgetform', 'submit', function(e){ e.preventDefault(); op('settings.set', { key:'budgetUrl', value: $('set-budgetUrl').value }); });
+  on('calform', 'submit', function(e){ e.preventDefault(); if (webAddr($('set-calUrl'), 'a calendar link')) sop($('set-calUrl'), 'settings.set', { key:'calUrl', value: $('set-calUrl').value.trim() }); });
+  on('budgetform', 'submit', function(e){ e.preventDefault(); if (webAddr($('set-budgetUrl'), 'a web address')) sop($('set-budgetUrl'), 'settings.set', { key:'budgetUrl', value: $('set-budgetUrl').value.trim() }); });
   on('cityform', 'submit', function(e){
     e.preventDefault();
+    var c = $('set-city'); ferrClear(c);
+    if (!c.value.trim()) return ferr(c, 'Type your town first, like “Belleville, Ontario”.');
     if (DEMO) return toast('The preview stays in Belleville');
-    post('api/city', { city: $('set-city').value }).then(function(){ WX = null; loadWeather(); });
+    api('api/city', { city: c.value }).then(function(j){ take(j); toast(j.msg); WX = null; loadWeather(); }, function(e){ ferr(c, e.message); });
   });
   on('kiosksw', 'click', function(){ if (DEMO) return toast('This works once it’s on the laptop'); post('api/kiosk', { on: !ME.kiosk }); });
   on('kbsw', 'click', function(){ store.set('kb', kbOn() ? '0' : '1'); hideKb(); renderSettings(); });
