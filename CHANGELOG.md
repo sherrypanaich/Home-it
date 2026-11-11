@@ -18,6 +18,7 @@ The first version: a home screen for your day, made for an old laptop with a tou
 - **Updates itself** from GitHub, checks the new version before switching, and reloads the screen.
 - **AI assistant connector (MCP).** Connect an assistant like Claude and ask it about your day, or have it add to-dos, shifts and events. It signs in as you, and the screen updates as it works.
 - **Company mode.** One tap hides the money cards until the next morning.
+- **Same accounts code as Split it and Budget it.** Everyone gets a unique @tag, ready for finding each other across the Budget it apps. Home it is one household, so invite links stay the way to add people.
 - **Every card can be switched off** in Settings, and the others fill the space.
 
 ### Security
