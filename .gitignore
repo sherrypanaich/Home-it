@@ -1,0 +1,5 @@
+data/
+home-it.env
+*.log
+*.zip
+preview/

@@ -1,0 +1,15 @@
+[Unit]
+Description=Home it
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Expects the app in ~/home-it. Change both paths below if you put it elsewhere.
+WorkingDirectory=%h/home-it
+ExecStart=/usr/bin/env node %h/home-it/server.js
+Environment=PORT=8100
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
