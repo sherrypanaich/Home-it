@@ -359,6 +359,67 @@ input,select{user-select:text;-webkit-user-select:text}
 .g-today .whs small{font-size:.84rem;font-weight:800;white-space:nowrap}
 .g-today .whl{flex:none;text-align:center;font-weight:800;font-size:.9rem;color:var(--muted);border-top:1.5px solid var(--line);padding-top:8px}
 .g-two{grid-template:"top top" auto "a b" minmax(0,1fr) / 1.15fr 1fr}
+/* the Week page */
+.g-two .stat small{font-size:.82rem}
+.g-two .stat span{font-size:.86rem}
+.g-two .pc h3{font-size:.84rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wkhint{font-size:.86rem;font-weight:700;color:var(--muted)}
+.wkday{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;border-top:1.5px solid var(--line);padding-top:10px;margin-top:2px}
+.wkday:first-child{border-top:0;padding-top:0;margin-top:0}
+.wkdate{align-self:start;margin-top:2px;border:2.5px solid var(--edge);border-radius:12px;box-shadow:3px 3px 0 var(--pgc,var(--pop));background:var(--surface);text-align:center;padding:5px 0 6px;line-height:1.05}
+.wkdate small{display:block;font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.wkdate b{display:block;font-family:var(--display);font-weight:400;font-size:1.45rem}
+.wkdate.soon{background:var(--hl);color:var(--hl-ink)}
+.wkdate.soon small{color:var(--hl-ink)}
+.wkitems{display:flex;flex-direction:column;gap:6px;min-width:0}
+.wkdh{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:24px}
+.wkdh b{font-weight:800;font-size:1.05rem}
+.wkdh span{display:flex;align-items:center;gap:5px;font-size:.86rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.wkdh .ic{width:22px;height:22px;flex:none}
+.wkit{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;width:100%;min-height:48px;padding:5px 10px 5px 12px;border:2px solid var(--line);border-left:6px solid var(--hl);border-radius:10px;background:var(--surface2);text-align:left;line-height:1.25}
+.wkit.shift{border-left-color:var(--pgc,var(--accent))}
+.wkit.cal{border-left-color:var(--muted)}
+button.wkit:active{transform:translate(1px,1px)}
+.wkit .a,.wkit .z{display:flex;flex-direction:column;min-width:0}
+.wkit .z{text-align:right;white-space:nowrap}
+.wkit b{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wkit small{font-size:.84rem;font-weight:700;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wkit .ed{font-size:.84rem;font-weight:800;border:2px solid var(--edge);border-radius:999px;padding:3px 11px;background:var(--surface)}
+.wkend{text-align:center;font-size:.84rem;font-weight:700;color:var(--muted);padding:6px 0 16px}
+.wkempty{flex:1;margin-bottom:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2.5px dashed var(--edge);border-radius:14px;padding:16px;color:var(--muted);font-weight:700}
+.wkempty b{font-family:var(--display);font-weight:400;font-size:1.35rem;color:var(--ink)}
+.wkempty.sm{flex:none;padding:12px}
+.wkempty.sm b{font-size:1.05rem}
+.wkfoot{display:flex;gap:10px;flex:none;padding:2px 4px 2px 0}
+.wkfoot .btn{flex:1;min-height:46px}
+.wkhero{display:flex;align-items:center;gap:14px;border:2.5px solid var(--edge);border-radius:12px;box-shadow:3px 3px 0 var(--pop);background:var(--hl);color:var(--hl-ink);padding:8px 14px;margin:0 4px 2px 0}
+.wkhero > b{font-family:var(--display);font-weight:400;font-size:1.9rem;line-height:1.1;white-space:nowrap}
+.wkhero div{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.wkhero small{font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.wkhero span{font-weight:700;font-size:.95rem}
+.wkkey{display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-weight:700;font-size:.82rem}
+.wkkey i{width:16px;height:11px;border:2px solid var(--edge);border-radius:3px;background:var(--pgc,var(--accent))}
+.wkkey i.rest{margin-left:8px;background:repeating-linear-gradient(135deg,var(--pgc,var(--accent)) 0 3px,transparent 3px 7px)}
+/* the list fades out at the bottom edge, so a cut-off row reads as "more below" */
+.g-two .pc[style*="grid-area:a"] > .dbody{-webkit-mask-image:linear-gradient(#000 calc(100% - 16px),transparent);mask-image:linear-gradient(#000 calc(100% - 16px),transparent)}
+.wkbar{display:grid;grid-template-columns:124px minmax(0,1fr) 108px;align-items:center;gap:10px;min-height:26px;font-weight:600}
+.wkbar.now .l{font-weight:800}
+.wkbar .l{white-space:nowrap}
+.wkbar .t{height:18px;border-radius:6px;background:var(--surface2)}
+.wkbar .t i{display:block;box-sizing:border-box;height:100%;min-width:12px;border:2px solid var(--edge);border-radius:6px;overflow:hidden;background:repeating-linear-gradient(135deg,var(--pgc,var(--accent)) 0 3px,transparent 3px 7px)}
+.wkbar .t u{display:block;height:100%;background:var(--pgc,var(--accent))}
+.wkbar .v{text-align:right;white-space:nowrap}
+.wkbar .v b{font-weight:800}
+.wkbar .v small{font-size:.84rem;font-weight:700;color:var(--muted)}
+.wknote{margin-top:auto;padding-top:6px}
+.stack .wkbar{grid-template-columns:104px minmax(0,1fr) auto}
+.stack .wkbar .l{overflow:hidden;text-overflow:ellipsis}
+.stack .wkhero{flex-direction:column;align-items:flex-start;gap:2px}
+.stack .wkhero > b{font-size:1.6rem}
+.stack .wkit{grid-template-columns:minmax(0,1fr) auto}
+.stack .wkit .ed{display:none}
+.stack .g-two .pc[style*="grid-area:a"] > .dbody{-webkit-mask-image:none;mask-image:none}
+.stack .wkend{padding-bottom:4px}
 .g-money{grid-template:"a b" minmax(0,1fr) / 1fr 1fr}
 .g-car{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
 .g-car .pc .dbody{max-width:640px;width:100%;margin:0 auto}
@@ -1263,30 +1324,65 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         + '</div><button class="btn" data-tdrm="1" style="margin-top:8px">Remove</button>';
     }
     if (k === 'pay'){
-      var ms = H.months(S, V.date, 12), cur = ms[0] && ms[0].ym === V.date.slice(0, 7) ? ms[0] : null, wk2 = H.week(S, V.date), yr = 0, yp = 0;
-      var mname = function(ym){ return ['January','February','March','April','May','June','July','August','September','October','November','December'][+ym.slice(5) - 1] + ' ' + ym.slice(0, 4); }, cash = function(m){ return S.settings.rate ? H.money(m / 60 * S.settings.rate) : ''; };
-      ms.forEach(function(m){ if (m.ym.slice(0, 4) === V.date.slice(0, 4)){ yr += m.mins; yp += m.pay || 0; } });
-      h = '<div class="stats">' + stat('This week', H.fmtHours(wk2.mins), wk2.pay != null ? 'about ' + H.money(wk2.pay) : 'Monday to Sunday')
-        + stat('This month', cur ? H.fmtHours(cur.mins) : '0 h', cur ? (cur.pay != null ? 'about ' + H.money(cur.pay) + ' · ' : '') + H.fmtHours(cur.doneMins) + ' worked so far' : 'no shifts yet')
-        + stat(V.date.slice(0, 4) + ' so far', H.fmtHours(yr), S.settings.rate ? 'about ' + H.money(yp) : 'all shifts this year') + '</div><!--cut:months--><h3>By month</h3>';
-      ms.forEach(function(m){ h += '<div class="dr"><span>' + mname(m.ym) + ' · ' + m.shifts + (m.shifts === 1 ? ' shift' : ' shifts') + '</span><b>' + H.fmtHours(m.mins) + (cash(m.mins) ? ' · about ' + cash(m.mins) : '') + '</b></div>'; });
-      if (!ms.length) h += '<div class="note">No shifts in the last 12 months yet.</div>';
-      h += '<div class="note" style="margin-top:8px">' + (S.settings.rate ? 'Pay is hours × your hourly rate, before tax. ' : 'Add your hourly rate in Settings to see pay. ') + 'Shifts are kept for two years.</div>';
+      var ms = H.months(S, V.date, 12), wk2 = H.week(S, V.date), rate = S.settings.rate, yr = 0, yn = 0, nsh = 0, wks = [], wmax = 0, mmax = 0;
+      var mname = function(ym){ return ['January','February','March','April','May','June','July','August','September','October','November','December'][+ym.slice(5) - 1] + (ym.slice(0, 4) === V.date.slice(0, 4) ? '' : ' ' + ym.slice(0, 4)); };
+      // One row: a name, a bar (solid = worked, stripes = still to come) and the pay or hours.
+      var bar = function(label, mins, done, max, now){
+        return '<div class="wkbar' + (now ? ' now' : '') + '"><span class="l">' + label + '</span><span class="t">' + (mins ? '<i style="width:' + Math.max(4, Math.round(mins / max * 100)) + '%"><u style="width:' + Math.round(Math.min(done, mins) / mins * 100) + '%"></u></i>' : '') + '</span><span class="v">'
+          + (mins ? (rate ? '<b>' + H.money(mins / 60 * rate) + '</b> <small>' + H.fmtHours(mins) + '</small>' : '<b>' + H.fmtHours(mins) + '</b>') : '<small>No shifts</small>') + '</span></div>';
+      };
+      wk2.days.forEach(function(d){ nsh += d.shifts.length; });
+      ms.forEach(function(m){ mmax = Math.max(mmax, m.mins); if (m.ym.slice(0, 4) === V.date.slice(0, 4)){ yr += m.mins; yn++; } });
+      for (var o = 1; o >= -3; o--){
+        var w0 = o ? H.week(S, H.addDays(V.date, 7 * o)) : wk2, dn = o < 0 ? w0.mins : 0;
+        if (!o){ dn = V.doneToday || 0; w0.days.forEach(function(d){ if (d.date < V.date) d.shifts.forEach(function(x){ dn += x.mins; }); }); }
+        if (o < -1 && !w0.mins) continue;      // older weeks only show if there was work
+        wks.push({ l: o === 1 ? 'Next week' : o === 0 ? 'This week' : o === -1 ? 'Last week' : H.fmtDate(w0.from).slice(4) + ' – ' + H.fmtDate(H.addDays(w0.from, 6)).slice(4), mins: w0.mins, done: dn, now: !o });
+        wmax = Math.max(wmax, w0.mins);
+      }
+      h = '<div class="wkhero"><b>' + (wk2.mins ? (rate ? 'about ' + H.money(wk2.pay) : H.fmtHours(wk2.mins)) : 'No shifts') + '</b><div><small>This week' + (rate && wk2.mins ? ' · before tax' : '') + '</small><span>'
+        + (wk2.mins ? H.fmtHours(wk2.mins) + ' over ' + nsh + (nsh === 1 ? ' shift' : ' shifts') : 'Nothing booked Monday to Sunday') + '</span></div></div>'
+        + '<!--cut:months--><h3>Week by week<span class="wkkey"><i></i>worked<i class="rest"></i>still to come</span></h3>';
+      wks.forEach(function(w){ h += bar(w.l, w.mins, w.done, wmax, w.now); });
+      h += '<h3>Month by month' + (yn > 1 ? '<span class="wkkey">' + V.date.slice(0, 4) + ' so far: ' + (rate ? 'about ' + H.money(yr / 60 * rate) : H.fmtHours(yr)) + '</span>' : '') + '</h3>';
+      ms.forEach(function(m, i){ var cur = m.ym === V.date.slice(0, 7); h += bar(mname(m.ym), m.mins, cur ? (m.doneMins || 0) + (V.doneToday || 0) : m.mins, mmax, cur); });
+      if (!ms.length) h += '<div class="wkempty sm"><b>No shifts yet</b><span>Add one with + Shift and your hours show up here.</span></div>';
+      h += '<div class="note wknote">' + (rate ? 'Pay is hours × ' + H.money(rate).replace(/\$(\d+)$/, function(a){ return rate % 1 ? '$' + rate.toFixed(2) : a; }) + ' an hour, before tax. Your real pay will be lower.' : 'Add your hourly rate in Settings to see pay here.') + '</div>';
     } else if (k === 'coming'){
-      var rows = H.coming(S, V.date, 60), last = '', sh = rows.filter(function(r){ return r.kind === 'shift'; }), mins = 0, off = '';
-      sh.forEach(function(r){ mins += (H.mins(r.end) - H.mins(r.start) + 1440) % 1440 || 1440; });
-      for (var i = 1; i <= 14 && !off; i++){ var d0 = H.addDays(V.date, i); if (!H.shiftsOn(S, d0).length) off = d0; }
-      h = '<div class="stats">' + stat('Next shift', sh[0] ? sh[0].label : 'None', sh[0] ? span(sh[0].start, sh[0].end, true) : 'Nothing booked')
-        + stat('Next two weeks', sh.length + (sh.length === 1 ? ' shift' : ' shifts'), H.fmtHours(mins) + (S.settings.rate ? ' · about ' + H.money(mins / 60 * S.settings.rate) : ''))
-        + stat('Plans', (rows.length - sh.length) + ' coming', 'events and calendar') + stat('Next day off', off ? (off === H.addDays(V.date, 1) ? 'Tomorrow' : H.DAYS_LONG[H.dow(off)]) : 'None', off ? H.fmtDate(off) : 'in the next two weeks') + '</div><!--cut:list-->';
-      rows.forEach(function(r){
-        if (r.date !== last){ last = r.date; var w = dayWx(r.date); h += '<h3>' + (r.label === 'Tomorrow' ? 'Tomorrow · ' : '') + H.fmtDate(r.date, true) + (w ? ' · ' + w.hi + '° / ' + w.lo + '° ' + sky(w.code, true)[1].toLowerCase() : '') + '</h3>'; }
-        if (r.kind === 'shift'){ var m = (H.mins(r.end) - H.mins(r.start) + 1440) % 1440 || 1440;
-          h += '<div class="dr"><span><span class="sh">Shift ' + span(r.start, r.end, true) + '</span> · ' + esc(r.t) + '</span><b>' + H.fmtHours(m) + (pay(m) ? ' · ' + pay(m) : '') + ' · leave ' + tm(H.hhmm((H.mins(r.start) - S.settings.travel + 1440) % 1440)) + '</b></div>'; }
-        else h += '<div class="dr"><span>' + esc(r.t) + '</span><b>' + (r.time ? tm(r.time) : 'Any time') + '</b></div>';
+      var v = V, days = [], sh = [], evs = [], off = '', wk = H.week(S, v.date), done = v.doneToday || 0, today = v.shift && (v.phase === 'before' || v.phase === 'soon');
+      var leave = function(x){ return tm(H.hhmm((H.mins(x.start) - S.settings.travel + 1440) % 1440)); };
+      var dname = function(d, i, long){ return i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : i < 7 || long ? H.DAYS_LONG[H.dow(d)] + (i >= 7 ? ' · ' + H.fmtDate(d).slice(4) : '') : H.fmtDate(d); };
+      for (var i = 1; i <= 14; i++){
+        var d0 = H.addDays(v.date, i), ss = H.shiftsOn(S, d0), ee = H.eventsOn(S, d0);
+        if (!ss.length && !off) off = d0;
+        if (ss.length || ee.length) days.push({ date: d0, i: i, sh: ss, ev: ee });
+        ss.forEach(function(x){ sh.push({ x: x, i: i }); }); ee.forEach(function(e){ evs.push({ e: e, i: i }); });
+      }
+      wk.days.forEach(function(d){ if (d.date < v.date) d.shifts.forEach(function(x){ done += x.mins; }); });
+      var left = Math.max(0, wk.mins - done), ns = today ? { x: v.shift, i: 0 } : sh[0], ne = evs[0];
+      h = '<div class="stats">'
+        + stat('Next shift', ns ? dname(ns.x.date, ns.i) : 'None booked', ns ? span(ns.x.start, endOf(ns.x), true) + ' · leave by ' + leave(ns.x) : 'in the next two weeks')
+        + stat('Work left this week', wk.mins ? (left ? H.fmtHours(left) + ' to go' : 'All done') : 'No shifts', wk.mins ? H.fmtHours(done) + ' of ' + H.fmtHours(wk.mins) + ' worked' : 'Monday to Sunday')
+        + stat('Next plan', ne ? esc(ne.e.t) : 'Nothing planned', ne ? dname(ne.e.date, ne.i) + (ne.e.time ? ' · ' + tm(ne.e.time) : '') : 'in the next two weeks')
+        + stat('Next day off', off ? dname(off, Math.round((Date.parse(off) - Date.parse(v.date)) / 864e5)).replace(/ · .*/, '') : 'None', off ? H.fmtDate(off) : 'in the next two weeks') + '</div><!--cut:list-->';
+      days.forEach(function(d){
+        var w = dayWx(d.date);
+        h += '<div class="wkday"><div class="wkdate' + (d.i === 1 ? ' soon' : '') + '"><small>' + H.DAYS_LONG[H.dow(d.date)].slice(0, 3) + '</small><b>' + (+d.date.slice(8)) + '</b></div><div class="wkitems"><div class="wkdh"><b>' + dname(d.date, d.i, true) + '</b>'
+          + (w ? '<span>' + SKY[sky(w.code, true)[0]] + w.hi + '° / ' + w.lo + '° · ' + sky(w.code, true)[1].toLowerCase() + '</span>' : '') + '</div>';
+        d.sh.forEach(function(x){
+          h += '<button class="wkit shift" data-wksh="' + esc(x.id) + '" data-date="' + d.date + '" aria-label="Change this shift"><span class="a"><b>Shift ' + span(x.start, endOf(x), true) + '</b><small>' + esc(x.place) + ' · leave by ' + leave(x) + (x.rule ? ' · every week' : '') + '</small></span>'
+            + '<span class="z"><b>' + H.fmtHours(x.mins) + '</b>' + (pay(x.mins) ? '<small>' + pay(x.mins) + '</small>' : '') + '</span><span class="ed">Edit</span></button>';
+        });
+        d.ev.forEach(function(e){
+          var sub = e.cal ? 'From your calendar' : e.rep ? 'Repeats ' + (REPW[e.rep] || '') : '';
+          h += (e.cal ? '<div class="wkit cal">' : '<button class="wkit" data-wkev="' + esc(e.id) + '" aria-label="Change this plan">') + '<span class="a"><b>' + esc(e.t) + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>'
+            + '<span class="z"><b>' + (e.time ? tm(e.time) : 'Any time') + '</b></span>' + (e.cal ? '</div>' : '<span class="ed">Edit</span></button>');
+        });
+        h += '</div></div>';
       });
-      if (!rows.length) h += '<div class="note">Nothing booked in the next two weeks.</div>';
-      h += '<div class="row first" style="margin-top:8px"><button class="btn" data-open="shiftsheet">+ Shift</button><button class="btn" data-open="eventsheet">+ Event</button></div>';
+      h += days.length ? '<div class="wkend">That’s everything for the next two weeks.</div>'
+        : '<div class="wkempty"><b>Two clear weeks</b><span>No shifts or plans booked. Add one with the buttons below.</span></div>';
+      h += '<!--cut:foot--><div class="wkfoot"><button class="btn" data-wkadd="1">+ Shift</button><button class="btn" data-open="eventsheet">+ Event</button></div>';
     } else if (k === 'forecast'){
       if (WX && WX.ok){
         h = '<div class="stats wxs">' + stat('Now', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · feels like ' + WX.feels + '°') + wxTiles() + '</div>'
@@ -1357,7 +1453,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           + panel('b', p.plans, 'Plans today') + panel('c', p.rest, 'Next 12 hours') + '</div>';
       } else if (name === 'week'){
         p = parts('coming'); q = parts('pay'); title = 'YOUR WEEK'; sub = 'Shifts, plans, hours and pay';
-        h = '<div class="pgrid g-two"><div class="top">' + p.head + '</div>' + panel('a', p.list, 'Coming up') + panel('b', '<div class="flat">' + q.head + '</div>' + q.months, 'Hours and pay') + '</div>';
+        h = '<div class="pgrid g-two"><div class="top">' + p.head + '</div>' + panel('a', p.list, 'Coming up', p.list.indexOf('class="ed"') > 0 ? '<span class="wkhint">Tap one to change it</span>' : '').replace(/<\/section>$/, p.foot + '</section>') + panel('b', q.head + q.months, 'Hours and pay') + '</div>';
       } else if (name === 'weather'){
         p = parts('forecast'); sub = WX && WX.ok ? WX.city : '';
         if (p.days){
@@ -1678,8 +1774,25 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var v = $('tdname').value.trim(); if (!v) return toast('Type something first.');
     $('tdname').blur(); op('todo.edit', { list: ui.todo.list, id: ui.todo.id, t: v }).then(function(){ show(null); });
   }
+  // Week page: tap a shift or plan to open it ready to change.
+  function weekClick(e){
+    var a = e.target.closest('[data-wksh]'), b = e.target.closest('[data-wkev]');
+    if (e.target.closest('[data-wkadd]')){ openShift(H.addDays(V.date, 1)); return true; }
+    if (a){
+      openShift(a.dataset.date);
+      var x = H.shiftsOn(S, a.dataset.date).filter(function(y){ return y.id === a.dataset.wksh; })[0];
+      if (x){ ui.sedit = x.id; ui.smove = null; $('sstart').value = x.start; $('send').value = endOf(x); $('splace').value = x.place === 'Work' ? '' : x.place; renderShiftSheet(); }
+      return true;
+    }
+    if (b){
+      show('eventsheet');
+      var ev = S.events.filter(function(y){ return y.id === b.dataset.wkev; })[0];
+      if (ev){ eventForm(ev); renderEventSheet(); }
+      return true;
+    }
+  }
   function bodyClick(e){
-    if (CarUI.click(e)) return;
+    if (CarUI.click(e) || weekClick(e)) return;
     var nw = e.target.closest('[data-news]'); if (nw){ ui.news = +nw.dataset.news; renderPages(); var on = pager.querySelector('.news .on'); if (on && on.scrollIntoView) on.scrollIntoView({ block:'nearest' }); return; }
     var tk = e.target.closest('.tk');
     if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);
