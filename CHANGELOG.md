@@ -6,6 +6,7 @@
 - Home is now only today and right now: the Today card, the weather with what to wear, one big "Hold to start" car button set for the weather, and Goodnight.
 - Lists have their own page: Later and Shopping side by side, each with its own add box on top, big rows you tap to tick, finished ones sink to the bottom, and a "Clear done" button. Week, Weather, Money, Car and News keep theirs.
 - Make your own lists: "+ New list" on the Lists page, up to eight, each with its own add box. A to-do can be moved to any of them, and the assistant connector can read and add to them by name.
+- News picked for you: an assistant you connect can send a few stories a day to the top of the News page, marked "For you", on the big screen and the phone. It keeps the newest 12 for three days, and each has a Remove button. Home it itself still has no AI inside.
 - Home's Today card shows the whole day and scrolls if it is long, instead of "+ 2 more today".
 - Company now hides pay as well as money: shift pay, the week's pay and the pay bars show hours only.
 - Settings opens as a small popup under its button, with three tabs: Everyday, Home page, More. Editing a to-do is a small popup too, and the shift and event forms are panels over the page. Tap outside to close.

@@ -171,7 +171,7 @@ test('an assistant needs a key, and gets the tools with one', async () => {
   const init = await mcpCall('initialize', { protocolVersion: '2025-06-18' });
   assert.equal(init.json.result.serverInfo.name, 'home-it');
   const names = (await mcpCall('tools/list')).json.result.tools.map(t => t.name);
-  assert.deepEqual(names, ['get_today', 'list_todos', 'add_todo', 'complete_todo', 'change_todo', 'remove_todo', 'list_shifts', 'add_shift', 'change_shift', 'hours_by_month', 'remove_shift', 'list_events', 'add_event', 'change_event', 'complete_event', 'remove_event']);
+  assert.deepEqual(names, ['get_today', 'list_todos', 'add_todo', 'complete_todo', 'change_todo', 'remove_todo', 'list_shifts', 'add_shift', 'change_shift', 'hours_by_month', 'remove_shift', 'list_events', 'add_event', 'change_event', 'complete_event', 'remove_event', 'list_news', 'add_news', 'remove_news']);
   assert.equal((await call('/api/assistant')).json.connected, 1);
 });
 
@@ -209,6 +209,13 @@ test('an assistant can read the day and add, tick and remove things', async () =
   assert.match((await tool('list_events')).content[0].text, /Dentist downtown \(done\)/);
   assert.equal((await tool('change_event', { what: 'dent' })).isError, true);
   assert.match((await tool('remove_event', { what: 'dent' })).content[0].text, /Removed “Dentist downtown”/);
+  // stories for the News page
+  assert.match((await tool('list_news', {})).content[0].text, /No picked stories/);
+  assert.match((await tool('add_news', { headline: 'Snow tonight', summary: 'Up to 10 cm by morning.', source: 'CBC', link: 'https://example.com/snow' })).content[0].text, /Sent “Snow tonight”/);
+  assert.equal((await tool('add_news', { headline: 'Bad link', summary: 'x', link: 'javascript:1' })).isError, true);
+  assert.match((await tool('list_news', {})).content[0].text, /Snow tonight \(CBC\) https:\/\/example\.com\/snow/);
+  assert.match((await tool('remove_news', { headline: 'snow' })).content[0].text, /Removed “Snow tonight”/);
+  assert.match((await tool('remove_news', { all: true })).content[0].text, /There were none/);
   assert.equal((await tool('add_shift', { date: 'someday', start: '9:00', end: '17:00' })).isError, true);
   const s = (await call('/api/state')).json.state;
   assert.equal(s.lists.shop.at(-1).t, 'Oat milk x2'); assert.equal(s.lists.today[0].d, true); assert.equal(s.rules.length, 1); assert.equal(s.events.length, 0);

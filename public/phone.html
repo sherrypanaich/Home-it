@@ -419,12 +419,14 @@ nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;st
   }
   function ago(at){ var m = Math.max(0, Math.round((Date.now() - at) / 60e3)); return m < 60 ? (m < 2 ? 'just now' : m + ' min ago') : m < 1440 ? Math.round(m / 60) + ' h ago' : m < 2880 ? 'yesterday' : H.fmtDate(H.ymd(new Date(at))); }
   function renderNews(){
-    var h;
-    if (!NEWS) h = '<div class="note">Getting the news…</div>';
-    else if (!NEWS.ok || !(NEWS.items || []).length) h = '<div class="note">Can’t reach the news right now. It will try again in a few minutes.</div>';
-    else h = NEWS.items.slice(0, 12).map(function(n){
+    var h, mine = H.freshPicks(S), row = function(n, fy){
       var ok = /^https?:\/\//.test(n.url || ''), tag = ok ? 'a' : 'div';
-      return '<' + tag + ' class="nw"' + (ok ? ' href="' + esc(n.url) + '" target="_blank" rel="noopener"' : '') + '><b>' + esc(n.t) + '</b>' + (n.sum ? '<span>' + esc(n.sum) + '</span>' : '') + (n.at ? '<small>' + ago(n.at) + '</small>' : '') + '</' + tag + '>'; }).join('')
+      return '<' + tag + ' class="nw"' + (ok ? ' href="' + esc(n.url) + '" target="_blank" rel="noopener"' : '') + '><b>' + esc(n.t) + '</b>' + (n.sum ? '<span>' + esc(n.sum) + '</span>' : '')
+        + '<small>' + (fy ? 'For you' + (n.src ? ' · ' + esc(n.src) : '') + (n.at ? ' · ' : '') : '') + (n.at ? ago(n.at) : '') + '</small></' + tag + '>'; };
+    h = mine.map(function(n){ return row(n, true); }).join('');
+    if (!NEWS) h += '<div class="note">Getting the news…</div>';
+    else if (!NEWS.ok || !(NEWS.items || []).length) h += '<div class="note">Can’t reach the news' + (mine.length ? ' site' : '') + ' right now. It will try again in a few minutes.</div>';
+    else h += NEWS.items.slice(0, 12).map(function(n){ return row(n, false); }).join('')
       + '<div class="note" style="border-top:1.5px solid var(--line);padding-top:8px">' + esc(NEWS.title || 'Headlines') + (NEWS.stale ? ' · from earlier' : '') + '. Tap a headline to read it.</div>';
     if ($('newsbody').dataset.h !== h){ $('newsbody').dataset.h = h; $('newsbody').innerHTML = h; }
   }

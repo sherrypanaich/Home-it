@@ -636,6 +636,9 @@ button.wkit:active{transform:translate(1px,1px)}
 .news button.on + button{border-top-color:transparent}
 .news b{font-weight:800;font-size:1rem;line-height:1.25}
 .news small{color:var(--muted);font-weight:700;font-size:.82rem}
+.fy{font-style:normal;font-weight:800;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:#14112A;background:var(--pgc,#FF9A2E);border-radius:999px;padding:1px 8px;margin-right:7px}
+.newsnone{padding:14px 12px;color:var(--muted);font-weight:700;font-size:.92rem;border-top:1.5px solid var(--line)}
+.lead .by .btn{margin-left:auto}
 /* a soft fade at the bottom edge says there are more headlines below */
 .news::after{content:"";position:sticky;bottom:0;flex:none;height:26px;margin:-26px 0 -30px;background:linear-gradient(to bottom,transparent,var(--surface));pointer-events:none}
 #set-newsPick{max-width:230px}
@@ -1127,6 +1130,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     ['https://www.cbc.ca/webfeed/rss/rss-world', 'CBC World'], ['https://feeds.bbci.co.uk/news/world/rss.xml', 'BBC World'], ['https://globalnews.ca/feed/', 'Global News']];
   function newsPreset(){ var u = S.settings.newsUrl || ''; if (u === 'https://www.cbc.ca/webfeed/rss/rss-topstories') u = ''; for (var i = 0; i < NEWS_SRC.length; i++) if (NEWS_SRC[i][0] === u) return NEWS_SRC[i]; return null; }
   function newsName(){ var p = newsPreset(); return (p ? p[1] : NEWS && NEWS.title || 'News') + (DEMO ? ' (sample)' : ''); }
+  // What the News page shows: the stories an assistant picked for you first, then the news site's headlines.
+  function newsItems(){ return H.freshPicks(S).map(function(x){ return { t: x.t, sum: x.sum, at: x.at, url: x.url, img: '', mine: true, src: x.src, id: x.id }; }).concat(NEWS && NEWS.ok ? NEWS.items : []); }
   function loadNews(force){
     if (!S) return;
     var src = S.settings.newsUrl || '';
@@ -1135,9 +1140,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (!force && Date.now() - newsAt < 5 * 60e3) return; newsAt = Date.now();
     api('api/news').then(function(n){
       if (src !== newsSrc) return;
-      var was = NEWS && NEWS.ok && NEWS.items[ui.news], at = 0;   // stay on the story being read, if it is still there
-      if (was && n.ok) n.items.forEach(function(x, i){ if (x.t === was.t) at = i; });
-      NEWS = n; ui.news = at; renderPages();
+      var was = newsItems()[ui.news], at = 0;   // stay on the story being read, if it is still there
+      NEWS = n; if (was) newsItems().forEach(function(x, i){ if (x.t === was.t) at = i; });
+      ui.news = at; renderPages();
     }).catch(function(){ if (src !== newsSrc) return; if (NEWS && NEWS.ok) NEWS.stale = true; else NEWS = { ok:false }; renderPages(); });
   }
   setInterval(function(){ if (ui.page === 'news' && S){ loadNews(); renderPages(); } }, 60e3);   // keeps "5 min ago" honest while the page is open
@@ -1589,18 +1594,21 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     }
     if (k === 'news'){
       var g0 = S.settings.guide === 'hancock' ? 'hancock' : 'luffy';
-      if (!NEWS) h = '<div class="newsoff"><img src="art/' + g0 + '-calm.webp" alt=""><div><b>Getting the news…</b></div></div>';
-      else if (!NEWS.ok) h = '<div class="newsoff"><img src="art/' + g0 + '-worried.webp" alt=""><div><b>Can’t reach the news right now</b><p>It will try again by itself in a few minutes.'
+      var NI = newsItems(), off = !(NEWS && NEWS.ok);
+      if (!NEWS && !NI.length) h = '<div class="newsoff"><img src="art/' + g0 + '-calm.webp" alt=""><div><b>Getting the news…</b></div></div>';
+      else if (off && !NI.length) h = '<div class="newsoff"><img src="art/' + g0 + '-worried.webp" alt=""><div><b>Can’t reach the news right now</b><p>It will try again by itself in a few minutes.'
         + (newsPreset() ? '' : ' If it stays like this, pick another news source in Settings.') + '</p><button class="btn primary" data-newsretry>Try again now</button></div></div>';
       else {
-        var cur = NEWS.items[ui.news] || NEWS.items[0], ci = NEWS.items.indexOf(cur), tl = cur.t.length + (cur.sum ? 0 : -40);
+        var cur = NI[ui.news] || NI[0], ci = NI.indexOf(cur), stale = off ? !!NEWS : NEWS.stale, nat = NEWS && NEWS.at, tl = cur.t.length + (cur.sum ? 0 : -40);
         h = '<div class="lead ' + (cur.img ? 'pic1' : 'nopic ' + (tl > 110 ? 't3' : tl > 60 ? 't2' : 't1')) + '">'
           + (cur.img ? '<figure class="pic"><img src="' + esc(cur.img) + '" alt="" decoding="async" referrerpolicy="no-referrer"></figure>' : '')
-          + (cur.at ? '<small>' + ago(cur.at) + '</small>' : '') + '<b>' + esc(cur.t) + '</b>' + (cur.sum ? '<p>' + esc(cur.sum) + '</p>' : '')
-          + '<div class="by"><img class="reader" src="art/' + g0 + (NEWS.stale ? '-worried' : '-calm') + '.webp" alt="">'
-          + (NEWS.stale ? '<span class="say warn">Can’t reach the news right now.' + (NEWS.at ? ' These are from ' + ago(NEWS.at) + '.' : ' These are from earlier.') + '</span>'
-            : '<span class="say">' + (NEWS.at ? 'Updated ' + ago(NEWS.at) : 'Here’s the latest') + '</span>') + '</div></div><!--cut:list--><div class="news">';
-        NEWS.items.forEach(function(n, i){ h += '<button data-news="' + i + '"' + (i === ci ? ' class="on"' : '') + '><b>' + esc(n.t) + '</b>' + (n.at ? '<small>' + ago(n.at) + '</small>' : '') + '</button>'; });
+          + '<small>' + (cur.mine ? '<i class="fy">For you</i>' + (cur.src ? esc(cur.src) + ' · ' : '') : '') + (cur.at ? ago(cur.at) : '') + '</small><b>' + esc(cur.t) + '</b>' + (cur.sum ? '<p>' + esc(cur.sum) + '</p>' : '')
+          + '<div class="by"><img class="reader" src="art/' + g0 + (stale ? '-worried' : '-calm') + '.webp" alt="">'
+          + (cur.mine ? '<span class="say">Picked for you</span><button class="btn sm" data-pickdel="' + esc(cur.id) + '">Remove</button>'
+            : stale ? '<span class="say warn">Can’t reach the news right now.' + (nat ? ' These are from ' + ago(nat) + '.' : ' These are from earlier.') + '</span>'
+            : '<span class="say">' + (nat ? 'Updated ' + ago(nat) : 'Here’s the latest') + '</span>') + '</div></div><!--cut:list--><div class="news">';
+        NI.forEach(function(n, i){ h += '<button data-news="' + i + '"' + (i === ci ? ' class="on"' : '') + '><b>' + esc(n.t) + '</b><small>' + (n.mine ? '<i class="fy">For you</i>' : '') + (n.at ? ago(n.at) : '') + '</small></button>'; });
+        if (off) h += '<div class="newsnone">' + (NEWS ? 'Can’t reach the news site right now. It will try again by itself.' : 'Getting the headlines…') + '</div>';
         h += '</div>';
       }
     }
@@ -1669,8 +1677,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         var ch = CarUI.html(true).split('<!--cut:more-->'), hd = CarUI.heads();
         h = ch[1] ? '<div class="pgrid g-money">' + panel('a', ch[0], hd.a) + panel('b', ch[1], hd.b, hd.back ? '<button class="btn sm carback" data-car="view" data-v="main">‹ Back</button>' : '') + '</div>' : '<div class="pgrid g-car">' + panel('a', ch[0], hd.a) + '</div>';
       } else {
-        p = parts('news'); sub = NEWS && NEWS.ok ? newsName() + ' · tap a headline to read it' : '';
-        h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, ui.news > 0 && NEWS.items[ui.news] ? 'Story' : 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : '<div class="pgrid g-news one">' + panel('a', p.head, 'News') + '</div>';
+        p = parts('news'); sub = NEWS && NEWS.ok ? newsName() + ' · tap a headline to read it' : newsItems().length ? 'Tap a headline to read it' : '';
+        h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, (newsItems()[ui.news] || newsItems()[0] || {}).mine ? 'For you' : ui.news > 0 && newsItems()[ui.news] ? 'Story' : 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : '<div class="pgrid g-news one">' + panel('a', p.head, 'News') + '</div>';
       }
       t.textContent = title; if (a.textContent !== sub) a.textContent = sub;
       if (b.dataset.h !== h){
@@ -2116,6 +2124,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function bodyClick(e){
     if (CarUI.click(e) || weekClick(e)) return;
     if (e.target.closest('[data-newsretry]')){ NEWS = null; renderPages(); return loadNews(true); }
+    var pd = e.target.closest('[data-pickdel]'); if (pd){ ui.news = 0; return op('pick.del', { id: pd.dataset.pickdel }).then(renderPages); }
     var nw = e.target.closest('[data-news]'); if (nw){ ui.news = +nw.dataset.news; renderPages(); var on = pager.querySelector('.news .on'); if (on && on.scrollIntoView) on.scrollIntoView({ block:'nearest' }); return; }
     var tk = e.target.closest('.tk');
     if (tk && tk.dataset.td) return op('todo.toggle', { list:'today', id: tk.dataset.td }, true);

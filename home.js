@@ -20,6 +20,7 @@
   const blank = () => ({
     lists: { today: [], later: [], shop: [] },
     myLists: [],    // lists the person made themselves: { id, name }; their items live in lists[id]
+    picks: [],      // stories an assistant picked for the person: { id, t, sum, src, url, at }; newest first
     shifts: [],     // one-off: { id, date, start, end, place }
     rules: [],      // weekly: { id, dow, start, end, place, from, until?, skip: [dates] }
     events: [],     // { id, date, time?, t, d?, rep?: 'weekly'|'monthly'|'yearly', done?: the day a repeating one was last ticked }
@@ -268,6 +269,8 @@
   class Bad extends Error { constructor(m) { super(m); this.status = 400; } }
   const bad = m => { throw new Bad(m); };
   const text = (v, max = 80) => String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+  const PICK_MAX = 12, PICK_DAYS = 3;
+  const freshPicks = (s, now) => (s.picks || []).filter(x => x.at > (now || Date.now()) - PICK_DAYS * 864e5);
   const listOf = (s, k) => listKeys(s).includes(k) ? s.lists[k] : bad('No such list.');
   const need = (ok, m) => ok || bad(m);
   const shiftArgs = a => {
@@ -324,6 +327,17 @@
       const i = s.myLists.findIndex(x => x.id === a.id); need(i >= 0, 'That list is gone.');
       const id = s.myLists[i].id; s.myLists.splice(i, 1); delete s.lists[id]; return 'List removed';
     },
+    // Stories an assistant sends for the News page. Twelve at most; older than three days fall off.
+    'pick.add'(s, a) {
+      const t = text(a.t, 160); need(t, 'Give the story a headline.');
+      const url = text(a.url, 400); need(!url || /^https:\/\/[^\s]+$/.test(url), 'The link should start with https://');
+      const now = this.now || Date.now();
+      s.picks = freshPicks(s, now).filter(x => x.t.toLowerCase() !== t.toLowerCase());
+      s.picks.unshift({ id: this.rid('n'), t, sum: text(a.sum, 600), src: text(a.src, 40), url, at: now });
+      s.picks.length = Math.min(s.picks.length, PICK_MAX); return 'Story added';
+    },
+    'pick.del'(s, a) { const i = s.picks.findIndex(x => x.id === a.id); need(i >= 0, 'That story is gone.'); s.picks.splice(i, 1); return 'Story removed'; },
+    'pick.clear'(s) { const n = s.picks.length; s.picks = []; return n ? 'Cleared ' + n : 'Nothing to clear'; },
     'todo.move'(s, a) {
       const l = listOf(s, a.list), to = listOf(s, a.to), i = l.findIndex(y => y.id === a.id); need(i >= 0, 'That one is gone.');
       to.push(l.splice(i, 1)[0]); return 'Moved';
@@ -423,6 +437,8 @@
     if (!Array.isArray(s.myLists)) s.myLists = [];
     s.myLists = s.myLists.filter(l => l && typeof l.id === 'string' && /^l[\w-]+$/.test(l.id) && !LISTS.includes(l.id) && typeof l.name === 'string' && l.name);
     for (const k of listKeys(s)) if (!Array.isArray(s.lists[k])) s.lists[k] = [];
+    s.picks = (Array.isArray(s.picks) ? s.picks : []).filter(x => x && typeof x.id === 'string' && typeof x.t === 'string' && x.t && typeof x.at === 'number')
+      .map(x => ({ id: x.id, t: text(x.t, 160), sum: text(x.sum, 600), src: text(x.src, 40), url: /^https:\/\/[^\s]+$/.test(x.url || '') ? x.url : '', at: x.at })).slice(0, PICK_MAX);
     for (const k of Object.keys(b.settings)) if (s.settings[k] === undefined) s.settings[k] = b.settings[k];
     return s;
   }
@@ -438,10 +454,12 @@
     if (!shiftsOn(s, today).length) s.shifts.push({ id: id('s', 9), date: today, start: '14:00', end: '22:00', place: 'Work' });
     s.events = [{ id: id('e', 1), date: today, time: '09:00', t: 'Gym', d: true }, { id: id('e', 2), date: today, time: '11:30', t: 'Call the dentist' },
       { id: id('e', 3), date: addDays(today, 2), time: '19:00', t: 'Dinner with Maya' }, { id: id('e', 4), date: addDays(today, 4), t: 'Rent due' }];
+    s.picks = [{ id: id('n', 1), t: 'Three easy meal-prep lunches for late shifts', sum: 'Rice bowls, wraps and a soup that all keep for four days. Each takes under half an hour on a day off.', src: 'Food blog', url: '', at: Date.now() - 50 * 60e3 },
+      { id: id('n', 2), t: 'Winter tire deals near Belleville this week', sum: 'Two shops have mail-in rebates until Sunday. Booking ahead saves the long wait after the first snow.', src: 'Local deals', url: '', at: Date.now() - 55 * 60e3 }];
     s.settings.rate = 17.5; s.day = today;
     return s;
   }
 
-  return { LISTS, listKeys, listName, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
+  return { LISTS, listKeys, listName, freshPicks, CARDS, DAYS, DAYS_LONG, MONTHS, blank, fix, sample, ymd, okDate, okTime, addDays, dow, weekStart, mins, hhmm, fmtTime, fmtDur, fmtHours, fmtDate, money,
     shiftMins, shiftsOn, week, months, nextShift, KEEP_DAYS, normalize, dayView, guide, coming, moneyCard, eventsOn, eventList, REPS, OPS, apply, text, Bad };
 });

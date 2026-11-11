@@ -380,6 +380,29 @@ button{width:100%;margin-top:18px;font:inherit;font-weight:800;font-size:1rem;pa
         const t = h.today(), date = a.date ? dayArg(a.date) : null;
         const x = findOne(date ? H.eventsOn(h.stateOf(uid), date) : H.eventList(h.stateOf(uid), t), a.what, 'event');
         h.applyOp(uid, 'event.del', { id: x.id }); return `Removed “${x.t}” (${H.fmtDate(x.date, true)}).`;
+      } },
+    { name: 'list_news', title: 'Stories picked for the person', annotations: { readOnlyHint: true },
+      description: 'Shows the stories already sent to the News page with add_news, newest first. Check this before adding, so nothing is sent twice.',
+      inputSchema: { type: 'object', properties: {} },
+      run(uid) {
+        const l = H.freshPicks(h.stateOf(uid));
+        return l.length ? l.map(x => `${x.t}${x.src ? ' (' + x.src + ')' : ''}${x.url ? ' ' + x.url : ''}`).join('\n') : 'No picked stories on the News page.';
+      } },
+    { name: 'add_news', title: 'Send a story to the News page', annotations: { destructiveHint: false },
+      description: 'Puts one story at the top of the person’s News page, under "For you", on the home screen and the phone. Use it for a few stories a day that matter to this person. Write a short plain headline and a two or three sentence summary; the screen shows only this text and cannot open links, so the summary should stand on its own. The page keeps the newest 12, and a story drops off after three days.',
+      inputSchema: { type: 'object', properties: { headline: { type: 'string', description: 'Up to 160 characters' }, summary: { type: 'string', description: 'Up to 600 characters, plain text' },
+        source: { type: 'string', description: 'Where it is from, like CBC or The Verge, up to 40 characters' }, link: { type: 'string', description: 'The story’s https address; the phone can open it' } }, required: ['headline', 'summary'] },
+      run(uid, a) {
+        h.applyOp(uid, 'pick.add', { t: a.headline, sum: a.summary, src: a.source, url: a.link });
+        return `Sent “${h.stateOf(uid).picks[0].t}” to the News page.`;
+      } },
+    { name: 'remove_news', title: 'Take a story off the News page', annotations: { destructiveHint: true },
+      description: 'Removes one story that was sent with add_news; give its headline or part of it. Or set all=true to clear every picked story. The ordinary headlines from the news site are not touched.',
+      inputSchema: { type: 'object', properties: { headline: { type: 'string' }, all: { type: 'boolean' } } },
+      run(uid, a) {
+        if (a.all === true) { const n = h.stateOf(uid).picks.length; h.applyOp(uid, 'pick.clear', {}); return n ? `Cleared ${n} picked ${n === 1 ? 'story' : 'stories'}.` : 'There were none.'; }
+        const x = findOne(h.stateOf(uid).picks, a.headline, 'story');
+        h.applyOp(uid, 'pick.del', { id: x.id }); return `Removed “${x.t}”.`;
       } }
   ];
 
