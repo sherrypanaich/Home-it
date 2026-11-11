@@ -88,7 +88,7 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 
 /* middle row */
 .mid{display:flex;gap:14px;min-height:0}
-.today{flex:1.72;position:relative;overflow:hidden;border-width:3px;box-shadow:6px 6px 0 var(--pop);padding:16px 20px;
+.today{flex:1.5;position:relative;overflow:hidden;border-width:3px;box-shadow:6px 6px 0 var(--pop);padding:16px 20px;
   background-color:var(--panel);color:var(--panel-ink);display:flex;flex-direction:column;gap:8px;
   background-image:repeating-conic-gradient(from 0deg at 82% 118%,var(--rays) 0deg 2.5deg,transparent 2.5deg 8deg)}
 .today .eyebrow{font-weight:800;text-transform:uppercase;letter-spacing:.07em;font-size:.82rem;opacity:.95}
@@ -187,8 +187,8 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .low .tap .wxl .ic{width:26px;height:26px}
 .low .tap .wxl small{font-size:.9rem}
 .low .tap .more{font-size:.86rem;line-height:1.25}
-.low .co{align-items:center;font-size:1rem;line-height:1.15;min-height:44px}
-.low .co small{display:block;font-size:.84rem;font-weight:700;color:var(--muted);margin-top:2px}
+.co{align-items:center;font-size:1rem;line-height:1.15;min-height:44px}
+.co small{display:block;font-size:.84rem;font-weight:700;color:var(--muted);margin-top:2px}
 .big{font-size:1.75rem;line-height:1.1;white-space:nowrap}
 .big small{font-family:var(--body);font-size:.86rem;font-weight:800}
 .good{color:var(--good)} .bad{color:var(--bad)}
@@ -302,7 +302,35 @@ input,select{user-select:text;-webkit-user-select:text}
 .pager{display:flex;gap:44px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding:0 18px;margin:0 -18px -8px;padding:0 18px 8px;min-height:0;scrollbar-width:none;overscroll-behavior-x:contain}
 .pager::-webkit-scrollbar{display:none}
 .pg{flex:0 0 100%;min-width:0;min-height:0;scroll-snap-align:start;scroll-snap-stop:always}
-.pg.home{display:grid;grid-template-rows:minmax(0,1fr) 128px;gap:14px}
+.pg.home{display:grid;grid-template-rows:minmax(0,1fr);gap:14px}
+/* Home is today and right now: the Today card, then weather, the car button and goodnight */
+.hside{flex:1;display:flex;flex-direction:column;gap:14px;min-width:0;min-height:0}
+.hside[hidden]{display:none}
+.hside .card{padding:14px 16px;display:flex;flex-direction:column;gap:8px;position:relative;min-height:0}
+.hnow{flex:none;cursor:pointer}
+.hn1{display:flex;align-items:center;gap:14px}
+.hn1 .ic{width:64px;height:64px;flex:none}
+.hn1 b{font-size:3.2rem;line-height:1}
+.hn1 span{font-weight:800;font-size:1.2rem;line-height:1.25}
+.hn1 small{display:block;font-size:.9rem;font-weight:700;color:var(--muted)}
+.hn2{font-weight:800;font-size:1.05rem;line-height:1.3;background:var(--soft);border:2px solid var(--line);border-radius:12px;padding:8px 12px}
+.hcar{flex:1}
+.hcar .hd,.pg.lists .todo .hd{display:flex;align-items:center;justify-content:space-between}
+.hcar .car-home{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
+.hcar .car-hold,.hcar .car-stop{flex:1;min-height:84px;max-height:none;width:100%}
+.hcar .car-hline{font-weight:800;font-size:1rem;line-height:1.3}
+.hcar .car-hline small{display:block;color:var(--muted);font-weight:700;font-size:.9rem}
+.hcar .car-hline.bad{color:var(--bad)}
+.hroom{flex:none;flex-direction:row !important;align-items:center;gap:16px !important}
+.hroom .row{flex:1}
+.hroom #gn{flex:1;margin-top:0 !important}
+.pg.lists{--pgc:#EC4899}
+.pg.lists .todo{flex:1;width:100%;max-width:760px;margin:0 auto;padding:16px 20px;font-size:1.08rem}
+.pg.lists .sub{font-weight:800;color:var(--muted)}
+.pg.lists .todo .hd .h2{display:none}
+/* Settings is a panel over the page, not a whole page */
+#sheet{left:50%;right:auto;top:50%;bottom:auto;width:960px;height:600px;padding:16px 30px;max-height:calc(100% - 40px);transform:translate(-50%,-50%);box-shadow:6px 6px 0 var(--pop),0 0 0 2000px rgba(10,8,20,.5)}
+.stack #sheet{left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-height:none;transform:none}
 .pg.home.nolow{grid-template-rows:minmax(0,1fr)}
 .pg.home.nomid{grid-template-rows:128px}
 .pg.full{display:flex;overflow:hidden;padding:0 6px 6px 0}
@@ -723,7 +751,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .pg[data-pg="today"]{--pgc:#2D5BFF}.pg[data-pg="week"]{--pgc:#8B5CF6}.pg[data-pg="weather"]{--pgc:#22B8E0}.pg[data-pg="money"]{--pgc:#16A765}.pg[data-pg="car"]{--pgc:#F0503C}.pg[data-pg="news"]{--pgc:#FF9A2E}
 .pg.full .h2{box-shadow:3px 3px 0 var(--pgc,var(--hl))}
 .pg.full .pghd .h2{box-shadow:4px 4px 0 var(--pgc,var(--hl))}
-.pgnav [data-go="today"]{--pgc:#2D5BFF}.pgnav [data-go="week"]{--pgc:#8B5CF6}.pgnav [data-go="weather"]{--pgc:#22B8E0}.pgnav [data-go="money"]{--pgc:#16A765}.pgnav [data-go="car"]{--pgc:#F0503C}.pgnav [data-go="news"]{--pgc:#FF9A2E}
+.pgnav [data-go="today"]{--pgc:#2D5BFF}.pgnav [data-go="lists"]{--pgc:#EC4899}.pgnav [data-go="week"]{--pgc:#8B5CF6}.pgnav [data-go="weather"]{--pgc:#22B8E0}.pgnav [data-go="money"]{--pgc:#16A765}.pgnav [data-go="car"]{--pgc:#F0503C}.pgnav [data-go="news"]{--pgc:#FF9A2E}
 /* budget bars on the Money page */
 .bud{border-top:1.5px solid var(--line);padding-top:7px}
 .dbody h3 + .bud{border-top:0;padding-top:0}
@@ -778,6 +806,36 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     <div class="mid" id="mid">
       <section class="card today" id="today" data-card="today" aria-label="Today"></section>
 
+      <div class="hside">
+        <section class="card tap hnow" data-card="now" data-detail="forecast" id="nowcard" role="button" tabindex="0" aria-label="Weather right now, tap for more"></section>
+        <section class="card hcar" data-card="car" id="carcard" aria-label="Car"></section>
+        <section class="card hroom" data-card="room" aria-label="Room">
+          <div class="row">
+            <label class="co" style="flex:1;justify-content:space-between"><span>Company<small id="cohint">Hides money</small></span><button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
+          <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:48px;margin-top:auto">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
+        </section>
+      </div>
+    </div>
+
+    <!-- kept for the pages that read them; not shown on Home any more -->
+    <div class="low" id="low" hidden>
+      <section class="card tap" data-card="coming" data-detail="coming" role="button" tabindex="0" aria-label="Coming up, tap for more"></section>
+      <section class="card tap" data-card="forecast" data-detail="forecast" role="button" tabindex="0" aria-label="Weather for the next days, tap for more"></section>
+      <section class="card tap money" data-card="split" data-detail="split" id="splitcard" role="button" tabindex="0" aria-label="Split it, tap for more"></section>
+      <section class="card tap money" data-card="budget" data-detail="budget" id="budgetcard" role="button" tabindex="0" aria-label="Budget it, tap for more"></section>
+      <section class="card week" data-card="week" aria-label="Shifts this week">
+        <div class="hd"><h2 class="h2" id="wktitle">THIS WEEK</h2><button class="btn sm" id="addshift">+ Shift</button></div>
+        <ul class="days" id="days"></ul>
+        <div class="wk"><button class="btn sm" id="wkprev" aria-label="Week before"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="mid2" id="wkmid" data-detail="pay" aria-label="Hours and pay by month"><span id="wkh"></span><small id="wkp"></small></button>
+          <button class="btn sm" id="wknext" aria-label="Week after"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
+      </section>
+    </div>
+
+    </section>
+    <section class="pg full" data-pg="today" aria-label="Today"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    <section class="pg full lists" data-pg="lists" aria-label="Lists"><div class="pgin"><div class="pghd"><h2 class="h2">LISTS</h2><div class="pgact"><span class="sub">Later and Shopping</span></div></div>
       <section class="card todo" data-card="todo" aria-label="To-do list">
         <div class="hd"><h2 class="h2">LISTS</h2><span class="cnt" id="cnt"></span></div>
         <div class="prog" id="prog" aria-hidden="true"></div>
@@ -792,32 +850,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           <div class="rep" id="rep" role="group" aria-label="How often"><button type="button" data-rep="" aria-pressed="true">Just once</button><button type="button" data-rep="daily" aria-pressed="false">Every day</button><button type="button" data-rep="weekly" aria-pressed="false">Every week</button></div>
         </form>
       </section>
-
-      <section class="card week" data-card="week" aria-label="Shifts this week">
-        <div class="hd"><h2 class="h2" id="wktitle">THIS WEEK</h2><button class="btn sm" id="addshift">+ Shift</button></div>
-        <ul class="days" id="days"></ul>
-        <div class="wk"><button class="btn sm" id="wkprev" aria-label="Week before"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-          <button class="mid2" id="wkmid" data-detail="pay" aria-label="Hours and pay by month"><span id="wkh"></span><small id="wkp"></small></button>
-          <button class="btn sm" id="wknext" aria-label="Week after"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
-      </section>
-    </div>
-
-    <div class="low" id="low">
-      <section class="card tap" data-card="coming" data-detail="coming" role="button" tabindex="0" aria-label="Coming up, tap for more"></section>
-      <section class="card tap" data-card="forecast" data-detail="forecast" role="button" tabindex="0" aria-label="Weather for the next days, tap for more"></section>
-      <section class="card tap money" data-card="split" data-detail="split" id="splitcard" role="button" tabindex="0" aria-label="Split it, tap for more"></section>
-      <section class="card tap money" data-card="budget" data-detail="budget" id="budgetcard" role="button" tabindex="0" aria-label="Budget it, tap for more"></section>
-      <section class="card tap" data-card="car" data-detail="car" id="carcard" role="button" tabindex="0" aria-label="Car, tap to start it"></section>
-      <section class="card" data-card="room" aria-label="Room">
-        <div class="row">
-          <label class="co" style="flex:1;justify-content:space-between"><span>Company<small id="cohint">Hides money</small></span><button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
-        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:48px;margin-top:auto">
-          <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
-      </section>
-    </div>
-
-    </section>
-    <section class="pg full" data-pg="today" aria-label="Today"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
+    </div></section>
     <section class="pg full" data-pg="week" aria-label="Week"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="weather" aria-label="Weather"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
     <section class="pg full" data-pg="money" aria-label="Money"><div class="pgin"><div class="pghd"><h2 class="h2" data-pgt></h2><div class="pgact" data-pga></div></div><div class="dbody" data-pgb></div></div></section>
@@ -961,7 +994,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     fog:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 9h16M4 13h12M7 17h13"/></svg>'
   };
   var LOCK = '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  var CARDS = [['today','Today'],['todo','Later and Shopping lists'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['car','Car'],['room','Room']];
+  var CARDS = [['today','Today'],['now','Weather right now'],['car','Car start button'],['room','Company and Goodnight']];
   // weather codes (WMO) -> [icon, words]
   function sky(code, day){
     if (code === 0 || code === 1) return [day ? 'sun' : 'moon', code ? 'Mostly clear' : 'Clear'];
@@ -1196,8 +1229,16 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.setValueAtTime(0.15, a.currentTime); g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.6); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + 0.6); } catch(e){}
   }
   function renderCar(){
-    var t = CarUI.tile(), el = $('carcard');
-    el.innerHTML = '<h2 class="h2">CAR</h2><div class="one' + (t.on ? ' good' : '') + '">' + esc(t.big) + '</div><div class="more">' + esc(t.sub) + '</div>';
+    if (CarUI.holding()) return;   // not under a finger that is holding the button
+    $('carcard').innerHTML = '<div class="hd"><h2 class="h2">CAR</h2><button class="btn sm" data-detail="car">More</button></div>' + CarUI.home();
+  }
+  // Home's "right now" weather: the temperature, the sky and what to wear
+  function renderNow(){
+    var el = $('nowcard'), h;
+    if (WX && WX.ok){ var k = sky(WX.code, WX.day);
+      h = '<div class="hn1">' + SKY[k[0]] + '<b class="disp">' + WX.temp + '°</b><span>' + k[1] + '<small>feels like ' + WX.feels + '° · high ' + WX.hi + '° · low ' + WX.lo + '°</small></span></div><div class="hn2">' + esc(wearTip()) + '</div>';
+    } else h = '<div class="hn2">' + (WX ? 'Can’t reach the weather right now.' : 'Getting the weather…') + '</div>';
+    if (el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; }
   }
   function renderComing(){
     var rows = H.coming(S, V.date, 30), r = rows[0];
@@ -1471,7 +1512,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
 
   // ---------- pages: Home first, then one full page each, swiped left and right ----------
-  var PAGES = [['home','Home'],['today','Today'],['week','Week'],['weather','Weather'],['money','Money'],['car','Car'],['news','News']];
+  var PAGES = [['home','Home'],['today','Today'],['lists','Lists'],['week','Week'],['weather','Weather'],['money','Money'],['car','Car'],['news','News']];
   var PAGE_OF = { today:'today', coming:'week', pay:'week', forecast:'weather', split:'money', budget:'money', car:'car', news:'news' };
   var pager = $('pager');
   function pageEl(name){ return pager.querySelector('[data-pg="' + name + '"]'); }
@@ -1492,7 +1533,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (!S || !V) return;
     var cur = PAGES.map(function(pg){ return pg[0]; }).indexOf(ui.page);
     PAGES.forEach(function(pg){
-      var name = pg[0], el = pageEl(name); if (name === 'home') return;
+      var name = pg[0], el = pageEl(name); if (name === 'home' || name === 'lists') return;
       if (Math.abs(PAGES.indexOf(pg) - cur) > 1 && el.querySelector('[data-pgb]').dataset.h) return;   // far pages wait until you get near
       var t = el.querySelector('[data-pgt]'), b = el.querySelector('[data-pgb]'), a = el.querySelector('[data-pga]'), h = '', title = pg[1].toUpperCase(), sub = '', p, q;
       if (name === 'today'){
@@ -1564,12 +1605,11 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function renderCards(){
     var hide = S.settings.hide;
     CARDS.forEach(function(c){ stage.querySelector('[data-card="' + c[0] + '"]').hidden = hide.indexOf(c[0]) >= 0; });
-    var nolow = ['coming','forecast','split','budget','car','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
-    $('low').hidden = nolow; $('mid').hidden = nomid;
-    $('pghome').classList.toggle('nolow', nolow); $('pghome').classList.toggle('nomid', nomid && !nolow);
+    var side = ['now','car','room'].every(function(k){ return hide.indexOf(k) >= 0; });
+    stage.querySelector('.hside').hidden = side; $('pghome').classList.toggle('noside', side);
     moneyCard($('splitcard'), 'split', S.settings.splitUrl);
     moneyCard($('budgetcard'), 'budget', S.settings.budgetUrl);
-    renderComing(); renderForecast(); renderCar();
+    renderComing(); renderForecast(); renderNow(); renderCar();
     if (ui.sheet === 'detailsheet') renderDetail();
     renderPages();
     $('company').setAttribute('aria-pressed', V.company); $('cohint').textContent = V.company ? 'Money hidden' : 'Hides money';
@@ -1936,6 +1976,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('dbody', 'submit', bodySubmit); on('dbody', 'click', bodyClick);
   pager.addEventListener('submit', function(e){ if (e.target.closest('.pg.full')) bodySubmit(e); });
   pager.addEventListener('click', function(e){ if (e.target.closest('.pg.full')) bodyClick(e); });
+  on('carcard', 'click', function(e){ CarUI.click(e); });
   on('pgnav', 'click', function(e){ var b = e.target.closest('[data-go]'); if (b) goPage(b.dataset.go); });
   document.addEventListener('keydown', function(e){
     if (ui.sheet || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '')) return;

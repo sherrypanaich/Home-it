@@ -127,6 +127,19 @@
     }
     return h + '</div></div>';
   }
+  // Home's car card: one line on what the weather calls for, and the hold button. Nothing else.
+  function home(){
+    if (!C) return '<div class="car-home"><div class="car-hline"><small>Checking the car…</small></div></div>';
+    if (!C.linked) return '<div class="car-home"><div class="car-hline">Add your car once<small>Then one button here warms it up for the weather.</small></div><button class="btn primary" data-detail="car" style="min-height:52px">Set it up</button></div>';
+    var r = C.run, dis = busy ? ' disabled' : '', pr = C.status ? problems(C.status) : [], h = '<div class="car-home">';
+    if (running()) return h + '<div class="car-hline">The car is on<small>It turns itself off at ' + clock(r.until) + '</small></div><button class="btn car-go car-stop" data-car="stop"' + dis + '>Stop the car</button></div>';
+    if (moving()) return h + '<div class="car-hline">Starting…<small>' + esc(r.msg || 'Asking the car to start…') + '</small></div><button class="btn car-go car-stop" data-car="stop"' + dis + '>Stop the car</button></div>';
+    var age = r && r.at ? Date.now() - r.at : 1e12;
+    if (r && r.state === 'failed' && age < 15 * 60e3) h += '<div class="car-hline bad">The car didn’t start<small>' + esc(r.msg || 'Try again in a minute.') + '</small></div>';
+    else if (pr.length) h += '<div class="car-hline bad">' + esc(pr[0]) + '</div>';
+    else h += '<div class="car-hline">' + esc(reason(false)) + '</div>';
+    return h + '<button class="btn primary car-go car-hold" data-car="hold"' + dis + ' aria-label="Hold for one second to start the car: ' + esc(P.words(d)) + '"><i></i><span><b class="t0">Hold to start</b><b class="t1">Keep holding…</b><small>' + esc(P.words(d)) + '</small></span></button></div>';
+  }
   function navPanel(split){
     var c = C.car, t = C.status, last = C.log && C.log[0], changed = JSON.stringify(d) !== JSON.stringify(P.tidy({}, C.plan));
     return '<div class="car-nav' + (split ? ' car-split' : '') + '">'
@@ -328,5 +341,5 @@
   }
 
   window.CarUI = { init: function(opts){ o = opts; }, bind: bind, load: load, html: html, heads: heads, holding: function(){ return !!holdT; }, demo: demo, click: click, submit: submit, short: short,
-    busy: function(){ return moving(); }, goodnight: goodnight, nudge: nudge, status: status, reset: function(){ view = 'main'; }, tile: tile, linked: function(){ return !!(C && C.linked); } };
+    busy: function(){ return moving(); }, goodnight: goodnight, nudge: nudge, status: status, reset: function(){ view = 'main'; }, tile: tile, home: home, linked: function(){ return !!(C && C.linked); } };
 })();
