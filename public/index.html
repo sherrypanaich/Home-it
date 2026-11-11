@@ -22,17 +22,17 @@
   --body:"Bricolage Grotesque",-apple-system,system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#121019; --surface:#1D1A2A; --surface2:#262236; --ink:#F1EEFF; --edge:#9C94C8; --pop:#5B5391;
-  --on-ink:#14112A; --muted:#ADA7C6; --line:rgba(241,238,255,.10); --dot:rgba(241,238,255,.10);
-  --accent:#8EA6FF; --accent-ink:#121019; --hl:#FFD23F; --hl-ink:#14112A; --soft:#3A3120;
-  --good:#4FD39A; --bad:#FF6B7D; --panel:#1F2A6B; --panel-ink:#F1EEFF; --panel-hi:#FFD23F;
-  --rays:rgba(255,255,255,.07); --night:#07060D; --night-ink:#77719A; color-scheme:dark}}
+  --bg:#121019; --surface:#1D1A2A; --surface2:#262236; --ink:#E8E4F6; --edge:#6C6592; --pop:#3D3760;
+  --on-ink:#14112A; --muted:#ADA7C6; --line:rgba(241,238,255,.10); --dot:rgba(241,238,255,.06);
+  --accent:#8EA6FF; --accent-ink:#121019; --hl:#E9BE45; --hl-ink:#14112A; --soft:#3A3120;
+  --good:#4FD39A; --bad:#FF6B7D; --panel:#1F2A6B; --panel-ink:#E8E4F6; --panel-hi:#E9BE45;
+  --rays:rgba(255,255,255,.07); --night:#07060D; --night-ink:#7C76A0; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#121019; --surface:#1D1A2A; --surface2:#262236; --ink:#F1EEFF; --edge:#9C94C8; --pop:#5B5391;
-  --on-ink:#14112A; --muted:#ADA7C6; --line:rgba(241,238,255,.10); --dot:rgba(241,238,255,.10);
-  --accent:#8EA6FF; --accent-ink:#121019; --hl:#FFD23F; --hl-ink:#14112A; --soft:#3A3120;
-  --good:#4FD39A; --bad:#FF6B7D; --panel:#1F2A6B; --panel-ink:#F1EEFF; --panel-hi:#FFD23F;
-  --rays:rgba(255,255,255,.07); --night:#07060D; --night-ink:#77719A; color-scheme:dark}
+  --bg:#121019; --surface:#1D1A2A; --surface2:#262236; --ink:#E8E4F6; --edge:#6C6592; --pop:#3D3760;
+  --on-ink:#14112A; --muted:#ADA7C6; --line:rgba(241,238,255,.10); --dot:rgba(241,238,255,.06);
+  --accent:#8EA6FF; --accent-ink:#121019; --hl:#E9BE45; --hl-ink:#14112A; --soft:#3A3120;
+  --good:#4FD39A; --bad:#FF6B7D; --panel:#1F2A6B; --panel-ink:#E8E4F6; --panel-hi:#E9BE45;
+  --rays:rgba(255,255,255,.07); --night:#07060D; --night-ink:#7C76A0; color-scheme:dark}
 /* the screen picks its own look from the time of day, whatever the viewer's theme */
 .stage[data-look="light"]{
   --bg:#F5F1E8; --surface:#FFFFFF; --surface2:#F1ECE1; --ink:#14112A; --edge:#14112A; --pop:#14112A;
@@ -40,10 +40,10 @@
   --accent:#2D5BFF; --accent-ink:#FFFFFF; --soft:#FFF1B8; --good:#0B7A45; --bad:#E0243C;
   --panel:#2D5BFF; --panel-ink:#FFFFFF; --rays:rgba(255,255,255,.14)}
 .stage[data-look="dark"]{
-  --bg:#121019; --surface:#1D1A2A; --surface2:#262236; --ink:#F1EEFF; --edge:#9C94C8; --pop:#5B5391;
-  --on-ink:#14112A; --muted:#ADA7C6; --line:rgba(241,238,255,.10); --dot:rgba(241,238,255,.10);
+  --bg:#121019; --surface:#1D1A2A; --surface2:#262236; --ink:#E8E4F6; --edge:#6C6592; --pop:#3D3760;
+  --on-ink:#14112A; --muted:#ADA7C6; --line:rgba(241,238,255,.10); --dot:rgba(241,238,255,.06);
   --accent:#8EA6FF; --accent-ink:#121019; --soft:#3A3120; --good:#4FD39A; --bad:#FF6B7D;
-  --panel:#1F2A6B; --panel-ink:#F1EEFF; --rays:rgba(255,255,255,.07)}
+  --panel:#1F2A6B; --panel-ink:#E8E4F6; --rays:rgba(255,255,255,.07)}
 
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0}
@@ -266,7 +266,7 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .night{background:var(--night);color:var(--night-ink)}
 .night .c{font-size:9rem;line-height:1.1}
 .night .n{font-weight:800;font-size:1.3rem;display:flex;align-items:center;gap:10px}
-.night .s{font-size:.95rem;max-width:46ch}
+.night .s{font-size:.95rem;font-weight:600}
 .idle{background-color:var(--panel);color:var(--panel-ink);
   background-image:repeating-conic-gradient(from 0deg at 50% 50%,var(--rays) 0deg 3deg,transparent 3deg 9deg)}
 .pol{display:flex;gap:26px;align-items:center}
@@ -274,8 +274,11 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .pol div i{flex:1;border:2px dashed #14112A;background:repeating-linear-gradient(45deg,#F1ECE1 0 10px,#fff 10px 20px)}
 .pol div:nth-child(1){transform:rotate(-6deg)} .pol div:nth-child(2){transform:rotate(3deg) translateY(-14px)} .pol div:nth-child(3){transform:rotate(-2deg)}
 .idle .cap{font-weight:800;font-size:1.1rem;margin-top:14px}
-.idle .corner{position:absolute;left:24px;bottom:18px;text-align:left;font-size:2.6rem;line-height:1.15;text-shadow:3px 3px 0 rgba(20,17,42,.4)}
-.idle .corner small{display:block;font-family:var(--body);font-weight:800;font-size:1rem;text-shadow:none}
+.idle .iwx{display:flex;align-items:center;gap:14px;margin-top:22px;text-align:left;font-weight:800;font-size:1.5rem;line-height:1.15}
+.idle .iwx .ic{width:54px;height:54px;stroke-width:2.2}
+.idle .iwx .disp{font-size:3.4rem;line-height:1;text-shadow:4px 4px 0 rgba(20,17,42,.4)}
+.idle .iwx small{display:block;font-size:1.05rem;font-weight:600;opacity:.9}
+.idle .c small{font-size:.42em;margin-left:.25em}
 .backdrop{position:absolute;inset:0;z-index:6;background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:12px 12px;cursor:pointer}
 .sheet{position:absolute;left:18px;right:24px;top:16px;bottom:18px;z-index:7;background:var(--surface);border:3px solid var(--edge);border-radius:16px;
   box-shadow:6px 6px 0 var(--pop);padding:16px max(22px, calc(50% - 400px));display:flex;flex-direction:column;gap:8px;overflow:auto}
@@ -646,11 +649,18 @@ button.wkit:active{transform:translate(1px,1px)}
 .soonz{align-items:flex-start;justify-content:center;text-align:left}
 .soonz .big{font-size:1.15rem;font-family:var(--body);font-weight:800;white-space:normal;line-height:1.2}
 a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
-.night{cursor:pointer;transition:opacity .6s}
+/* night: asleep it shows only a very faint clock; a tap lights the clock, the next shift and the wake button for a few seconds */
+.night{cursor:pointer}
 .night > *{transition:opacity .8s}
 .night:not(.peek) > *{opacity:0}
-.night .c{color:#3d3960}
-.night.peek .c{color:var(--night-ink)}
+.night:not(.peek) .btn{pointer-events:none}
+.night .c{transition:opacity .8s,color .8s}
+.night:not(.peek) .c{opacity:1;color:#262338}
+.night .btn{background:none;color:var(--night-ink);border-color:#3A3655;box-shadow:none;min-height:48px;padding:6px 22px;margin-top:10px}
+.stage.has-night .toast{background:#1B1929;color:var(--night-ink);box-shadow:none}
+@media (prefers-reduced-motion:reduce){.night > *,.night .c{transition:none}}
+#gn small{display:block;font-size:.8125rem;font-weight:600;line-height:1.1}
+#gn span{line-height:1.15;text-align:left}
 .idle .c{font-size:9rem;line-height:1.05;text-shadow:6px 6px 0 rgba(20,17,42,.4)}
 .idle .d{font-weight:800;font-size:1.5rem}
 .idle .l{font-weight:800;font-size:1.15rem;background:var(--hl);color:#14112A;border:2.5px solid #14112A;border-radius:12px;box-shadow:3px 3px 0 #14112A;padding:6px 16px;margin-top:8px}
@@ -745,6 +755,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .stack .days{gap:2px}
 .stack .over{position:fixed;inset:0;padding:20px}
 .stack .night .c,.stack .idle .c{font-size:4.6rem}
+.stack .night,.stack .idle{padding:0 16px}
+.stack .night .n{font-size:1.05rem}
+.stack .idle .iwx{font-size:1.2rem;gap:10px}
 .stack .idle img{height:150px;right:10px}
 .stack .backdrop{position:fixed}
 .stack .sheet{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;transform:none;box-shadow:4px 4px 0 var(--pop)}
@@ -842,7 +855,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
           <div class="row">
             <label class="co" style="flex:1;justify-content:space-between"><span>Company<small id="cohint">Hides money</small></span><button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
           <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:48px;margin-top:auto">
-            <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
+            <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span>Goodnight<small>screen goes dark</small></span></button>
         </section>
       </div>
     </div>
@@ -892,13 +905,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <div class="c disp" id="nclock"></div>
       <div class="n"><svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span id="nline"></span></div>
       <div class="otmr" id="ntmr" hidden><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/></svg><span></span></div>
-      <button class="btn" id="nwake" style="margin-top:14px">Use the screen</button>
+      <button class="btn" id="nwake">Wake the screen</button>
+      <div class="s" id="nhint"></div>
     </div>
     <div class="over idle" id="idle" hidden>
       <div class="c disp" id="iclock"></div>
       <div class="d" id="idate"></div>
       <div class="l" id="iline"></div>
       <div class="otmr" id="itmr" hidden><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5V6"/></svg><span></span></div>
+      <div class="iwx" id="iwx" hidden></div>
       <img id="iimg" alt="">
     </div>
 
@@ -1632,25 +1647,50 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       + PAGES.map(function(pg){ return '<button data-go="' + pg[0] + '"' + (pg[0] === ui.page ? ' aria-current="true"' : '') + '>' + pg[1] + '</button>'; }).join('')
       + '</div><button class="arr" data-go="' + PAGES[Math.min(PAGES.length - 1, pi + 1)][0] + '"' + (pi >= PAGES.length - 1 ? ' disabled' : '') + ' aria-label="Next page"><svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>';
   }
+  var noMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function pageIdx(name){ for (var i = 0; i < PAGES.length; i++) if (PAGES[i][0] === name) return i; return 0; }
+  function pageLeft(el){ return el.offsetLeft - pager.offsetLeft - 18; }
   function goPage(name, jump){
     var el = pageEl(name); if (!el) return;
     if (ui.sheet) show(null);
+    var smooth = !jump && !(noMotion && noMotion.matches), to = pageIdx(name);
     ui.page = name;
-    if (root.classList.contains('stack')) el.scrollIntoView({ behavior: jump ? 'auto' : 'smooth', block: 'start' });
-    else pager.scrollTo({ left: el.offsetLeft - pager.offsetLeft - 18, behavior: jump ? 'auto' : 'smooth' });
+    if (root.classList.contains('stack')) el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+    else {
+      // A far jump hops next to the page first, so only one page ever slides: quick, and light work for the laptop.
+      var step = pageLeft(pageEl(PAGES[1][0])) - pageLeft(pageEl(PAGES[0][0])), at = step > 0 ? Math.round(pager.scrollLeft / step) : to;
+      if (smooth && Math.abs(to - at) > 1) pager.scrollTo({ left: pageLeft(pageEl(PAGES[to + (to > at ? -1 : 1)][0])), behavior: 'instant' });
+      ui.going = name; ui.goT = Date.now(); pgMark = name;
+      pager.scrollTo({ left: pageLeft(el), behavior: smooth ? 'smooth' : 'instant' });
+    }
     renderPages();
     if (name === 'news') loadNews();
     if (name === 'car') openCar();
   }
   function openCar(){ CarUI.reset(); CarUI.load().then(function(){ CarUI.status(false); }); }
   var pgTimer;
+  // While a swipe is moving, only the tab highlight follows along (cheap). The page itself is settled once the swipe has stopped.
+  function pageSettle(){
+    var best = 'home', gap = 1e9;
+    PAGES.forEach(function(pg){ var g = Math.abs(pageLeft(pageEl(pg[0])) - pager.scrollLeft); if (g < gap){ gap = g; best = pg[0]; } });
+    if (ui.going){
+      if (best !== ui.going && Date.now() - ui.goT < 1500){ pgTimer = setTimeout(pageSettle, 120); return; }   // still sliding to the page that was asked for
+      ui.going = null;
+    }
+    if (best !== ui.page){ ui.page = best; renderPages(); if (best === 'news') loadNews(); if (best === 'car') openCar(); }
+    pgMark = ui.page;
+  }
+  var pgStep = 0, pgMark = 'home';
   pager.addEventListener('scroll', function(){
-    clearTimeout(pgTimer); pgTimer = setTimeout(function(){
-      var best = 'home', gap = 1e9;
-      PAGES.forEach(function(pg){ var el = pageEl(pg[0]), g = Math.abs(el.offsetLeft - pager.offsetLeft - 18 - pager.scrollLeft); if (g < gap){ gap = g; best = pg[0]; } });
-      if (best !== ui.page){ ui.page = best; renderPages(); if (best === 'news') loadNews(); if (best === 'car') openCar(); }
-    }, 90);
-  });
+    clearTimeout(pgTimer); pgTimer = setTimeout(pageSettle, 90);
+    if (ui.going && Date.now() - ui.goT < 1500) return;
+    if (!pgStep) pgStep = pageLeft(pageEl(PAGES[1][0])) - pageLeft(pageEl(PAGES[0][0]));
+    var pg = pgStep > 0 && PAGES[Math.round(pager.scrollLeft / pgStep)], name = pg ? pg[0] : '';
+    if (name && name !== pgMark){
+      pgMark = name;
+      [].forEach.call($('pgnav').querySelectorAll('.tabs [data-go]'), function(b){ if (b.dataset.go === name) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+    }
+  }, { passive: true });
   function renderCards(){
     var hide = S.settings.hide;
     CARDS.forEach(function(c){ stage.querySelector('[data-card="' + c[0] + '"]').hidden = hide.indexOf(c[0]) >= 0; });
@@ -1803,10 +1843,16 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function kioskish(){ return ME.kiosk || (DEMO && (ui.demo === 'night' || ui.demo === 'idle')); }
   function renderTick(force){
     if (!S) return;
-    var n = now(), sun = WX && WX.ok && WX.sunrise ? { rise: H.mins(WX.sunrise), set: H.mins(WX.sunset) } : null;
-    var v = V = H.dayView(S, n, sun), minute = v.nowM, real = Date.now();
+    // the day is only worked out again when the minute changes (or something was edited); the rest of each second is a few cheap checks
+    var n = now(), mk = Math.floor(n.getTime() / 60e3), v = V;
+    if (force || !v || mk !== ui.vmin){
+      var sun = WX && WX.ok && WX.sunrise ? { rise: H.mins(WX.sunrise), set: H.mins(WX.sunset) } : null;
+      v = V = H.dayView(S, n, sun); ui.vmin = mk;
+    }
+    var minute = v.nowM, real = Date.now();
     if (v.date !== ui.day){ var first = !ui.day; ui.day = v.date; if (!first){ if (DEMO) H.normalize(S, v.date); else loadState(); force = true; } }
-    stage.dataset.look = v.look; root.dataset.theme = v.look;
+    if (stage.dataset.look !== v.look) stage.dataset.look = v.look;
+    if (root.dataset.theme !== v.look) root.dataset.theme = v.look;
     // night
     if (ui.good && v.night) ui.goodNight = true;
     if (ui.good && ui.goodNight && !v.night){ ui.good = false; ui.goodNight = false; }
@@ -1814,19 +1860,28 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     if (real <= ui.awake && real - ui.touch > 5 * 60e3) ui.awake = 0;
     var nel = $('night');
     if (nightOn && nel.hidden){ ui.peek = real + 8000; show(null); }
-    nel.hidden = !nightOn;
+    if (nel.hidden === nightOn) nel.hidden = !nightOn;
     nel.classList.toggle('peek', real < ui.peek);
     // idle
     var idleOn = !nightOn && v.phase !== 'soon' && !ui.sheet && $('osk').hidden && (ui.forceIdle || (ME.kiosk && S.settings.idle > 0 && real - ui.touch > S.settings.idle * 60e3));
     if (idleOn && $('idle').hidden && ui.page !== 'home') goPage('home', true);
-    $('idle').hidden = !idleOn;
-    stage.classList.toggle('has-over', nightOn || idleOn);
-    if (nightOn || idleOn){
-      var c = tm(H.hhmm(v.nowM)).replace(/ [AP]M$/, '');
-      $('nclock').textContent = c; $('nline').textContent = shiftLine(v);
-      $('iclock').textContent = tm(H.hhmm(v.nowM)); $('idate').textContent = H.fmtDate(v.date, true); $('iline').textContent = shiftLine(v);
-      var g = H.guide(S, v), src = 'art/' + g.who + '-calm.webp'; if ($('iimg').getAttribute('src') !== src) $('iimg').src = src;
+    if ($('idle').hidden === idleOn) $('idle').hidden = !idleOn;
+    stage.classList.toggle('has-over', nightOn || idleOn); stage.classList.toggle('has-night', nightOn);
+    var ok = nightOn ? 'n' + mk : idleOn ? 'i' + mk : '';
+    if (ok && (force || ok !== ui.okey)){   // the big clocks are only redrawn when the minute changes
+      var c = tm(H.hhmm(v.nowM));
+      if (nightOn){
+        $('nclock').textContent = c.replace(/ [AP]M$/, ''); $('nline').textContent = shiftLine(v);
+        $('nhint').textContent = 'Tap anywhere to see the time. The screen wakes by itself at ' + tm(S.settings.nightTo) + '.';
+      } else {
+        $('iclock').innerHTML = esc(c).replace(/ ([AP]M)$/, '<small>$1</small>'); $('idate').textContent = H.fmtDate(v.date, true); $('iline').textContent = shiftLine(v);
+        var k = WX && WX.ok ? sky(WX.code, WX.day) : null;
+        $('iwx').hidden = !k;
+        if (k) $('iwx').innerHTML = SKY[k[0]] + '<span class="disp">' + WX.temp + '°</span><span>' + k[1] + '<small>feels ' + WX.feels + '° · high ' + WX.hi + '° · low ' + WX.lo + '°</small></span>';
+        var g = H.guide(S, v), src = 'art/' + g.who + '-calm.webp'; if ($('iimg').getAttribute('src') !== src) $('iimg').src = src;
+      }
     }
+    ui.okey = ok;
     var nd = v.phase === 'soon' && !nightOn ? CarUI.nudge(v.toLeave) : null, nk = v.date + (v.shift ? v.shift.start : '');
     if (nd && ui.nudged !== nk && ui.page !== 'car'){ ui.nudged = nk; carNudge(nd); }
     if (force || minute !== ui.minute){ ui.minute = minute; renderBar(v); renderToday(v); if (force){ renderWeek(v); renderItems(); renderCards(); if (ui.sheet === 'sheet') renderSettings(); if (ui.sheet === 'shiftsheet') renderShiftSheet(); if (ui.sheet === 'eventsheet') renderEventSheet(); } }
@@ -2032,7 +2087,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('carcard', 'click', function(e){ CarUI.click(e); });
   on('pgnav', 'click', function(e){ var b = e.target.closest('[data-go]'); if (b) goPage(b.dataset.go); });
   document.addEventListener('keydown', function(e){
-    if (ui.sheet || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '')) return;
+    if (ui.sheet || stage.classList.contains('has-over') || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '')) return;
     var i = PAGES.map(function(p){ return p[0]; }).indexOf(ui.page);
     if (e.key === 'ArrowRight' && i < PAGES.length - 1) goPage(PAGES[i + 1][0]);
     if (e.key === 'ArrowLeft' && i > 0) goPage(PAGES[i - 1][0]);
@@ -2079,12 +2134,15 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('gn', 'click', function(){ CarUI.goodnight(function(msg){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); if (msg) toast(msg); }); });   // checks the car is locked first
   on('nwake', 'click', function(e){ e.stopPropagation(); ui.good = false; ui.awake = Date.now() + 5 * 60e3; ui.touch = Date.now(); renderTick(); });
   ['pointerdown', 'keydown'].forEach(function(n){ document.addEventListener(n, function(e){
-    var wasIdle = !$('idle').hidden;
+    var wasIdle = !$('idle').hidden, wasNight = !$('night').hidden;
     ui.touch = Date.now(); if (ui.awake) ui.awake = Date.now() + 5 * 60e3;
-    if (!$('night').hidden) ui.peek = Date.now() + 8000;
-    if (wasIdle){ ui.forceIdle = false; e.preventDefault(); }
+    if (wasNight){ if (n === 'pointerdown' && Date.now() >= ui.peek) ui.eat = Date.now(); ui.peek = Date.now() + 8000; }   // a first tap in the dark only shows the time
+    if (wasIdle){ ui.forceIdle = false; ui.eat = Date.now(); e.preventDefault(); }
+    if ((wasIdle || wasNight) && n === 'keydown' && e.key !== 'Tab' && e.key !== 'Enter' && e.key !== ' ') e.stopPropagation();   // that key only wakes or peeks, it doesn't also turn the page
     renderTick();
   }, true); });
+  // the tap that wakes the big clock, or lights up the night clock, must not also press whatever is under the finger
+  document.addEventListener('click', function(e){ if (ui.eat && Date.now() - ui.eat < 700){ e.stopPropagation(); e.preventDefault(); } ui.eat = 0; }, true);
 
   // ---------- fit the 1280 x 720 screen to the window ----------
   function scale(){
