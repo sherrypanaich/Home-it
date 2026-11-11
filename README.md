@@ -14,7 +14,17 @@ It is one small Node.js app with no dependencies. Your data stays on your own co
 - **Guides**: Luffy or Hancock comment on your day.
 - **Full screen**: opens as an app on the laptop at startup. It can also be opened from a phone if you choose to share it.
 
-The Split it and Budget it cards, and the TV and PS5 card, are placeholders in this version. See [CHANGELOG.md](CHANGELOG.md).
+The Split it and Budget it cards show live numbers once you link those apps (both are optional):
+
+```
+node server.js mcp-key YOURNAME      # run this in the Split it (or Budget it) folder; it prints a key
+node server.js link-split YOURNAME   # run this in the Home it folder; it asks for that app's address and the key
+node server.js link-budget YOURNAME
+```
+
+To show a calendar you already keep (Apple, Google, Outlook), share it as a link and paste the `webcal://` or `https://` address under Settings, Apps. Home it reads it every 15 minutes and never writes to it.
+
+Home it asks each app every few minutes, the same way an AI assistant would. The key is kept in `data/users.json` on your computer and never sent to a screen. `unlink-split` and `unlink-budget` undo it. See [CHANGELOG.md](CHANGELOG.md) for what's new.
 
 ## Try it without installing
 
@@ -39,7 +49,7 @@ Open http://localhost:8100 and sign in. The first person added runs it.
 
 ### Updates
 
-Installed from git like this, Home it checks GitHub every 10 minutes. When there is a newer version on `main` it switches to it, runs its self-check and restarts; the screen reloads by itself. If the new version fails the check, the old one keeps running. Your `data` folder and `home-it.env` are never touched. To update right now: `bash update.sh`.
+Installed from git like this, Home it checks GitHub every 10 minutes. When a newer version has been released (a tag like `v1.1.0`) it switches to it, runs its self-check and restarts; the screen reloads by itself. If the self-check fails, or the app doesn't answer after the restart, the old version comes back and the bad one isn't tried again. Work in progress on `main` is never picked up. Your `data/` folder and `home-it.env` are never touched.
 
 ### Run it as a full-screen app on the laptop
 
@@ -87,13 +97,14 @@ node server.js set-password NAME   change a password (signs every screen out)
 node server.js kiosk-link NAME     a one-time link that signs a screen in for good
 node server.js sample NAME         fill an empty account with made-up data
 node server.js list-users
+node server.js link-split NAME     show Split it on the screen (also link-budget, unlink-split, unlink-budget)
 node server.js mcp-key NAME        a key for an AI assistant
 node server.js mcp-revoke NAME     sign every assistant out
 ```
 
 ## Your data
 
-Everything is in the `data` folder: `db.json` (shifts, lists, events, settings) and `users.json` (accounts) and `oauth.json` (connected assistants). A copy of `db.json` is kept for each of the last 30 days in `data/backups`.
+Everything is in the `data` folder: `db.json` (shifts, lists, events, settings) and `users.json` (accounts) and `oauth.json` (connected assistants). A copy of `db.json` is kept for each of the last 30 days in `data/backups`. Those copies sit on the same disk as the data, so set `BACKUP_COPY_DIR` in `home-it.env` to a USB stick or a folder that syncs somewhere else and each day's copy goes there too. Past shifts and events are kept for two years.
 
 ## Tests
 

@@ -10,7 +10,7 @@ const { spawn, execFileSync } = require('child_process');
 const SERVER = path.join(__dirname, '..', 'server.js');
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'home-it-test-'));
 const PORT = 8911, WX = 8912, BASE = `http://127.0.0.1:${PORT}`;
-const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0.1', WEATHER_URL: `http://127.0.0.1:${WX}/wx`, GEOCODE_URL: `http://127.0.0.1:${WX}/geo` };
+const env = { ...process.env, DATA_DIR: DATA, PORT: String(PORT), HOST: '127.0.0.1', WEATHER_URL: `http://127.0.0.1:${WX}/wx`, GEOCODE_URL: `http://127.0.0.1:${WX}/geo`, BACKUP_COPY_DIR: path.join(DATA, 'copy') };
 const cli = (args, extra = {}) => execFileSync('node', [SERVER, ...args], { env: { ...env, ...extra }, encoding: 'utf8' });
 let proc, fake, cookie = '';
 
@@ -81,7 +81,7 @@ test('other screens hear about a change', async () => {
 test('weather: read and tidied', async () => {
   const { json } = await call('/api/weather');
   assert.equal(json.ok, true); assert.equal(json.temp, 3); assert.equal(json.feels, -1); assert.equal(json.sunset, '16:44'); assert.equal(json.sunrise, '06:56');
-  assert.equal(json.hours.length, 24); assert.equal(json.tomorrow.hi, 4); assert.equal(json.city, 'Belleville, Ontario');
+  assert.equal(json.hours.length, 24); assert.equal(json.tomorrow.hi, 4); assert.equal(json.days[0].hi, 4); assert.equal(json.city, 'Belleville, Ontario');
 });
 
 test('changing the town looks it up', async () => {
@@ -89,6 +89,35 @@ test('changing the town looks it up', async () => {
   assert.equal(r.status, 400);
   r = await call('/api/city', { city: 'Kingston' });
   assert.equal(r.json.state.settings.city, 'Kingston, Ontario'); assert.equal(r.json.state.settings.lat, 44.2298);
+});
+
+test('the money card shows a linked app, and nothing while there is company', async () => {
+  assert.deepEqual((await call('/api/money')).json, {});
+  assert.match(cli(['link-split', 'Sherry'], { APP_URL: `http://127.0.0.1:${WX}`, APP_KEY: 'bad-key' }), /Split it is linked/);
+  assert.equal((await call('/api/money')).json.split.ok, false);
+  cli(['link-split', 'Sherry'], { APP_URL: `http://127.0.0.1:${WX}`, APP_KEY: 'good-key' });
+  const { json } = await call('/api/money');
+  assert.equal(json.split.big, '$40.00'); assert.deepEqual(json.split.more, { title: 'Lately', lines: ['Groceries $80.00, paid by you', 'Internet $70.00, paid by Maya'] }); assert.deepEqual(json.split.rows, ['Maya owes you $40.00']); assert.equal(json.budget, undefined);
+  assert.doesNotMatch(JSON.stringify((await call('/api/state')).json), /good-key/);   // the key never reaches a screen
+  await call('/api/op', { op: 'company.set', args: { on: true } });
+  assert.deepEqual((await call('/api/money')).json, { hidden: true });
+  await call('/api/op', { op: 'company.set', args: { on: false } });
+  assert.match(cli(['unlink-split', 'Sherry']), /no longer shown/);
+  assert.deepEqual((await call('/api/money')).json, {});
+});
+
+test('a calendar link shows its events, read-only, and is never saved with the rest', async () => {
+  let r = await call('/api/op', { op: 'settings.set', args: { key: 'calUrl', value: 'ftp://nope' } });
+  assert.equal(r.status, 400);
+  r = await call('/api/op', { op: 'settings.set', args: { key: 'calUrl', value: `webcal://127.0.0.1:${WX}/cal.ics`.replace('webcal', 'http') } });
+  assert.equal(r.status, 200);
+  let cal; for (let i = 0; i < 40 && !(cal = (await call('/api/state')).json.state.cal); i++) await new Promise(res => setTimeout(res, 50));
+  assert.deepEqual(cal.map(c => (c.time || 'all day') + ' ' + c.t), ['all day Maya’s birthday', '12:00 Dinner at Mum’s']);
+  assert.equal((await call('/api/state')).json.cal, 'ok');
+  await new Promise(res => setTimeout(res, 600));   // let the app write its file
+  assert.doesNotMatch(fs.readFileSync(path.join(DATA, 'db.json'), 'utf8') + '', /Dinner at Mum/);
+  await call('/api/op', { op: 'settings.set', args: { key: 'calUrl', value: '' } });
+  assert.equal((await call('/api/state')).json.state.cal, undefined);
 });
 
 test('the bedroom screen link works once and stays signed in', async () => {
@@ -135,7 +164,7 @@ test('an assistant needs a key, and gets the tools with one', async () => {
   const init = await mcpCall('initialize', { protocolVersion: '2025-06-18' });
   assert.equal(init.json.result.serverInfo.name, 'home-it');
   const names = (await mcpCall('tools/list')).json.result.tools.map(t => t.name);
-  assert.deepEqual(names, ['get_today', 'list_todos', 'add_todo', 'complete_todo', 'remove_todo', 'list_shifts', 'add_shift', 'remove_shift', 'list_events', 'add_event', 'remove_event']);
+  assert.deepEqual(names, ['get_today', 'list_todos', 'add_todo', 'complete_todo', 'change_todo', 'remove_todo', 'list_shifts', 'add_shift', 'change_shift', 'hours_by_month', 'remove_shift', 'list_events', 'add_event', 'change_event', 'complete_event', 'remove_event']);
   assert.equal((await call('/api/assistant')).json.connected, 1);
 });
 
@@ -158,10 +187,24 @@ test('an assistant can read the day and add, tick and remove things', async () =
   r = await tool('add_event', { what: 'Dentist', date: 'tomorrow', time: '15:30' });
   assert.match(r.content[0].text, /at 3:30 PM/);
   assert.match((await tool('list_events')).content[0].text, /Dentist/);
-  assert.match((await tool('remove_event', { what: 'dent' })).content[0].text, /Removed “Dentist”/);
+  r = await tool('change_todo', { text: 'oat', list: 'shopping', new_text: 'Oat milk x2', move_to: 'later' });
+  assert.match(r.content[0].text, /“Oat milk” is now “Oat milk x2” in Later/);
+  r = await tool('change_todo', { text: 'x2', list: 'later', move_to: 'shopping' });
+  assert.match(r.content[0].text, /in Shopping/);
+  r = await tool('add_shift', { date: 'tomorrow', start: '12:00', end: '16:00' });
+  r = await tool('change_shift', { date: 'tomorrow', new_end: '18:00', place: 'Cafe' });
+  assert.match(r.content[0].text, /Shift changed: .*12:00 PM to 6:00 PM/);
+  assert.match((await tool('hours_by_month')).content[0].text, /\d{4}-\d\d: \d/);
+  assert.match((await tool('remove_shift', { date: 'tomorrow' })).content[0].text, /Shift removed/);
+  r = await tool('change_event', { what: 'dent', new_name: 'Dentist downtown', new_time: '16:00' });
+  assert.match(r.content[0].text, /“Dentist downtown” is on .* at 4:00 PM/);
+  assert.match((await tool('complete_event', { what: 'dent' })).content[0].text, /is done/);
+  assert.match((await tool('list_events')).content[0].text, /Dentist downtown \(done\)/);
+  assert.equal((await tool('change_event', { what: 'dent' })).isError, true);
+  assert.match((await tool('remove_event', { what: 'dent' })).content[0].text, /Removed “Dentist downtown”/);
   assert.equal((await tool('add_shift', { date: 'someday', start: '9:00', end: '17:00' })).isError, true);
   const s = (await call('/api/state')).json.state;
-  assert.equal(s.lists.shop.at(-1).t, 'Oat milk'); assert.equal(s.lists.today[0].d, true); assert.equal(s.rules.length, 1); assert.equal(s.events.length, 0);
+  assert.equal(s.lists.shop.at(-1).t, 'Oat milk x2'); assert.equal(s.lists.today[0].d, true); assert.equal(s.rules.length, 1); assert.equal(s.events.length, 0);
 });
 
 test('an assistant can sign in the way a person does (OAuth)', async () => {
@@ -196,4 +239,10 @@ test('too many wrong passwords means a wait', async () => {
   let last;
   for (let i = 0; i < 6; i++) last = await call('/api/login', { name: 'Sherry', password: 'nope' + i }, { anon: true });
   assert.equal(last.status, 429);
+});
+
+test('the app says it is up, and the day’s backup also lands in the second folder', async () => {
+  const h = await (await fetch(BASE + '/api/health')).json();
+  assert.equal(h.ok, true); assert.match(h.version, /^\d+\.\d+\.\d+$/); assert.equal(h.backup.copy, 'ok');
+  assert.deepEqual(fs.readdirSync(path.join(DATA, 'copy')), fs.readdirSync(path.join(DATA, 'backups')));
 });

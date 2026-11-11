@@ -8,6 +8,7 @@
 //   node server.js kiosk-link NAME     a one-time address that signs the bedroom screen in for good
 //   node server.js sample NAME         fill an empty account with made-up data to try things
 //   node server.js list-users
+//   node server.js link-split NAME  show your Split it balance on the screen (link-budget NAME for Budget it; unlink-… undoes it)
 //   node server.js mcp-key NAME        a key for an AI assistant (see mcp.js); mcp-revoke NAME signs them all out
 //
 // Settings: PORT, HOST, DATA_DIR, TZ (your time zone, like America/Toronto), or a home-it.env file.
@@ -19,7 +20,7 @@ const crypto = require('crypto');
 const readline = require('readline');
 const zlib = require('zlib');
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 // Optional settings file next to this one: KEY=value per line (see home-it.env.example).
 try {
   for (const line of fs.readFileSync(path.join(__dirname, 'home-it.env'), 'utf8').split(/\r?\n/)) {
@@ -36,6 +37,8 @@ const PUBLIC = path.join(__dirname, 'public');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const COPY_DIR = (process.env.BACKUP_COPY_DIR || '').trim();
+let lastBackup = null;
 const KEEP_BACKUPS = 30, SESSION_DAYS = 90, KIOSK_DAYS = 3650;
 // Weather comes from Open-Meteo (free, no key, no account). Tests point these somewhere else.
 const WEATHER_URL = process.env.WEATHER_URL || 'https://api.open-meteo.com/v1/forecast';
@@ -88,7 +91,20 @@ function backup() {
     if (fs.existsSync(DB_FILE) && !fs.existsSync(f)) fs.copyFileSync(DB_FILE, f);
     if (fs.existsSync(USERS_FILE)) { JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); fs.copyFileSync(USERS_FILE, USERS_FILE + '.bak'); }
     for (const old of backups().slice(KEEP_BACKUPS)) fs.rmSync(old, { force: true });
+    lastBackup = { day: H.ymd(new Date()), copy: COPY_DIR ? copyBackups() : '' };
   } catch (e) { console.error('Backup:', e.message); }
+}
+// A second home for the daily data copies (a USB stick, a synced folder), so a dead disk doesn't take both.
+// The sign-in file stays on this computer: it holds keys. Returns 'ok' or 'fail'.
+function copyBackups() {
+  try {
+    fs.mkdirSync(COPY_DIR, { recursive: true, mode: 0o700 });
+    const mine = backups();
+    for (const f of mine) { const to = path.join(COPY_DIR, path.basename(f)); if (!fs.existsSync(to)) fs.copyFileSync(f, to); }
+    const keep = new Set(mine.map(f => path.basename(f)));
+    for (const f of fs.readdirSync(COPY_DIR)) if (/^db-\d{4}-\d\d-\d\d\.json$/.test(f) && !keep.has(f)) fs.rmSync(path.join(COPY_DIR, f), { force: true });
+    return 'ok';
+  } catch (e) { console.error('Backup copy to ' + COPY_DIR + ':', e.message); return 'fail'; }
 }
 
 // ---------- each person's home ----------
@@ -101,7 +117,8 @@ function stateOf(uid) {
   if (H.normalize(s, today())) saveDb();
   return s;
 }
-const viewFor = (uid, req) => ({ me: { name: nameFor(uid), kiosk: !!sessionOf(req)?.kiosk }, version: VERSION, today: today(), state: stateOf(uid) });
+const withCal = uid => { const s = stateOf(uid), c = calFor(uid); return c.rows.length ? { ...s, cal: c.rows } : s; };   // calendar rows ride along; they are never saved
+const viewFor = (uid, req) => ({ me: { name: nameFor(uid), kiosk: !!sessionOf(req)?.kiosk }, version: VERSION, today: today(), state: withCal(uid), cal: calFor(uid).state });
 function applyOp(uid, op, args) {
   const s = stateOf(uid), msg = H.apply(s, op, args, { today: today(), rid });
   saveDb(); return msg;
@@ -200,13 +217,69 @@ function file(res, name, type, cache, dir) {
 }
 const PUBLIC_FILES = new Set(['/manifest.webmanifest', '/sw.js', '/icon.svg', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/apple-touch-icon.png']);
 
-const mcp = require('./mcp')({ DATA_DIR, users: () => users, findUser, checkLogin, tooManyTries, noteMiss, secure, H, stateOf, today, version: VERSION,
+const mcp = require('./mcp')({ DATA_DIR, users: () => users, findUser, checkLogin, tooManyTries, noteMiss, secure, H, stateOf: uid => withCal(uid), today, version: VERSION,
   applyOp: (uid, op, args) => { const msg = applyOp(uid, op, args); changed(uid); return msg; },   // the screen updates as the assistant works
   weather: uid => weatherFor(stateOf(uid).settings),
   needsCode: uid => accounts.needsCode(uid), checkCode: (uid, code) => accounts.checkCode(uid, code) });
 const accounts = require('./accounts')({ appName: 'Home it', envFile: 'home-it.env', cookieName: 'hi', tagline: '',
   users: () => users, saveUsers, endSessions, docs: () => ({}), saveDb: () => {}, broadcast: () => {}, hashPw, findUser, setCookie, cookies, clientIp, misses,
   noteMiss, tooManyTries, nameFor, readBody, send, file, secure, SESSION_DAYS });
+
+// ---------- money cards: Home it asks Split it and Budget it the way an assistant would (their /mcp address, with a key) ----------
+// Linked per person with `node server.js link-split NAME` / `link-budget NAME`. Asked at most every 5 minutes; the last answer is kept if an app is down.
+// tool: the headline. more: a second question whose answer fills the card's page, shown line by line.
+const APPS = { split: { name: 'Split it', tool: 'get_balances', more: ['recent_expenses', { limit: 6 }, 'Lately'] },
+  budget: { name: 'Budget it', tool: 'safe_to_spend', more: ['budget_status', {}, 'Budgets this month'] } };
+const moneyCache = new Map();   // uid:kind -> { at, card }
+async function askApp(link, tool, args = {}) {
+  const r = await fetch(link.url.replace(/\/+$/, '') + '/mcp', { method: 'POST', signal: AbortSignal.timeout(8000),
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', Authorization: 'Bearer ' + link.key },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: tool, arguments: args } }) });
+  if (!r.ok) throw new Error('answered ' + r.status);
+  const j = await r.json(), out = j.result;
+  if (!out || out.isError) throw new Error(out?.content?.[0]?.text || j.error?.message || 'no answer');
+  return { text: String(out.content?.[0]?.text || ''), data: out.structuredContent && typeof out.structuredContent === 'object' ? out.structuredContent : null };
+}
+async function moneyFor(uid) {
+  const links = users.users[uid]?.apps || {}, res = {};
+  if (stateOf(uid).settings.company === today()) return { hidden: true };
+  await Promise.all(Object.keys(APPS).map(async kind => {
+    const link = links[kind]; if (!link) return;
+    const key = uid + ':' + kind, hit = moneyCache.get(key);
+    if (hit && Date.now() - hit.at < 5 * 60e3) return void (res[kind] = hit.card);
+    try {
+      const ans = await askApp(link, APPS[kind].tool);
+      const card = { ok: true, ...H.moneyCard(kind, ans.text, ans.data) }, [tool, args, title] = APPS[kind].more;
+      try { card.more = { title, lines: (await askApp(link, tool, args)).text.split('\n').map(l => l.replace(/^[-•]\s*/, '').trim()).filter(Boolean).slice(0, 8).map(l => l.slice(0, 140)) }; } catch {}
+      moneyCache.set(key, { at: Date.now(), card }); res[kind] = card;
+    } catch (e) { res[kind] = hit ? { ...hit.card, stale: true } : { ok: false }; }
+  }));
+  return res;
+}
+
+// ---------- a calendar link (Apple, Google, Outlook): read every 15 minutes, the next 60 days kept ----------
+const ICS = require('./ics');
+const calCache = new Map();   // uid -> { url, at, rows, state: 'ok' | 'wait' | 'fail', busy }
+function calFor(uid) {
+  const url = stateOf(uid).settings.calUrl; if (!url) return { rows: [], state: '' };
+  let hit = calCache.get(uid);
+  if (!hit || hit.url !== url) calCache.set(uid, hit = { url, at: 0, rows: [], state: 'wait' });
+  if (!hit.busy && Date.now() - hit.at > 15 * 60e3) refreshCal(uid, hit);
+  return hit;
+}
+async function refreshCal(uid, hit) {
+  hit.busy = true; hit.at = Date.now();
+  const before = JSON.stringify(hit.rows) + hit.state;
+  try {
+    const r = await fetch(hit.url, { signal: AbortSignal.timeout(15000), headers: { 'User-Agent': 'home-it' } });
+    if (!r.ok) throw new Error('calendar ' + r.status);
+    const text = await r.text();
+    if (!/BEGIN:VCALENDAR/.test(text) || text.length > 8e6) throw new Error('not a calendar');
+    hit.rows = ICS.read(text, today(), H.addDays(today(), 60)); hit.state = 'ok';
+  } catch (e) { hit.state = hit.rows.length ? 'ok' : 'fail'; hit.at = Date.now() - 13 * 60e3; }   // try again in a couple of minutes
+  hit.busy = false;
+  if (calCache.get(uid) === hit && JSON.stringify(hit.rows) + hit.state !== before) changed(uid);
+}
 
 // ---------- weather: asked at most every 15 minutes per place, and the last answer is kept if the internet drops ----------
 const weatherCache = new Map();   // 'lat,lon' -> { at, data }
@@ -215,7 +288,7 @@ async function weatherFor(set) {
   const key = set.lat + ',' + set.lon, hit = weatherCache.get(key);
   if (hit && Date.now() - hit.at < 15 * 60e3) return hit.data;
   try {
-    const q = new URLSearchParams({ latitude: set.lat, longitude: set.lon, timezone: 'auto', forecast_days: '2',
+    const q = new URLSearchParams({ latitude: set.lat, longitude: set.lon, timezone: 'auto', forecast_days: '5',
       current: 'temperature_2m,apparent_temperature,weather_code,is_day',
       hourly: 'temperature_2m,weather_code,precipitation_probability',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max' });
@@ -227,6 +300,7 @@ async function weatherFor(set) {
       temp: Math.round(c.temperature_2m), feels: Math.round(c.apparent_temperature), code: c.weather_code, day: c.is_day !== 0,
       hi: Math.round(d.temperature_2m_max?.[0]), lo: Math.round(d.temperature_2m_min?.[0]), rain: d.precipitation_probability_max?.[0] ?? null,
       sunrise: hm(d.sunrise?.[0]), sunset: hm(d.sunset?.[0]),
+      days: (d.time || []).slice(1, 5).map((t, i) => ({ date: t, code: d.weather_code?.[i + 1], hi: Math.round(d.temperature_2m_max?.[i + 1]), lo: Math.round(d.temperature_2m_min?.[i + 1]), rain: d.precipitation_probability_max?.[i + 1] ?? null })),
       tomorrow: { code: d.weather_code?.[1], hi: Math.round(d.temperature_2m_max?.[1]), lo: Math.round(d.temperature_2m_min?.[1]) },
       hours: (h.time || []).slice(from, from + 24).map((t, i) => ({ t: hm(t), temp: Math.round(h.temperature_2m[from + i]), code: h.weather_code[from + i], rain: h.precipitation_probability?.[from + i] ?? null }))
     };
@@ -267,6 +341,8 @@ async function handle(req, res) {
   if (await mcp.handle(req, res)) return;   // AI assistants (mcp.js)
   const url = new URL(req.url, 'http://x'), p = url.pathname, m = req.method;
   const ses = sessionOf(req), uid = ses ? ses.uid : null;
+  // Tells the updater (and anyone checking on the laptop) that the app is up and can read its data.
+  if (p === '/api/health' && m === 'GET') return send(res, 200, { ok: true, version: VERSION, backup: lastBackup });
   if (PUBLIC_FILES.has(p)) return file(res, p.slice(1), null, p === '/sw.js' ? 'no-cache' : 'public, max-age=86400');
   if (/^\/art\/[a-z0-9-]+\.(webp|png)$/.test(p)) return file(res, p.slice(1), null, 'public, max-age=604800');
   if (p === '/home.js') return file(res, 'home.js', null, 'no-cache', __dirname);
@@ -310,6 +386,7 @@ async function handle(req, res) {
     return send(res, 200, { ok: true, msg, ...viewFor(uid, req) });
   }
   if (p === '/api/weather' && m === 'GET') return send(res, 200, await weatherFor(stateOf(uid).settings));
+  if (p === '/api/money' && m === 'GET') return send(res, 200, await moneyFor(uid));
   if (p === '/api/city' && m === 'POST') {
     const name = H.text((await readBody(req)).city, 60);
     if (!name) return send(res, 400, { error: 'Type a town or city.' });
@@ -345,7 +422,8 @@ async function cli([cmd, ...rest]) {
   const name = rest.join(' ').trim();
   if (mcp.cli(cmd, name)) return;
   if (cmd === 'list-users') { for (const [id, u] of Object.entries(users.users)) console.log(`${u.name}${u.owner ? ' (owner)' : ''}  ${id}`); return; }
-  if (!['add-user', 'set-password', 'kiosk-link', 'sample'].includes(cmd)) return console.log('Commands: add-user NAME, set-password NAME, kiosk-link NAME, sample NAME, list-users, mcp-key NAME, mcp-revoke NAME');
+  const link = /^(un)?link-(split|budget)$/.exec(cmd || '');
+  if (!link && !['add-user', 'set-password', 'kiosk-link', 'sample'].includes(cmd)) return console.log('Commands: add-user NAME, set-password NAME, kiosk-link NAME, sample NAME, list-users, link-split NAME, link-budget NAME, unlink-split NAME, unlink-budget NAME, mcp-key NAME, mcp-revoke NAME');
   if (!name) return console.log(`Usage: node server.js ${cmd} NAME`);
   const found = findUser(name), job = { cmd, name };
   if (cmd === 'add-user' && found) return console.log(`${name} already exists. Use set-password to change it.`);
@@ -354,6 +432,12 @@ async function cli([cmd, ...rest]) {
     job.password = process.env.NEW_PASSWORD || await ask(`Password for ${name} (8+ characters): `);
     if (job.password.length < 8) return console.log('Too short, nothing saved.');
   }
+  if (link && !link[1]) {
+    const app = APPS[link[2]].name;
+    job.url = (process.env.APP_URL || await ask(`${app} address (like http://localhost:8090): `)).trim();
+    job.key = (process.env.APP_KEY || await ask(`${app} key (from "node server.js mcp-key NAME" in the ${app} folder): `)).trim();
+    if (!/^https?:\/\/\S+$/.test(job.url) || !job.key) return console.log('That needs an address starting with http and a key. Nothing saved.');
+  }
   // A running app keeps everything in memory and would write its own copy back over ours, so it does the job itself.
   const answer = await askServer(job);
   if (answer && answer.text) return console.log(answer.text);
@@ -361,9 +445,18 @@ async function cli([cmd, ...rest]) {
   console.log(r.text + (answer ? ' The app is running but didn’t answer, so restart it to pick this up.' : ''));
 }
 // What those commands do. Used here when the app is stopped, and by the running app when it is asked (see /api/local/cli).
-function localCommand({ cmd, name, password }) {
+function localCommand({ cmd, name, password, url, key }) {
   if (cmd === 'ping') return { text: 'running' };
   const found = findUser(name || '');
+  const link = /^(un)?link-(split|budget)$/.exec(cmd || '');
+  if (link) {
+    if (!found) return { text: `No user called ${name}.` };
+    const u = found[1], kind = link[2]; u.apps = u.apps || {};
+    if (link[1]) delete u.apps[kind]; else u.apps[kind] = { url: String(url), key: String(key) };
+    for (const k of moneyCache.keys()) if (k.startsWith(found[0] + ':')) moneyCache.delete(k);
+    saveUsers(); changed(found[0]);
+    return { text: link[1] ? `${APPS[kind].name} is no longer shown on ${u.name}’s screen.` : `${APPS[kind].name} is linked. Its card shows on ${u.name}’s screen within a minute.` };
+  }
   if (cmd === 'add-user') {
     if (found) return { text: `${name} already exists. Use set-password to change it.` };
     if (String(password || '').length < 8) return { text: 'Too short, nothing saved.' };
@@ -419,4 +512,4 @@ if (require.main === module) {
     })).listen(PORT, HOST, () => console.log(`Home it ${VERSION} running at http://${HOST}:${PORT}`));
   }
 }
-module.exports = { applyOp, stateOf, weatherFor };
+module.exports = { applyOp, stateOf, weatherFor, moneyFor };

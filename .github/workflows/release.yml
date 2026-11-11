@@ -1,0 +1,30 @@
+name: Release
+# Run this from the Actions tab (Run workflow) to publish the version that is on main.
+# It checks the tests, then makes the tag and the GitHub release from CHANGELOG.md.
+# Copies of Home it that update themselves only move when a release like this exists.
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test test/*.test.js
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n "s/^const VERSION = '\([0-9.]*\)';.*/\1/p" server.js)"
+          [ -n "$VERSION" ] || { echo "Couldn't read the version from server.js"; exit 1; }
+          if gh release view "v$VERSION" >/dev/null 2>&1; then echo "v$VERSION is already released."; exit 1; fi
+          awk -v v="## v$VERSION" '$0 ~ "^## v" { on = (index($0, v) == 1) ; next } on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "CHANGELOG.md has no section for v$VERSION"; exit 1; }
+          gh release create "v$VERSION" --target "$(git rev-parse HEAD)" --title "Home it v$VERSION" --notes-file notes.md
