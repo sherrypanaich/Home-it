@@ -2,6 +2,12 @@
 
 ## v1.2.0 (not released yet)
 
+### Improved (latest pass)
+- Today page: the add box sits at the top of the to-do list, plans and tomorrow share one panel, weather has its own.
+- Home: a "+ To-do" button jumps straight to typing a to-do.
+- Car page: start on the left, everything else on the right, and a one-tap "Lock it" when the car is unlocked.
+- Faster: only the page you are on and its neighbours are redrawn.
+
 The big screen is now a set of full pages you swipe between, and it can start your car with the heat set for the weather.
 
 ### New

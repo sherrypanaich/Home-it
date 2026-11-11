@@ -72,7 +72,7 @@
     else if (confirmAt > Date.now()) h += '<div class="car-two" style="margin-top:10px"><button class="btn primary car-go" data-car="go"' + (busy ? ' disabled' : '') + '>Yes, start it for ' + d.minutes + ' min</button><button class="btn car-go" data-car="no">Cancel</button></div>';
     else h += '<button class="btn primary car-go car-hold" data-car="hold"' + (busy ? ' disabled' : '') + '><i></i><span>Hold to start<small>' + esc(P.words(d)) + '</small></span></button>';
     var last = C.log && C.log[0];
-    h += '<div class="car-nav">'
+    h += '<!--cut:more--><div class="car-nav">'
       + navBtn('status', 'Locks, fuel and doors', C.status ? statusLine(C.status) : 'Tap to ask the car')
       + navBtn('adjust', 'Change this start', changed ? 'Changed · tap to see' : 'Minutes, heat, defrost, seat')
       + navBtn('car', 'Your car', esc(c.name) + ' · ' + esc([c.year, c.model].filter(Boolean).join(' ')))
@@ -94,7 +94,7 @@
     if (t.washer) a.push('Washer fluid is low.');
     return a;
   }
-  function warn(){ var a = C.status ? problems(C.status) : []; return a.length ? '<div class="car-run failed" style="margin-top:10px">' + esc(a.join(' ')) + '</div>' : ''; }
+  function warn(){ var a = C.status ? problems(C.status) : []; return a.length ? '<div class="car-run failed" style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px"><span>' + esc(a.join(' ')) + '</span>' + (C.status.locked === false && view === 'main' ? '<button class="btn sm" data-car="lock"' + (busy ? ' disabled' : '') + '>Lock it</button>' : '') + '</div>' : ''; }
   function statusPage(){
     var t = C.status, l = C.lock, h = '<div class="car-h" style="margin-top:0">Locks, fuel and doors</div>';
     if (!t) return h + '<div class="car-note">Asking the car…</div>';

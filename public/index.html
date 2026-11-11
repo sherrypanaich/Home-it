@@ -295,7 +295,8 @@ input,select{user-select:text;-webkit-user-select:text}
 .pgin > .dbody{flex:1;overflow:visible;min-height:0}
 .pgrid{display:grid;gap:12px 14px;height:100%;min-height:0}
 .pgrid .top{grid-area:top;min-width:0}
-.g-today{grid-template:"top top" auto "a b" minmax(0,auto) "a c" minmax(0,1fr) / 1.25fr 1fr}
+.g-today{grid-template:"top top top" auto "a b c" minmax(0,1fr) / 1.15fr 1fr .62fr}
+.g-today .pc .hrs2 div{flex:1 0 40%}
 .g-two{grid-template:"top top" auto "a b" minmax(0,1fr) / 1.15fr 1fr}
 .g-money{grid-template:"a b" minmax(0,1fr) / 1fr 1fr}
 .g-car{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
@@ -815,7 +816,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         + '<div class="leave">' + shiftLine(v) + '</div>' + tlHtml(rows);
     }
     var g = H.guide(S, v), name = g.who === 'luffy' ? 'Luffy' : 'Hancock';
-    el.innerHTML = h + '<button class="btn sm evbtn" id="evbtn">+ Event</button><button class="btn sm evbtn tdbtn" id="tdbtn">All of today ›</button>'
+    el.innerHTML = h + '<button class="btn sm evbtn" id="evbtn">+ Event</button><button class="btn sm evbtn tdbtn" id="tdbtn">+ To-do</button>'
       + '<div class="fig"><div class="bubble">' + esc(g.line) + '</div><button id="figbtn" aria-label="Switch guide"><img src="art/' + g.who + '-' + g.mood + '.webp" alt="' + name + ', ' + g.mood + '"></button></div>';
   }
 
@@ -917,9 +918,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
         + (WX && WX.ok ? stat('Weather', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · high ' + WX.hi + '° · low ' + WX.lo + '°') : '') + '</div>'
         + (x ? '<div class="note" style="font-weight:700">' + weekDone(v) + (wk.pay != null ? ' · about ' + H.money(wk.pay) + ' this week' : '') + '</div>' : '') + '<!--cut:plans--><h3>Plans</h3>';
       var ev = v.events.map(function(e){ return '<div class="dr"><button class="tk" ' + (e.cal ? 'disabled' : 'data-ev="' + esc(e.id) + '"') + ' aria-pressed="' + !!e.d + '"><i class="tbox"></i>' + esc(e.t) + '</button><b>' + (e.cal ? 'Calendar · ' : '') + (e.time ? tm(e.time) : 'Any time') + '</b></div>'; }).join('');
-      h += (ev || '<div class="note">Nothing planned.</div>') + '<h3>To do</h3>'
-        + S.lists.today.map(function(t){ return '<div class="dr"><button class="tk" data-td="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><i class="tbox"></i>' + esc(t.t) + '</button><span style="display:flex;align-items:center;gap:8px">' + (t.due ? '<b>' + tm(t.due) + '</b>' : t.rep ? '<b>' + (t.rep === 'daily' ? 'Daily' : 'Weekly') + '</b>' : '') + '<button class="btn sm" data-more="' + esc(t.id) + '" aria-label="Edit, move or remove">⋯</button></span></div>'; }).join('')
-        + '<form id="tdaddform" style="margin-top:6px"><input class="kb" id="tdadd" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off"><button class="btn primary">Add</button></form>';
+      h += (ev || '<div class="note">Nothing planned.</div>') + '<!--cut:todo--><h3>To do</h3>'
+        + '<form id="tdaddform" style="margin-bottom:4px"><input class="kb" id="tdadd" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off"><button class="btn primary">Add</button></form>'
+        + (S.lists.today.map(function(t){ return '<div class="dr"><button class="tk" data-td="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><i class="tbox"></i>' + esc(t.t) + '</button><span style="display:flex;align-items:center;gap:8px">' + (t.due ? '<b>' + tm(t.due) + '</b>' : t.rep ? '<b>' + (t.rep === 'daily' ? 'Daily' : 'Weekly') + '</b>' : '') + '<button class="btn sm" data-more="' + esc(t.id) + '" aria-label="Edit, move or remove">⋯</button></span></div>'; }).join('') || '<div class="note">Nothing on today’s list. Add something above.</div>');
       if (WX && WX.ok && WX.hours){
         h += '<!--cut:rest--><h3>The rest of the day</h3><div class="hrs2">' + WX.hours.filter(function(q, i){ return i % 2 === 1 && i < 12; }).map(function(q){
           var m = H.mins(q.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise);
@@ -1029,12 +1030,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   }
   function renderPages(){
     if (!S || !V) return;
+    var cur = PAGES.map(function(pg){ return pg[0]; }).indexOf(ui.page);
     PAGES.forEach(function(pg){
       var name = pg[0], el = pageEl(name); if (name === 'home') return;
+      if (Math.abs(PAGES.indexOf(pg) - cur) > 1 && el.querySelector('[data-pgb]').dataset.h) return;   // far pages wait until you get near
       var t = el.querySelector('[data-pgt]'), b = el.querySelector('[data-pgb]'), a = el.querySelector('[data-pga]'), h = '', title = pg[1].toUpperCase(), sub = '', p, q;
       if (name === 'today'){
         p = parts('today'); if (!p) return; title = 'TODAY'; sub = H.fmtDate(V.date, true);
-        h = '<div class="pgrid g-today"><div class="top">' + p.head.replace(/<div class="note"[\s\S]*$/, '') + '</div>' + panel('a', p.plans) + (p.rest ? panel('b', p.rest) : '') + panel('c', p.tomorrow) + '</div>';
+        h = '<div class="pgrid g-today"><div class="top">' + p.head.replace(/<div class="note"[\s\S]*$/, '') + '</div>' + panel('a', p.todo) + panel('b', p.plans + '<h3>Tomorrow</h3>' + p.tomorrow.replace(/^<h3>[^<]*<\/h3>/, '')) + (p.rest ? panel('c', p.rest, 'Weather today') : '') + '</div>';
       } else if (name === 'week'){
         p = parts('coming'); q = parts('pay'); title = 'YOUR WEEK'; sub = 'Shifts, plans, hours and pay';
         h = '<div class="pgrid g-two"><div class="top">' + p.head + '</div>' + panel('a', p.list, 'Coming up') + panel('b', '<div class="flat">' + q.head + '</div>' + q.months, 'Hours and pay') + '</div>';
@@ -1056,16 +1059,17 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       } else if (name === 'car'){
         var ae = document.activeElement; if (ae && ae.closest && ae.closest('#carlink,#carcode')) return;   // don't redraw under someone typing
         title = 'CAR'; sub = CarUI.linked() ? 'Start it for the weather, check the locks' : 'Add your Hyundai once';
-        h = '<div class="pgrid g-car">' + panel('a', CarUI.html(), 'Start the car') + '</div>';
+        var ch = CarUI.html().split('<!--cut:more-->');
+        h = ch[1] ? '<div class="pgrid g-money">' + panel('a', ch[0], 'Start the car') + panel('b', ch[1], 'More') + '</div>' : '<div class="pgrid g-car">' + panel('a', ch[0], 'Car') + '</div>';
       } else {
         p = parts('news'); sub = NEWS && NEWS.ok ? 'Tap a headline to read it' : '';
         h = p.list ? '<div class="pgrid g-news">' + panel('a', p.head, 'Top story') + panel('b', p.list, 'Headlines') + '</div>' : p.head;
       }
       t.textContent = title; if (a.textContent !== sub) a.textContent = sub;
       if (b.dataset.h !== h){
-        var keep = {}; b.querySelectorAll('.pc').forEach(function(c){ keep[c.style.gridArea] = c.querySelector('.dbody').scrollTop; });
+        var keep = {}; b.querySelectorAll('.pc').forEach(function(c){ var d = c.querySelector('.dbody'); if (d) keep[c.style.gridArea] = d.scrollTop; });
         b.dataset.h = h; b.innerHTML = h;
-        b.querySelectorAll('.pc').forEach(function(c){ if (keep[c.style.gridArea]) c.querySelector('.dbody').scrollTop = keep[c.style.gridArea]; });
+        b.querySelectorAll('.pc').forEach(function(c){ var d = c.querySelector('.dbody'); if (d && keep[c.style.gridArea]) d.scrollTop = keep[c.style.gridArea]; });
       }
     });
     var pi = PAGES.map(function(pg){ return pg[0]; }).indexOf(ui.page);
@@ -1273,7 +1277,8 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     var c = e.target.closest('.chk');
     if (c){ var g = goList(); g[c.dataset.go] = !g[c.dataset.go]; store.set('go', JSON.stringify(g)); c.setAttribute('aria-pressed', !!g[c.dataset.go]); return; }
     var td = e.target.closest('[data-td]'); if (td) return op('todo.toggle', { list:'today', id: td.dataset.td }, true);
-    if (e.target.closest('#tdbtn') || e.target.closest('[data-today]')) return goPage('today');
+    if (e.target.closest('#tdbtn')){ goPage('today'); return setTimeout(function(){ var i = $('tdadd'); if (i) i.focus(); }, 380); }
+    if (e.target.closest('[data-today]')) return goPage('today');
     var ev = e.target.closest('[data-ev]'); if (ev) return op('event.toggle', { id: ev.dataset.ev, date: V.date }, true);
     if (e.target.closest('#evbtn')) return show('eventsheet');
     if (e.target.closest('#figbtn')) op('settings.set', { key:'guide', value: S.settings.guide === 'luffy' ? 'hancock' : 'luffy' }, true);
