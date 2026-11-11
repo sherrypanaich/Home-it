@@ -295,8 +295,52 @@ input,select{user-select:text;-webkit-user-select:text}
 .pgin > .dbody{flex:1;overflow:visible;min-height:0}
 .pgrid{display:grid;gap:12px 14px;height:100%;min-height:0}
 .pgrid .top{grid-area:top;min-width:0}
-.g-today{grid-template:"top top top" auto "a b c" minmax(0,1fr) / 1.15fr 1fr .62fr}
-.g-today .pc .hrs2 div{flex:1 0 40%}
+.g-today{grid-template:"top top top" auto "a b c" minmax(0,1fr) / 1.1fr 1fr .68fr}
+.g-today .top .stats{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.g-today .top .stat{padding:8px 16px 9px}
+.g-today .top .stat small{font-size:.82rem}
+.g-today .top .stat b{font-size:1.5rem}
+.g-today .top .stat span{font-size:.86rem}
+.g-today .pc{gap:10px}
+.g-today .pc .cnt{font-size:.9rem}
+.g-today .trs{display:flex;flex-direction:column}
+.g-today .tr{display:flex;align-items:center;gap:4px;border-top:1.5px solid var(--line)}
+.g-today .tr:first-child{border-top:0}
+.g-today .tr .tk{min-height:54px;gap:12px;font-size:1.06rem;line-height:1.25;padding:6px 0}
+.g-today .tr .tk .tbox{width:24px;height:24px;margin:0;position:relative}
+.g-today .tr .tk[aria-pressed="true"]{text-decoration:none}
+.g-today .tr .tk[aria-pressed="true"] .tt{text-decoration:line-through}
+.g-today .tr .tk[aria-pressed="true"] .tbox::after{content:"";position:absolute;left:6px;top:1.5px;width:5px;height:11px;border:solid var(--hl-ink);border-width:0 2.5px 2.5px 0;transform:rotate(42deg)}
+.g-today .tr .tt{flex:1;min-width:0;overflow-wrap:anywhere}
+.g-today .tr .tt small{display:block;font-size:.82rem;font-weight:700;color:var(--muted)}
+.g-today .tr b{font-weight:800;font-size:.95rem;white-space:nowrap;color:var(--muted)}
+.g-today .tr.pl b{color:inherit}
+.g-today .tr.pl .tk{padding-right:4px}
+.g-today .tr.done{opacity:.6}
+.g-today .tr.pl.done .tbox{background:none;border-color:currentColor}
+.g-today .tr.pl.done .tbox::after{border-color:currentColor}
+.g-today .ed{all:unset;box-sizing:border-box;cursor:pointer;flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
+.g-today .ed .ic{width:19px;height:19px}
+.g-today .ed:active{background:var(--line)}
+.g-today .ed:focus-visible,.g-today .tk:focus-visible{outline:2.5px solid var(--accent);outline-offset:1px}
+.g-today .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:10px 8px;border:2px dashed var(--line);border-radius:12px;min-height:96px}
+.g-today .empty b{font-family:var(--display);font-weight:400;font-size:1.15rem;line-height:1.2}
+.g-today .empty span{font-weight:700;color:var(--muted);max-width:260px;line-height:1.3}
+.g-today .tmw{margin-top:auto;flex:none;display:flex;flex-direction:column;gap:5px;border:2px solid var(--line);border-radius:12px;background:var(--surface2,transparent);padding:10px 14px 11px}
+.g-today .tmw h3{margin:0 0 1px;font-size:.84rem}
+.g-today .tmw div{display:flex;gap:10px;align-items:baseline;font-weight:700;line-height:1.3}
+.g-today .tmw small{flex:0 0 68px;font-size:.84rem;font-weight:800;color:var(--muted)}
+.g-today .tmw div > span{min-width:0;overflow-wrap:anywhere}
+.g-today .tmw .sh{color:var(--accent);font-weight:800}
+.g-today .adds{flex:none}
+.g-today .whs{flex:1;display:flex;flex-direction:column;min-height:0}
+.g-today .whs div{flex:1;min-height:40px;display:grid;grid-template-columns:62px 30px 44px minmax(0,1fr);align-items:center;gap:8px;border-top:1.5px solid var(--line);font-weight:800}
+.g-today .whs div:first-child{border-top:0}
+.g-today .whs time{font-size:.95rem;color:var(--muted)}
+.g-today .whs .ic{width:28px;height:28px}
+.g-today .whs b{font-family:var(--display);font-weight:400;font-size:1.25rem;text-align:right}
+.g-today .whs small{font-size:.84rem;font-weight:800;white-space:nowrap}
+.g-today .whl{flex:none;text-align:center;font-weight:800;font-size:.9rem;color:var(--muted);border-top:1.5px solid var(--line);padding-top:8px}
 .g-two{grid-template:"top top" auto "a b" minmax(0,1fr) / 1.15fr 1fr}
 .g-money{grid-template:"a b" minmax(0,1fr) / 1fr 1fr}
 .g-car{grid-template:"a" minmax(0,1fr) / minmax(0,1fr)}
@@ -958,28 +1002,43 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       var v = V, x = v.shift, wk = H.week(S, v.date);
       title = 'TODAY · ' + H.fmtDate(v.date, true).toUpperCase();
       if ($('tdadd') && document.activeElement === $('tdadd')) return null;
-      var left = S.lists.today.filter(function(t){ return !t.d; }).length;
+      // Top tiles: only what the other panels don't already say (shift, when to leave, the week so far).
+      var wkDone = weekDone(v).replace(/^This week: | of .*$/g, '');
       h = '<div class="stats">'
-        + (x ? stat('Shift', span(x.start, endOf(x), true), esc(x.place) + ' · ' + H.fmtHours(x.mins) + (pay(x.mins) ? ' · ' + pay(x.mins) : ''))
-             : stat('Shift', 'Day off', shiftLine(v)))
+        + (x ? stat('Your shift', span(x.start, endOf(x), true), esc(x.place) + ' · ' + H.fmtHours(x.mins) + (pay(x.mins) ? ' · ' + pay(x.mins) : ''))
+             : stat('Your shift', 'Day off', shiftLine(v)))
         + (x && (v.phase === 'before' || v.phase === 'soon') ? stat('Leave by', tm(H.hhmm(v.leaveM)), (v.toLeave > 0 ? 'in ' + H.fmtDur(v.toLeave) : 'time to go') + ' · ' + S.settings.travel + ' min trip')
-           : x && v.phase === 'working' ? stat('Home time', tm(H.hhmm(v.endM)), H.fmtDur((v.endM - v.nowM + 1440) % 1440) + ' to go')
-           : stat('This week', H.fmtHours(wk.mins), wk.pay != null ? 'about ' + H.money(wk.pay) : weekDone(v).replace('This week: ', '')))
-        + stat('To do', left ? left + ' left' : 'All done', S.lists.today.length + ' on the list · ' + v.events.length + ' plan' + (v.events.length === 1 ? '' : 's'))
-        + (WX && WX.ok ? stat('Weather', WX.temp + '°', sky(WX.code, WX.day)[1] + ' · high ' + WX.hi + '° · low ' + WX.lo + '°') : '') + '</div>'
-        + (x ? '<div class="note" style="font-weight:700">' + weekDone(v) + (wk.pay != null ? ' · about ' + H.money(wk.pay) + ' this week' : '') + '</div>' : '') + '<!--cut:plans--><h3>Plans</h3>';
-      var ev = v.events.map(function(e){ return '<div class="dr"><button class="tk" ' + (e.cal ? 'disabled' : 'data-ev="' + esc(e.id) + '"') + ' aria-pressed="' + !!e.d + '"><i class="tbox"></i>' + esc(e.t) + '</button><b>' + (e.cal ? 'Calendar · ' : '') + (e.time ? tm(e.time) : 'Any time') + '</b></div>'; }).join('');
-      h += (ev || '<div class="note">Nothing planned.</div>') + '<!--cut:todo--><h3>To do</h3>'
-        + '<form id="tdaddform" style="margin-bottom:4px"><input class="kb" id="tdadd" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off"><button class="btn primary">Add</button></form>'
-        + (S.lists.today.map(function(t){ return '<div class="dr"><button class="tk" data-td="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><i class="tbox"></i>' + esc(t.t) + '</button><span style="display:flex;align-items:center;gap:8px">' + (t.due ? '<b>' + tm(t.due) + '</b>' : t.rep ? '<b>' + (t.rep === 'daily' ? 'Daily' : 'Weekly') + '</b>' : '') + '<button class="btn sm" data-more="' + esc(t.id) + '" aria-label="Edit, move or remove">⋯</button></span></div>'; }).join('') || '<div class="note">Nothing on today’s list. Add something above.</div>');
-      if (WX && WX.ok && WX.hours){
-        h += '<!--cut:rest--><h3>The rest of the day</h3><div class="hrs2">' + WX.hours.filter(function(q, i){ return i % 2 === 1 && i < 12; }).map(function(q){
+           : x && v.phase === 'working' ? stat('Home time', tm(H.hhmm(v.endM)), H.fmtDur((v.endM - v.nowM + 1440) % 1440) + ' to go') : '')
+        + (wk.mins ? stat('This week', H.fmtHours(wk.mins), wkDone + ' done so far' + (wk.pay != null ? ' · about ' + H.money(wk.pay) : '')) : stat('This week', 'No shifts', 'Nothing on the schedule'))
+        + '</div>';
+      // To do: open ones first, ticked ones sink to the bottom. Tap a row to tick it; the pencil edits, moves or removes.
+      var tds = S.lists.today.filter(function(t){ return !t.d; }).concat(S.lists.today.filter(function(t){ return t.d; }));
+      h += '<!--cut:todo-->'
+        + '<form id="tdaddform"><input class="kb" id="tdadd" type="text" maxlength="80" placeholder="Add a to-do for today" aria-label="Add a to-do for today" autocomplete="off"><button class="btn primary">Add</button></form>'
+        + (tds.length ? '<div class="trs">' + tds.map(function(t){
+            var w = t.due ? tm(t.due) : t.rep ? (t.rep === 'daily' ? 'Every day' : 'Every week') : '';
+            return '<div class="tr' + (t.d ? ' done' : '') + '"><button class="tk" data-td="' + esc(t.id) + '" aria-pressed="' + !!t.d + '"><i class="tbox"></i><span class="tt">' + esc(t.t) + '</span>' + (w ? '<b>' + w + '</b>' : '') + '</button>'
+              + '<button class="ed" data-more="' + esc(t.id) + '" aria-label="Edit, move or remove ' + esc(t.t) + '"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"/></svg></button></div>'; }).join('') + '</div>'
+          : '<div class="empty"><b>All clear</b><span>Nothing on today’s list. Type one in the box above.</span></div>');
+      // Plans: today's events in time order, then tomorrow in three short lines, then the add buttons at the bottom.
+      h += '<!--cut:plans-->' + (v.events.length ? '<div class="trs">' + v.events.map(function(e){
+            return '<div class="tr pl' + (e.d ? ' done' : '') + '"><button class="tk" ' + (e.cal ? 'disabled' : 'data-ev="' + esc(e.id) + '"') + ' aria-pressed="' + !!e.d + '"><i class="tbox"></i><span class="tt">' + esc(e.t) + (e.cal ? '<small>From your calendar</small>' : '') + '</span><b>' + (e.time ? tm(e.time) : 'Any time') + '</b></button></div>'; }).join('') + '</div>'
+          : '<div class="empty"><b>Nothing planned</b><span>' + (x ? 'Just your shift today.' : 'The day is all yours.') + '</span></div>');
+      var tm2 = H.coming(S, v.date, 30).filter(function(r){ return r.date === v.tomorrow.date; }), tw = dayWx(v.tomorrow.date),
+        tsh = tm2.filter(function(r){ return r.kind === 'shift'; }), tev = tm2.filter(function(r){ return r.kind !== 'shift'; });
+      h += '<div class="tmw"><h3>Tomorrow</h3>'
+        + '<div><small>Shift</small><span>' + (tsh.length ? tsh.map(function(r){ return '<span class="sh">' + span(r.start, r.end, true) + '</span>'; }).join(' and ') : 'Day off') + '</span></div>'
+        + '<div><small>Plans</small><span>' + (tev.length ? esc(tev[0].t) + (tev[0].time ? ' · ' + tm(tev[0].time) : '') + (tev.length > 1 ? ' · + ' + (tev.length - 1) + ' more' : '') : 'Nothing booked') + '</span></div>'
+        + (tw ? '<div><small>Weather</small><span>' + sky(tw.code, true)[1] + ' · high ' + tw.hi + '° · low ' + tw.lo + '°</span></div>' : '') + '</div>'
+        + '<div class="row adds"><button class="btn" data-open="eventsheet">+ Event</button><button class="btn" data-open="shiftsheet">+ Shift</button></div>';
+      // Weather: a short list for the next 12 hours.
+      h += '<!--cut:rest-->';
+      if (WX && WX.ok && WX.hours && WX.hours.length){
+        h += '<div class="whs">' + WX.hours.filter(function(q, i){ return i % 2 === 1 && i < 12; }).map(function(q){
           var m = H.mins(q.t), dk = m >= H.mins(WX.sunset) || m < H.mins(WX.sunrise);
-          return '<div>' + hourLabel(q.t) + SKY[sky(q.code, !dk)[0]] + '<b>' + q.temp + '°</b>' + (q.rain >= 40 ? '<small class="wet">' + q.rain + '%</small>' : '') + '</div>'; }).join('') + '</div>';
-      }
-      var tm2 = H.coming(S, v.date, 30).filter(function(r){ return r.date === v.tomorrow.date; }), tw = dayWx(v.tomorrow.date);
-      h += '<!--cut:tomorrow--><h3>Tomorrow</h3><div class="dr"><span>' + (tm2.length ? tm2.map(comingText).join(' · ') : 'Day off, nothing booked') + '</span>' + (tw ? '<b>' + tw.hi + '° / ' + tw.lo + '°</b>' : '') + '</div>'
-        + '<div class="row first" style="margin-top:8px"><button class="btn" data-open="eventsheet">+ Event</button><button class="btn" data-open="shiftsheet">+ Shift</button></div>';
+          return '<div><time>' + hourLabel(q.t) + '</time>' + SKY[sky(q.code, !dk)[0]] + '<b>' + q.temp + '°</b><small' + (q.rain >= 40 ? ' class="wet">' + q.rain + '% rain' : '>') + '</small></div>'; }).join('') + '</div>'
+          + '<div class="whl">' + (WX.stale ? 'From earlier today' : 'High ' + WX.hi + '° · low ' + WX.lo + '°') + '</div>';
+      } else h += '<div class="empty"><b>' + (WX ? 'No weather right now' : 'Checking the weather…') + '</b><span>' + (WX ? 'Can’t reach it at the moment. It will try again by itself.' : 'One moment.') + '</span></div>';
     }
     if (k === 'todo'){
       var td = S.lists[ui.todo.list].filter(function(y){ return y.id === ui.todo.id; })[0];
@@ -1089,7 +1148,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       var t = el.querySelector('[data-pgt]'), b = el.querySelector('[data-pgb]'), a = el.querySelector('[data-pga]'), h = '', title = pg[1].toUpperCase(), sub = '', p, q;
       if (name === 'today'){
         p = parts('today'); if (!p) return; title = 'TODAY'; sub = H.fmtDate(V.date, true);
-        h = '<div class="pgrid g-today"><div class="top">' + p.head.replace(/<div class="note"[\s\S]*$/, '') + '</div>' + panel('a', p.todo) + panel('b', p.plans + '<h3>Tomorrow</h3>' + p.tomorrow.replace(/^<h3>[^<]*<\/h3>/, '')) + (p.rest ? panel('c', p.rest, 'Weather today') : '') + '</div>';
+        var tleft = S.lists.today.filter(function(y){ return !y.d; }).length;
+        h = '<div class="pgrid g-today"><div class="top">' + p.head + '</div>'
+          + panel('a', p.todo, 'To do', S.lists.today.length ? '<span class="cnt">' + (tleft ? tleft + ' left' : 'All done') + '</span>' : '')
+          + panel('b', p.plans, 'Plans today') + panel('c', p.rest, 'Next 12 hours') + '</div>';
       } else if (name === 'week'){
         p = parts('coming'); q = parts('pay'); title = 'YOUR WEEK'; sub = 'Shifts, plans, hours and pay';
         h = '<div class="pgrid g-two"><div class="top">' + p.head + '</div>' + panel('a', p.list, 'Coming up') + panel('b', '<div class="flat">' + q.head + '</div>' + q.months, 'Hours and pay') + '</div>';
