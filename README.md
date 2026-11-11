@@ -28,7 +28,7 @@ Home it asks each app every few minutes, the same way an AI assistant would. The
 
 ## Start the car (Hyundai Bluelink, Canada)
 
-Tap **Car** in the Room card (or the Car card on the phone's Today) to warm up or cool down the car before you leave. Home it picks the run time and climate from the weather where you live:
+Tap the **Car** card in the bottom row (or the Car card on the phone's Today) to warm up or cool down the car before you leave. Home it picks the run time and climate from the weather where you live:
 
 | Feels like | Run time | Inside | Front defrost | Seat, wheel, rear window |
 |---|---|---|---|---|

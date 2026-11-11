@@ -5,9 +5,10 @@
 Start your car from the screen, with the heat set for the weather.
 
 ### New
-- **Start the car.** A Car button in the Room card, and a Car card on the phone, start a Hyundai with Bluelink (Canada). Home it picks 2 to 8 minutes, the inside temperature, defrost, rear window, heated wheel and seat from the weather outside. Snow adds time and defrost.
+- **Start the car.** A Car card in the bottom row of the big screen (tap it for the car page), and a Car card on the phone, start a Hyundai with Bluelink (Canada). Home it picks 2 to 8 minutes, the inside temperature, defrost, rear window, heated wheel and seat from the weather outside. Snow adds time and defrost.
 - **A short car page.** The page shows what will happen and the button. Changing this start, your car's settings and past starts each have their own small page.
 - **Change a start before you press (it's used once, then the weather's plan comes back),** and tell Home it once that you like it warmer or want it to run longer.
+- **Nothing spills out of the bottom row.** The Room card no longer pushes its Company switch past the edge, and the bottom cards show a small arrow instead of "More" so their titles have room.
 - **Safe by design.** Press and hold to start, at most 3 starts an hour, Stop while it runs, a list of the last starts, and a wrong PIN stops at once so Bluelink doesn't lock it. Your Bluelink sign-in stays on the laptop.
 
 ## v1.1.0 (not released yet)

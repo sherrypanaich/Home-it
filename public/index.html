@@ -198,6 +198,7 @@ svg.ic{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke
 .hid svg{width:28px;height:28px}
 .tap{cursor:pointer;position:relative;justify-content:flex-start}
 .tap::after{content:"More ›";position:absolute;right:12px;top:13px;font-family:var(--body);font-weight:800;font-size:.74rem;color:var(--muted);line-height:1}
+.low .tap::after{content:"›";font-size:1.3rem;top:9px}   /* six cards share the bottom row: an arrow is enough */
 .tap:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--pop)}
 .tap.hid::after{content:none}
 .tap .one{font-weight:800;font-size:1.02rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -441,15 +442,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
       <section class="card tap" data-card="forecast" data-detail="forecast" role="button" tabindex="0" aria-label="Weather for the next days, tap for more"></section>
       <section class="card tap money" data-card="split" data-detail="split" id="splitcard" role="button" tabindex="0" aria-label="Split it, tap for more"></section>
       <section class="card tap money" data-card="budget" data-detail="budget" id="budgetcard" role="button" tabindex="0" aria-label="Budget it, tap for more"></section>
+      <section class="card tap" data-card="car" data-detail="car" id="carcard" role="button" tabindex="0" aria-label="Car, tap to start it"></section>
       <section class="card" data-card="room" aria-label="Room">
-        <div class="row"><h2 class="h2">ROOM</h2>
-          <label class="co">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
-        <div style="display:flex;gap:8px;margin-top:auto">
-        <button class="btn" id="carbtn" aria-label="Car" style="flex:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:1rem;min-height:50px;padding:4px 12px">
-          <svg class="ic" viewBox="0 0 24 24"><path d="M5 16h14M6.5 16l1.6-5.2A2 2 0 0 1 10 9.4h4a2 2 0 0 1 1.9 1.4L17.5 16M4 16v3h3v-3M17 16v3h3v-3"/></svg><span id="carlbl">Car</span></button>
-        <button class="btn primary" id="gn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px">
+        <div class="row" style="justify-content:space-between;gap:8px">
+          <label class="co" style="flex:1;justify-content:space-between">Company<button class="sw" id="company" aria-pressed="false" aria-label="Company mode, hides money until tomorrow"></button></label></div>
+        <button class="btn primary" id="gn" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:1.05rem;min-height:50px;margin-top:auto">
           <svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Goodnight</button>
-        </div>
       </section>
     </div>
 
@@ -562,7 +560,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     fog:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 9h16M4 13h12M7 17h13"/></svg>'
   };
   var LOCK = '<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  var CARDS = [['today','Today'],['todo','Later and Shopping lists'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['room','Room']];
+  var CARDS = [['today','Today'],['todo','Later and Shopping lists'],['week','Shifts this week'],['coming','Coming up'],['forecast','Weather for the next days'],['split','Split it'],['budget','Budget it'],['car','Car'],['room','Room']];
   // weather codes (WMO) -> [icon, words]
   function sky(code, day){
     if (code === 0 || code === 1) return [day ? 'sun' : 'moon', code ? 'Mostly clear' : 'Clear'];
@@ -782,6 +780,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
     else h += '<div class="one">' + (m ? 'Can’t reach it right now' : 'Open ' + low(title)) + '</div>';
     el.innerHTML = h;
   }
+  function renderCar(){
+    var t = CarUI.tile(), el = $('carcard');
+    el.innerHTML = '<h2 class="h2">CAR</h2><div class="one' + (t.on ? ' good' : '') + '">' + esc(t.big) + '</div><div class="more">' + esc(t.sub) + '</div>';
+  }
   function renderComing(){
     var rows = H.coming(S, V.date, 30), r = rows[0];
     stage.querySelector('[data-card="coming"]').innerHTML = '<h2 class="h2">COMING UP</h2>' + (r
@@ -896,12 +898,12 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function renderCards(){
     var hide = S.settings.hide;
     CARDS.forEach(function(c){ stage.querySelector('[data-card="' + c[0] + '"]').hidden = hide.indexOf(c[0]) >= 0; });
-    var nolow = ['coming','forecast','split','budget','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
+    var nolow = ['coming','forecast','split','budget','car','room'].every(function(k){ return hide.indexOf(k) >= 0; }), nomid = ['today','todo','week'].every(function(k){ return hide.indexOf(k) >= 0; });
     $('low').hidden = nolow; $('mid').hidden = nomid;
     stage.classList.toggle('nolow', nolow); stage.classList.toggle('nomid', nomid && !nolow);
     moneyCard($('splitcard'), 'split', S.settings.splitUrl);
     moneyCard($('budgetcard'), 'budget', S.settings.budgetUrl);
-    renderComing(); renderForecast();
+    renderComing(); renderForecast(); renderCar();
     if (ui.sheet === 'detailsheet') renderDetail();
     $('company').setAttribute('aria-pressed', V.company);
   }
@@ -1111,7 +1113,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function openDetail(e){
     var c = e.target.closest('[data-detail]'); if (!c || c.classList.contains('hid')) return;
     if (e.type === 'keydown'){ if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
-    ui.detail = c.dataset.detail; show('detailsheet');
+    ui.detail = c.dataset.detail; if (ui.detail === 'car'){ CarUI.reset(); CarUI.load(); } show('detailsheet');
   }
   on('dbody', 'submit', function(e){
     e.preventDefault();
@@ -1158,8 +1160,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   on('kiosksw', 'click', function(){ if (DEMO) return toast('This works once it’s on the laptop'); post('api/kiosk', { on: !ME.kiosk }); });
   on('kbsw', 'click', function(){ store.set('kb', kbOn() ? '0' : '1'); hideKb(); renderSettings(); });
   on('company', 'click', function(){ op('company.set', { on: !V.company }); });
-  on('carbtn', 'click', function(){ ui.detail = 'car'; CarUI.reset(); show('detailsheet'); CarUI.load(); });
-  on('gn', 'click', function(){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); });
+    on('gn', 'click', function(){ ui.good = true; ui.goodNight = false; ui.awake = 0; renderTick(); });
   on('nwake', 'click', function(e){ e.stopPropagation(); ui.good = false; ui.awake = Date.now() + 5 * 60e3; ui.touch = Date.now(); renderTick(); });
   ['pointerdown', 'keydown'].forEach(function(n){ document.addEventListener(n, function(e){
     var wasIdle = !$('idle').hidden;
@@ -1208,7 +1209,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
   function start(){
     scale();
     CarUI.init({ api: api, toast: toast, esc: esc, demo: DEMO, from: 'big screen', top: function(){ $('detailsheet').scrollTop = 0; }, demoWeather: function(){ return WX; },
-      onChange: function(){ $('carlbl').textContent = CarUI.short(true); if (ui.sheet === 'detailsheet' && ui.detail === 'car') renderDetail(); } });
+      onChange: function(){ renderCar(); if (ui.sheet === 'detailsheet' && ui.detail === 'car') renderDetail(); } });
     CarUI.bind($('dbody'));
     if (DEMO){
       S = H.sample(H.ymd(new Date())); S.cal = [{ date: H.addDays(H.ymd(new Date()), 1), time:'18:30', t:'Mum’s birthday dinner' }]; ME = { name:'You', kiosk:false }; $('demo').hidden = false; $('wait').hidden = true;

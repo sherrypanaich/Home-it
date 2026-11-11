@@ -171,6 +171,14 @@
     if (f.id === 'carcode'){ e.preventDefault(); send('api/car/code', { code: document.getElementById('car-code').value }); return true; }
     return false;
   }
+  // what the Car tile on the big screen says: one headline and one small line
+  function tile(){
+    if (!C) return { big:'Car', sub:'' };
+    if (!C.linked) return { big:'Add your car', sub:'Tap to set it up' };
+    if (running()) return { big:'On till ' + clock(C.run.until), sub: P.words(C.run.plan).split(' · ').slice(1).join(' · '), on:true };
+    if (moving()) return { big:'Starting…', sub:'Waiting for the car' };
+    return { big:'Ready · ' + d.minutes + ' min', sub: P.words(d).split(' · ').slice(1, 3).join(' · ') };
+  }
   // a short line for a button on the home screen
   function short(tiny){
     if (tiny) return running() ? 'On' : moving() ? '…' : 'Car';
@@ -202,5 +210,5 @@
   }
 
   window.CarUI = { init: function(opts){ o = opts; }, bind: bind, load: load, html: html, click: click, submit: submit, short: short,
-    busy: function(){ return moving(); }, reset: function(){ view = 'main'; }, linked: function(){ return !!(C && C.linked); } };
+    busy: function(){ return moving(); }, reset: function(){ view = 'main'; }, tile: tile, linked: function(){ return !!(C && C.linked); } };
 })();
